@@ -40,6 +40,23 @@
 }
 
 @layer base {
+  html {
+    font-size: 90%;
+  }
+
+  html, body {
+    @apply overflow-x-hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    background-color: #F8FAFC;
+    background-image: radial-gradient(#E2E8F0 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+  }
+
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
   body {
     @apply font-sans text-slate-900 antialiased;
   }

@@ -5,12 +5,20 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Link, 
+  useNavigate 
+} from "react-router-dom";
+import { 
   motion, 
   AnimatePresence, 
   useMotionValue, 
   useSpring, 
   useTransform 
 } from "motion/react";
+import AuthPage from "./pages/AuthPage";
 import { 
   ChevronDown, 
   Search, 
@@ -44,13 +52,29 @@ import {
   Twitter, 
   Linkedin, 
   Github,
-  Download
+  Download,
+  Menu,
+  X,
+  Mail
 } from "lucide-react";
 
 export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+function LandingPage() {
+  const navigate = useNavigate();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -117,50 +141,134 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-transparent selection:bg-fintrack-primary selection:text-white">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-500">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <nav className="bg-white/70 backdrop-blur-xl border border-white/20 rounded-3xl px-8 py-4 flex items-center justify-between shadow-2xl shadow-slate-900/5 ring-1 ring-slate-900/5">
-            <div className="flex items-center w-48 h-12 md:h-14 relative">
-              <Logo className="h-20 md:h-28 absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="max-w-7xl mx-auto">
+          <nav className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-[2rem] px-6 py-3 flex items-center justify-between shadow-[0_8px_32px_-4px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center w-32 sm:w-40 h-10 sm:h-12 relative">
+              <Logo className="h-full w-full absolute left-0 top-0 z-10" />
             </div>
 
-            <div className="hidden lg:flex items-center gap-10">
-              <NavItem label="Produit" hasDropdown />
-              <NavItem label="Fonctionnalités" />
-              <NavItem label="Tarifs" />
-              <NavItem label="Solutions" hasDropdown />
+            <div className="hidden lg:flex items-center gap-8">
+              <NavItem label="Accueil" href="#accueil" />
+              <NavItem label="Fonctionnalités" href="#fonctionnalites" />
+              <NavItem label="Solutions" href="#solutions" />
+              <NavItem label="Tarification" href="#tarifs" />
+              <NavItem label="À propos" href="#a-propos" />
+              <NavItem label="Contact" href="#contact" />
             </div>
 
-            <div className="flex items-center gap-6">
-              <button className="hidden sm:block text-slate-600 hover:text-fintrack-primary font-bold text-sm transition-colors">
-                Connexion
-              </button>
-              <button className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-8 py-4 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-fintrack-primary/20 hover:scale-105 active:scale-95">
-                Essai Gratuit
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="hidden sm:flex items-center gap-6">
+                <button 
+                  onClick={() => navigate("/auth")}
+                  className="text-slate-600 hover:text-fintrack-primary font-bold text-sm transition-colors"
+                >
+                  Connexion
+                </button>
+                <button 
+                  onClick={() => navigate("/auth")}
+                  className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-5 lg:px-6 py-2.5 lg:py-3 rounded-xl font-bold text-xs transition-all shadow-xl shadow-fintrack-primary/20 hover:scale-105 active:scale-95"
+                >
+                  Commencer
+                </button>
+              </div>
+              
+              {/* Mobile Menu Toggle */}
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="lg:hidden p-2 text-slate-600 hover:text-fintrack-primary transition-colors"
+              >
+                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </nav>
+
+          {/* Mobile Menu Overlay */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="lg:hidden mt-4 bg-white/95 backdrop-blur-2xl rounded-[2rem] border border-white/20 shadow-2xl overflow-hidden"
+              >
+                <div className="p-8 flex flex-col gap-6">
+                  <NavItem label="Accueil" href="#accueil" mobile />
+                  <NavItem label="Fonctionnalités" href="#fonctionnalites" mobile />
+                  <NavItem label="Solutions" href="#solutions" mobile />
+                  <NavItem label="Tarification" href="#tarifs" mobile />
+                  <NavItem label="À propos" href="#a-propos" mobile />
+                  <NavItem label="Contact" href="#contact" mobile />
+                  <hr className="border-slate-100" />
+                  <div className="flex flex-col gap-4">
+                    <button 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate("/auth");
+                      }}
+                      className="text-slate-600 font-bold text-center py-2"
+                    >
+                      Connexion
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate("/auth");
+                      }}
+                      className="bg-fintrack-primary text-white px-8 py-4 rounded-2xl font-bold text-center shadow-lg shadow-fintrack-primary/20"
+                    >
+                      Commencer
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-16">
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+        <section id="accueil" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative">
+          {/* Decorative Background Elements */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-fintrack-primary/5 rounded-full blur-[120px]" />
+            <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-fintrack-secondary/5 rounded-full blur-[100px]" />
+          </div>
+
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center lg:text-left relative z-10"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6 text-slate-900">
-              Pilotez vos ventes et vos dépôts bancaires en toute simplicité.
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fintrack-primary/5 border border-fintrack-primary/10 text-fintrack-primary text-[10px] font-black uppercase tracking-widest mb-6"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fintrack-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-fintrack-primary"></span>
+              </span>
+              Plateforme de Gestion Financière 2.0
+            </motion.div>
+
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl leading-[1.05] mb-6 text-slate-900 font-black tracking-tighter">
+              L'intelligence financière <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fintrack-primary to-fintrack-secondary">au service de votre croissance.</span>
             </h1>
-            <p className="text-lg text-slate-600 mb-10 max-w-lg leading-relaxed">
-              La solution tout-en-un pour la gestion des encaissements, le suivi de caisse et la supervision de vos agents de terrain.
+            <p className="text-sm sm:text-base text-slate-600 mb-8 sm:mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
+              Pilotez vos ventes, vos dépôts bancaires et vos agents de terrain avec une précision chirurgicale. FinTrack transforme vos données en décisions stratégiques.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <button className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-fintrack-primary/20">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+              <button 
+                onClick={() => navigate("/auth")}
+                className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-8 py-4 rounded-full font-bold text-sm transition-all shadow-2xl shadow-fintrack-primary/30 hover:scale-105 active:scale-95"
+              >
                 Démarrer gratuitement
               </button>
               <WatchDemoButton />
@@ -171,45 +279,48 @@ export default function App() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative w-full h-full"
+            className="relative w-full h-full mt-12 lg:mt-0"
           >
             {/* Connecting Lines SVG */}
-            <svg className="absolute -inset-20 w-[140%] h-[140%] pointer-events-none z-0 opacity-20" viewBox="0 0 800 600">
+            <svg className="absolute -inset-10 sm:-inset-20 w-[120%] sm:w-[140%] h-[120%] sm:h-[140%] pointer-events-none z-0 opacity-20" viewBox="0 0 800 600">
               <path d="M100,300 Q200,100 400,300 T700,300" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="8 8" className="text-fintrack-accent" />
               <path d="M150,400 Q300,500 450,350 T750,450" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="8 8" className="text-fintrack-secondary" />
-              <circle cx="100" cy="300" r="4" className="fill-fintrack-accent" />
-              <circle cx="700" cy="300" r="4" className="fill-fintrack-accent" />
-              <circle cx="150" cy="400" r="4" className="fill-fintrack-secondary" />
-              <circle cx="750" cy="450" r="4" className="fill-fintrack-secondary" />
             </svg>
 
             {/* Hero Image Replacement */}
-            <div className="relative z-10 bg-slate-100 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-slate-200 overflow-hidden group w-full h-full min-h-[500px] lg:min-h-[600px]">
-              <img 
-                src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/Gemini_Generated_Image_9mw2eg9mw2eg9mw2.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L0dlbWluaV9HZW5lcmF0ZWRfSW1hZ2VfOW13MmVnOW13MmVnOW13Mi5wbmciLCJpYXQiOjE3NzYwNjY0ODksImV4cCI6MTgwNzYwMjQ4OX0.pbJhIp5QFnqq2eoarPj6V_hiCreYyH1UX7MWWilIh80" 
-                alt="FinTrack Dashboard Preview" 
-                className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-fintrack-primary/60 via-transparent to-transparent pointer-events-none" />
-              
-              {/* Overlay Badge */}
-              <div className="absolute bottom-8 left-8 right-8 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                  <div className="text-white font-bold text-lg">Tableau de Bord Temps Réel</div>
-                  <div className="text-white/60 text-sm">Suivi instantané des opérations terrain</div>
-                </div>
-                <div className="w-12 h-12 bg-fintrack-secondary rounded-full flex items-center justify-center text-white shadow-lg">
-                  <TrendingUp className="w-6 h-6" />
+            <div className="relative z-10 bg-white p-2 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-white/50 overflow-hidden group w-full h-full min-h-[350px] sm:min-h-[500px] lg:min-h-[600px]">
+              <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" 
+                  alt="FinTrack Dashboard Preview" 
+                  className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-fintrack-primary/40 via-transparent to-fintrack-secondary/20 pointer-events-none" />
+                
+                {/* Overlay Badge - Glassmorphism */}
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 bg-white/20 backdrop-blur-2xl border border-white/30 p-4 sm:p-6 rounded-2xl flex items-center justify-between shadow-2xl">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30">
+                      <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-white font-black text-sm sm:text-lg tracking-tight">Tableau de Bord 2.0</div>
+                      <div className="text-white/80 text-[9px] sm:text-xs font-bold uppercase tracking-widest">Analyse prédictive active</div>
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-fintrack-secondary/80 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest">
+                    Live
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Floating Icons */}
-            <FloatingIcon icon={<Wallet className="text-amber-500" />} className="top-0 -right-4" delay={0} />
-            <FloatingIcon icon={<Landmark className="text-fintrack-accent" />} className="bottom-10 -left-8" delay={1} />
-            <FloatingIcon icon={<Smartphone className="text-purple-500" />} className="-top-10 left-1/2" delay={0.5} />
-            <FloatingIcon icon={<History className="text-fintrack-secondary" />} className="bottom-0 right-10" delay={1.5} />
+            {/* Floating Icons - Refined */}
+            <FloatingIcon icon={<Wallet className="text-amber-500 w-5 h-5" />} className="top-4 -right-6 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={0} />
+            <FloatingIcon icon={<Landmark className="text-fintrack-primary w-5 h-5" />} className="bottom-20 -left-10 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={1} />
+            <FloatingIcon icon={<Smartphone className="text-fintrack-secondary w-5 h-5" />} className="-top-12 left-1/2 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={0.5} />
+            <FloatingIcon icon={<History className="text-purple-500 w-5 h-5" />} className="bottom-4 right-12 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={1.5} />
             
             {/* Background Decorative Elements */}
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-fintrack-primary/10 rounded-full blur-3xl -z-10" />
@@ -217,101 +328,117 @@ export default function App() {
           </motion.div>
         </section>
 
-        {/* Partners & Networks - Premium Square Bento Grid */}
-        <section className="max-w-7xl mx-auto px-6 mt-40 relative overflow-hidden py-20">
-          {/* Background Abstract Shapes */}
-          <div className="absolute top-0 left-0 w-full h-full -z-20 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-fintrack-primary/[0.02] rounded-full blur-[120px]" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-fintrack-secondary/[0.03] rounded-full blur-[100px]" />
+
+        {/* Fonctionnalités Section */}
+        <section id="fonctionnalites" className="max-w-7xl mx-auto px-6 mt-24">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl mb-3 text-slate-900 font-bold">
+              Fonctionnalités Avancées
+            </h2>
+            <p className="text-slate-500 text-sm max-w-2xl mx-auto">
+              Une plateforme robuste conçue pour répondre aux défis complexes de la gestion financière sur le terrain.
+            </p>
           </div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center mb-32 relative"
-          >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3]
-              }}
-              transition={{ duration: 8, repeat: Infinity }}
-              className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-60 bg-fintrack-primary/10 rounded-full blur-[100px] -z-10"
-            />
-            <h2 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 tracking-tighter">
-              L'Élite du <span className="bg-clip-text text-transparent bg-gradient-to-r from-fintrack-primary to-fintrack-secondary">Digital</span>
-            </h2>
-            <p className="text-slate-400 max-w-3xl mx-auto text-xl font-medium leading-relaxed tracking-tight">
-              FinTrack s'entoure des géants technologiques pour bâtir le futur de la gestion financière. Une synergie <span className="text-slate-900 font-bold underline decoration-fintrack-secondary decoration-4 underline-offset-8">sans compromis</span>.
-            </p>
-          </motion.div>
-
-          <motion.div 
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={{
-              hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1,
-                  delayChildren: 0.2
-                }
-              }
-            }}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-8 relative"
-          >
-            {/* Dynamic Grid Background */}
-            <div className="absolute inset-0 -z-10 opacity-[0.05] pointer-events-none">
-              <div className="w-full h-full border-[0.5px] border-slate-900/20 grid grid-cols-6 grid-rows-1">
-                {[...Array(6)].map((_, i) => <div key={i} className="border-r border-slate-900/20" />)}
-              </div>
-            </div>
-            <PartnerCard name="MTN" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/mtn.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L210bi5wbmciLCJpYXQiOjE3NzYwODg4NTAsImV4cCI6MTgwNzYyNDg1MH0.aY3pn3wP7CWUrznZrCMTXKeTzV9BnLJsQCJRNRAw8iU" />
-            <PartnerCard name="Moov" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/moov.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L21vb3YuanBlZyIsImlhdCI6MTc3NjA5MDEzNCwiZXhwIjoxODA3NjI2MTM0fQ.K9jlmQUyBBp6Og2ElxiO16D9YGk-AieGmIHVG0bUuQQ" />
-            <PartnerCard name="Celtiis" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/celtiis.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2NlbHRpaXMuanBnIiwiaWF0IjoxNzc2MDg4ODEwLCJleHAiOjE4MDc2MjQ4MTB9.UKspCgfucV5z3HTlfTNrNtQmQAfWou8cv_xXdcbpDHg" />
-            <PartnerCard name="Canal+" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/Canal+.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L0NhbmFsKy5qcGVnIiwiaWF0IjoxNzc2MDg4NzkzLCJleHAiOjE4MDc2MjQ3OTN9.GStzXtayl8VqcB9uJopkfmTy97b5_9vfCaiExB5G65s" />
-            <PartnerCard name="SBEE" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/sbee.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L3NiZWUud2VicCIsImlhdCI6MTc3NjA4ODg2NywiZXhwIjoxODA3NjI0ODY3fQ.gTg-eCiYsbaCM44dNmWcPEhy2lfM7aKQ9wEOV3M0SQ0" />
-            <PartnerCard name="SONEB" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/soneb.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L3NvbmViLndlYnAiLCJpYXQiOjE3NzYwODg4ODgsImV4cCI6MTgwNzYyNDg4OH0.8r-KDvZ0KAXPrVZALbJTcYvo_9EVsCmHyBzbdfIibpU" />
-          </motion.div>
-        </section>
-
-        {/* Features Section */}
-        <section className="max-w-7xl mx-auto px-6 mt-40 text-center">
-          <h2 className="text-4xl md:text-5xl mb-4 text-slate-900">
-            Fonctionnalités Clés
-          </h2>
-          <p className="text-slate-500 mb-16 text-lg">
-            Une suite complète d'outils pensés pour le terrain et la supervision.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard 
               icon={<Wallet />}
               title="Gestion des Ventes"
-              description="Enregistrez chaque transaction instantanément, même en déplacement, avec une traçabilité totale."
+              description="Enregistrement instantané des transactions avec catégorisation automatique et suivi des stocks en temps réel."
+            />
+            <FeatureCard 
+              icon={<History />}
+              title="Gestion de la Caisse"
+              description="Suivi rigoureux des entrées et sorties, clôtures journalières automatisées et détection d'écarts."
             />
             <FeatureCard 
               icon={<Landmark />}
               title="Dépôts Bancaires"
-              description="Suivez les remontées de fonds et validez les dépôts bancaires en temps réel avec preuves photo."
+              description="Validation des remontées de fonds avec preuves numériques et réconciliation bancaire simplifiée."
             />
             <FeatureCard 
-              icon={<History />}
-              title="Suivi de Caisse"
-              description="Contrôlez les flux de trésorerie, gérez les clôtures journalières et identifiez les écarts immédiatement."
+              icon={<Activity />}
+              title="Suivi des Agents"
+              description="Géolocalisation des opérations, suivi des performances individuelles et gestion des tournées."
+            />
+            <FeatureCard 
+              icon={<PieChart />}
+              title="Rapports & Analytics"
+              description="Tableaux de bord personnalisables, exportations de données et analyses prédictives de croissance."
+            />
+            <FeatureCard 
+              icon={<ShieldCheck />}
+              title="Audit & Supervision"
+              description="Journal d'audit complet, alertes en cas d'anomalies et outils de supervision hiérarchique."
             />
           </div>
         </section>
 
+        {/* Solutions Section */}
+        <section id="solutions" className="max-w-7xl mx-auto px-6 mt-24">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl mb-3 text-slate-900 font-bold">Solutions par Profil</h2>
+            <p className="text-slate-500 text-sm">FinTrack s'adapte aux besoins spécifiques de chaque acteur de votre écosystème.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-fintrack-primary transition-all duration-500 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-fintrack-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+              <div className="w-14 h-14 bg-fintrack-primary/10 text-fintrack-primary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+                <Smartphone className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Agents de Terrain</h3>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Outils mobiles intuitifs pour l'encaissement, le reporting et la gestion des dépôts en toute mobilité.</p>
+              <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Encaissement rapide</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Preuves de dépôt</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Mode hors-ligne</li>
+              </ul>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-fintrack-secondary transition-all duration-500 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-fintrack-secondary/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+              <div className="w-14 h-14 bg-fintrack-secondary/10 text-fintrack-secondary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+                <Users className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Marchands</h3>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Visibilité totale sur les opérations, gestion des stocks et optimisation des flux de trésorerie.</p>
+              <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-primary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-primary group-hover:text-white" /></div> Suivi des ventes</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-primary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-primary group-hover:text-white" /></div> Clôtures de caisse</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-primary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-primary group-hover:text-white" /></div> Gestion d'inventaire</li>
+              </ul>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-slate-900 transition-all duration-500 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+              <div className="w-14 h-14 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Administrateurs</h3>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Contrôle centralisé, gestion des accès, audits de sécurité et rapports consolidés multi-sites.</p>
+              <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Gestion des rôles</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Audit de sécurité</li>
+                <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> API & Intégrations</li>
+              </ul>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
-        <section className="max-w-7xl mx-auto px-6 mt-40 text-center">
-          <div className="mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4 text-slate-900 font-bold">Tarifs Simples et Transparents</h2>
-            <p className="text-slate-500 text-lg">Choisissez le plan adapté à la croissance de votre activité.</p>
+        <section id="tarifs" className="max-w-7xl mx-auto px-6 mt-24 text-center">
+          <div className="mb-10">
+            <h2 className="text-2xl md:text-3xl mb-3 text-slate-900 font-bold">Tarification Transparente</h2>
+            <p className="text-slate-500 text-sm max-w-2xl mx-auto">Des offres adaptées à chaque étape de votre développement, sans frais cachés.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 items-stretch">
@@ -319,60 +446,29 @@ export default function App() {
               title="Indépendant"
               price="0"
               description="Idéal pour les marchands individuels et petits projets."
-              features={["Jusqu'à 3 agents", "Suivi de caisse basique", "Support communautaire", "1 Superviseur"]}
+              features={["Jusqu'à 3 agents", "Suivi de caisse basique", "Support communautaire", "1 Superviseur", "Rapports hebdomadaires"]}
             />
             <PricingCard 
               title="Business"
               price="29"
               description="Parfait pour les équipes en pleine croissance."
-              features={["Agents illimités", "Analyses avancées", "Support prioritaire", "Preuves photo illimitées", "Rapports personnalisés"]}
+              features={["Agents illimités", "Analyses avancées", "Support prioritaire", "Preuves photo illimitées", "Rapports personnalisés", "Audit en temps réel"]}
               isPopular
             />
             <PricingCard 
               title="Entreprise"
               price="Sur mesure"
               description="Fonctionnalités avancées pour les grandes organisations."
-              features={["Tout du plan Business", "Gestionnaire dédié", "Garantie de service (SLA)", "Multi-agences", "Intégration API"]}
+              features={["Tout du plan Business", "Gestionnaire dédié", "Garantie de service (SLA)", "Multi-agences", "Intégration API", "Formation sur site"]}
             />
           </div>
         </section>
 
-        {/* Profiles Section */}
-        <section className="max-w-7xl mx-auto px-6 mt-40">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4 text-slate-900 font-bold">Une Solution pour Chaque Profil</h2>
-            <p className="text-slate-500 text-lg">FinTrack s'adapte aux besoins spécifiques de votre équipe.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-fintrack-light p-8 rounded-3xl border border-slate-100">
-              <div className="w-12 h-12 bg-fintrack-primary text-white rounded-xl flex items-center justify-center mb-6">
-                <Smartphone className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Agent Mobile</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">Encaissez, enregistrez les ventes et effectuez vos dépôts bancaires en quelques clics depuis votre smartphone.</p>
-            </div>
-            <div className="bg-fintrack-light p-8 rounded-3xl border border-slate-100">
-              <div className="w-12 h-12 bg-fintrack-secondary text-white rounded-xl flex items-center justify-center mb-6">
-                <Users className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Marchand / Superviseur</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">Pilotez vos équipes, contrôlez les clôtures de caisse et validez les remontées de fonds en temps réel.</p>
-            </div>
-            <div className="bg-fintrack-light p-8 rounded-3xl border border-slate-100">
-              <div className="w-12 h-12 bg-fintrack-accent text-white rounded-xl flex items-center justify-center mb-6">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Administrateur</h3>
-              <p className="text-slate-600 text-sm leading-relaxed">Gérez les accès, configurez les agences et accédez à des rapports consolidés pour une vision globale.</p>
-            </div>
-          </div>
-        </section>
-
         {/* Mobility Section */}
-        <section className="max-w-7xl mx-auto px-6 mt-40 bg-fintrack-primary rounded-[3rem] p-12 md:p-20 text-white overflow-hidden relative">
+        <section className="max-w-7xl mx-auto px-6 mt-24 bg-fintrack-primary rounded-[2.5rem] p-8 md:p-12 text-white overflow-hidden relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <div>
-              <h2 className="text-4xl md:text-5xl mb-8 font-bold leading-tight">Pensé pour la Mobilité et le Terrain</h2>
+              <h2 className="text-3xl md:text-4xl mb-6 font-bold leading-tight">Pensé pour la Mobilité et le Terrain</h2>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
@@ -403,12 +499,12 @@ export default function App() {
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
+            <div className="relative max-w-md mx-auto lg:ml-auto">
+              <div className="bg-white/5 rounded-3xl p-3 backdrop-blur-sm border border-white/10">
                 <img 
-                  src="https://picsum.photos/seed/mobile/800/1200" 
-                  alt="FinTrack Mobile App" 
-                  className="rounded-2xl shadow-2xl"
+                  src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?auto=format&fit=crop&w=800&q=80" 
+                  alt="FinTrack Mobile App in use" 
+                  className="rounded-2xl shadow-2xl w-full h-auto object-cover aspect-[3/4]"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -451,12 +547,12 @@ export default function App() {
 
           {/* Customer Success Stories */}
           <section className="text-center">
-            <div className="mb-12">
-              <h2 className="text-3xl md:text-4xl mb-3 text-slate-900 font-bold">Témoignages Clients</h2>
-              <p className="text-slate-500 text-sm font-medium">Découvrez comment FinTrack transforme le quotidien des entreprises.</p>
+            <div className="mb-10">
+              <h2 className="text-2xl md:text-3xl mb-2 text-slate-900 font-bold">Témoignages Clients</h2>
+              <p className="text-slate-500 text-xs font-medium">Découvrez comment FinTrack transforme le quotidien des entreprises.</p>
             </div>
             
-            <div className="relative min-h-[400px] md:min-h-[300px] overflow-hidden">
+            <div className="relative min-h-[350px] md:min-h-[250px] overflow-hidden">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div 
                   key={activeTestimonial}
@@ -471,21 +567,21 @@ export default function App() {
                   className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/30 flex flex-col md:flex-row items-stretch overflow-hidden text-left h-full"
                 >
                   {/* Left Profile Side */}
-                  <div className="md:w-[35%] bg-[#f0f7ff] p-8 flex flex-col items-center justify-center text-center border-r border-slate-100">
+                  <div className="md:w-[35%] bg-[#f0f7ff] p-6 flex flex-col items-center justify-center text-center border-r border-slate-100">
                     <motion.img 
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.2 }}
                       src={testimonials[activeTestimonial].image} 
                       alt={testimonials[activeTestimonial].name} 
-                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg mb-4"
+                      className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg mb-3"
                       referrerPolicy="no-referrer"
                     />
                     <motion.h4 
                       initial={{ y: 10, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
-                      className="text-base font-bold text-slate-900"
+                      className="text-sm font-bold text-slate-900"
                     >
                       {testimonials[activeTestimonial].name}
                     </motion.h4>
@@ -500,19 +596,19 @@ export default function App() {
                   </div>
 
                   {/* Content Side */}
-                  <div className="flex-1 p-8 flex flex-col justify-between">
+                  <div className="flex-1 p-6 flex flex-col justify-between">
                     <motion.div
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
                     >
-                      <p className="text-sm text-slate-700 font-medium mb-6 leading-relaxed italic">
+                      <p className="text-xs text-slate-700 font-medium mb-4 leading-relaxed italic">
                         "{testimonials[activeTestimonial].quote}"
                       </p>
                       
-                      <div className="flex items-center gap-2 mb-6">
-                        <Logo className="h-12" />
-                        <div className="w-2 h-2 rounded-full bg-fintrack-success" />
+                      <div className="flex items-center gap-2 mb-4">
+                        <Logo className="h-10" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-fintrack-success" />
                       </div>
                     </motion.div>
 
@@ -520,25 +616,25 @@ export default function App() {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.5 }}
-                      className="border-t border-slate-100 pt-6 flex items-center justify-between"
+                      className="border-t border-slate-100 pt-4 flex items-center justify-between"
                     >
                       <div className="flex -space-x-2">
                         {[1, 2, 3, 4].map(i => (
-                          <div key={i} className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-white shadow-sm ${
+                          <div key={i} className={`w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-white shadow-sm ${
                             i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-fintrack-dark' : i === 3 ? 'bg-red-500' : 'bg-fintrack-success'
                           }`}>
-                            {i === 1 ? <Activity className="w-3.5 h-3.5" /> : i === 2 ? <Cloud className="w-3.5 h-3.5" /> : i === 3 ? <Zap className="w-3.5 h-3.5" /> : <Workflow className="w-3.5 h-3.5" />}
+                            {i === 1 ? <Activity className="w-3 h-3" /> : i === 2 ? <Cloud className="w-3 h-3" /> : i === 3 ? <Zap className="w-3 h-3" /> : <Workflow className="w-3 h-3" />}
                           </div>
                         ))}
                       </div>
-                      <div className="flex gap-6">
+                      <div className="flex gap-4">
                         <div className="text-center">
-                          <div className="text-xl font-bold text-slate-900">{testimonials[activeTestimonial].stats.savings}</div>
-                          <div className="text-[7px] text-slate-400 uppercase font-bold tracking-widest">Gain de Temps</div>
+                          <div className="text-lg font-bold text-slate-900">{testimonials[activeTestimonial].stats.savings}</div>
+                          <div className="text-[6px] text-slate-400 uppercase font-bold tracking-widest">Gain de Temps</div>
                         </div>
-                        <div className="text-center border-l border-slate-100 pl-6">
-                          <div className="text-xl font-bold text-slate-900">{testimonials[activeTestimonial].stats.roi}</div>
-                          <div className="text-[7px] text-slate-400 uppercase font-bold tracking-widest">ROI</div>
+                        <div className="text-center border-l border-slate-100 pl-4">
+                          <div className="text-lg font-bold text-slate-900">{testimonials[activeTestimonial].stats.roi}</div>
+                          <div className="text-[6px] text-slate-400 uppercase font-bold tracking-widest">ROI</div>
                         </div>
                       </div>
                     </motion.div>
@@ -603,15 +699,18 @@ export default function App() {
 
           {/* CTA Section (Moved next to Advanced Features) */}
           <section className="h-full">
-            <div className="bg-fintrack-primary/5 rounded-[2.5rem] p-10 text-center relative overflow-hidden h-full flex flex-col justify-center border border-fintrack-primary/10">
+            <div className="bg-fintrack-primary/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 text-center relative overflow-hidden h-full flex flex-col justify-center border border-fintrack-primary/10">
               <div className="relative z-10">
-                <h2 className="text-3xl md:text-4xl mb-4 text-slate-900 font-bold leading-tight">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl mb-4 text-slate-900 font-bold leading-tight">
                   Prêt à Propulser <span className="text-fintrack-secondary">Votre</span> <br /> Activité ?
                 </h2>
-                <p className="text-slate-500 text-xs mb-8 max-w-[280px] mx-auto leading-relaxed">
+                <p className="text-slate-500 text-[10px] sm:text-xs mb-6 sm:mb-8 max-w-[280px] mx-auto leading-relaxed">
                   Rejoignez des milliers de marchands qui font confiance à FinTrack pour piloter leurs ventes et leurs dépôts.
                 </p>
-                <button className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-8 py-3 rounded-full font-bold text-xs transition-all shadow-lg shadow-fintrack-primary/20">
+                <button 
+                  onClick={() => navigate("/auth")}
+                  className="bg-fintrack-primary hover:bg-fintrack-dark text-white px-6 py-3 sm:px-8 sm:py-3 rounded-full font-bold text-[10px] sm:text-xs transition-all shadow-lg shadow-fintrack-primary/20"
+                >
                   Essayer FinTrack Gratuitement !
                 </button>
               </div>
@@ -637,187 +736,368 @@ export default function App() {
           </section>
         </div>
 
-        {/* PWA / App Section - Hyper Version */}
-        <section className="max-w-7xl mx-auto px-6 mt-40">
-          <div className="bg-fintrack-primary rounded-[4rem] p-12 md:p-24 flex flex-col lg:flex-row items-center justify-between gap-20 relative overflow-hidden border border-white/5 shadow-[0_0_100px_rgba(106,188,166,0.1)]">
-            
-            {/* Immersive Background Effects */}
-            <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(106,188,166,0.15),transparent_70%)] pointer-events-none" />
-            <div className="absolute -bottom-1/2 -left-1/4 w-full h-full bg-fintrack-secondary/5 blur-[120px] rounded-full pointer-events-none" />
-            
-            {/* Animated Grid Overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-            <div className="max-w-2xl relative z-10">
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 text-fintrack-secondary px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-10"
-              >
-                <div className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fintrack-secondary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-fintrack-secondary"></span>
+        {/* Contact Section - Redesigned based on image */}
+        <section id="contact" className="max-w-7xl mx-auto px-6 mt-24 mb-16">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center gap-2 bg-[#E8F0FE] text-[#1A73E8] px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#1A73E8]" />
+                Parlons de votre projet
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-[#0B1B3D] mb-6 leading-tight">
+                Une question ?<br />
+                Une <span className="text-fintrack-primary">démo</span> ?
+              </h2>
+              <p className="text-slate-500 text-base mb-8 leading-relaxed max-w-md">
+                Notre équipe d'experts est disponible pour répondre à toutes vos questions et vous aider à configurer FinTrack selon vos besoins spécifiques.
+              </p>
+              
+              <div className="space-y-8">
+                <div className="flex items-center gap-6 group">
+                  <div className="w-14 h-14 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center group-hover:bg-fintrack-primary group-hover:text-white transition-all duration-300">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Email Direct</div>
+                    <div className="text-xl font-bold text-[#0B1B3D]">contact@fintrack.com</div>
+                  </div>
                 </div>
-                Technologie Cloud PWA 2.0
+                <div className="flex items-center gap-6 group">
+                  <div className="w-14 h-14 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center group-hover:bg-fintrack-primary group-hover:text-white transition-all duration-300">
+                    <Smartphone className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Support Whatsapp</div>
+                    <div className="text-xl font-bold text-[#0B1B3D]">+229 01 00 00 00 00</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Column - Form Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-[2rem] p-6 md:p-10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden"
+            >
+              {/* Grid Pattern Overlay */}
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+              
+              <form className="relative z-10 space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Votre Nom</label>
+                    <input 
+                      type="text" 
+                      placeholder="Jean Koffi" 
+                      className="w-full bg-slate-50 border-none rounded-xl px-5 py-4 text-[#0B1B3D] placeholder:text-slate-300 focus:ring-2 focus:ring-fintrack-primary/20 transition-all font-bold text-sm" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Pro</label>
+                    <input 
+                      type="email" 
+                      placeholder="jean@entreprise.com" 
+                      className="w-full bg-slate-50 border-none rounded-xl px-5 py-4 text-[#0B1B3D] placeholder:text-slate-300 focus:ring-2 focus:ring-fintrack-primary/20 transition-all font-bold text-sm" 
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Message</label>
+                  <textarea 
+                    placeholder="Dites-nous tout..." 
+                    rows={4} 
+                    className="w-full bg-slate-50 border-none rounded-xl px-5 py-4 text-[#0B1B3D] placeholder:text-slate-300 focus:ring-2 focus:ring-fintrack-primary/20 transition-all font-bold resize-none text-sm"
+                  ></textarea>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-6 pt-2">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full md:w-auto bg-[#0B1B3D] text-white px-10 py-4 rounded-xl font-black flex items-center justify-center gap-3 group shadow-2xl shadow-[#0B1B3D]/20"
+                  >
+                    <span className="text-base">Envoyer</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                  </motion.button>
+                  <p className="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[200px] text-center md:text-left">
+                    En envoyant ce formulaire, vous acceptez notre politique de confidentialité.
+                  </p>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* About Section - Enhanced */}
+        <section id="a-propos" className="max-w-7xl mx-auto px-6 mt-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-24">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center gap-2 bg-fintrack-primary/10 text-fintrack-primary px-3 py-1.5 rounded-full text-[10px] font-bold mb-4">
+                NOTRE HISTOIRE
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight">
+                Digitaliser le dernier kilomètre de la <span className="text-fintrack-secondary">finance terrain</span>.
+              </h2>
+              <p className="text-slate-600 text-base leading-relaxed mb-6">
+                FinTrack est né d'un constat simple : la gestion des flux financiers sur le terrain est souvent opaque et risquée. Nous avons bâti une plateforme qui apporte transparence, sécurité et efficacité aux marchands et à leurs agents.
+              </p>
+              
+              <div className="space-y-8">
+                <div className="flex gap-6">
+                  <div className="w-12 h-12 bg-fintrack-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                    <Rocket className="w-6 h-6 text-fintrack-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-2">Notre Mission</h4>
+                    <p className="text-slate-500 text-sm">Démocratiser l'accès aux outils de gestion financière avancés pour tous les acteurs du terrain.</p>
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <div className="w-12 h-12 bg-fintrack-secondary/10 rounded-2xl flex items-center justify-center shrink-0">
+                    <Zap className="w-6 h-6 text-fintrack-secondary" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-2">Notre Vision</h4>
+                    <p className="text-slate-500 text-sm">Devenir le standard de confiance pour les transactions financières mobiles en Afrique et au-delà.</p>
+                  </div>
+                </div>
+                <div className="flex gap-6">
+                  <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-6 h-6 text-slate-900" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-2">Nos Valeurs</h4>
+                    <p className="text-slate-500 text-sm">Intégrité, Innovation, Proximité et Excellence opérationnelle.</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="aspect-square rounded-[3rem] overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80" 
+                  alt="Team collaboration" 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="absolute -bottom-10 -right-10 bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 hidden md:block">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-fintrack-success/10 text-fintrack-success rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900">Certifié Sécurisé</div>
+                    <div className="text-xs text-slate-400">Standard Bancaire</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Partners Grid */}
+          <div className="text-center mb-16">
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Ils nous font confiance</h3>
+            <p className="text-slate-500">Intégration native avec les plus grands réseaux.</p>
+          </div>
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1 }
+              }
+            }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8"
+          >
+            <PartnerCard name="MTN" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/mtn.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L210bi5wbmciLCJpYXQiOjE3NzYwODg4NTAsImV4cCI6MTgwNzYyNDg1MH0.aY3pn3wP7CWUrznZrCMTXKeTzV9BnLJsQCJRNRAw8iU" />
+            <PartnerCard name="Moov" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/moov.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L21vb3YuanBlZyIsImlhdCI6MTc3NjA5MDEzNCwiZXhwIjoxODA3NjI2MTM0fQ.K9jlmQUyBBp6Og2ElxiO16D9YGk-AieGmIHVG0bUuQQ" />
+            <PartnerCard name="Celtiis" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/celtiis.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2NlbHRpaXMuanBnIiwiaWF0IjoxNzc2MDg4ODEwLCJleHAiOjE4MDc2MjQ4MTB9.UKspCgfucV5z3HTlfTNrNtQmQAfWou8cv_xXdcbpDHg" />
+            <PartnerCard name="Canal+" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/Canal+.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L0NhbmFsKy5qcGVnIiwiaWF0IjoxNzc2MTc5Njc0LCJleHAiOjE4MDc3MTU2NzR9.Xv9q8tdRQDysxHnBETNzG3FZof2NbycozoUNgs9dv0Y" />
+            <PartnerCard name="SBEE" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/sbee.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L3NiZWUud2VicCIsImlhdCI6MTc3NjA4ODg2NywiZXhwIjoxODA3NjI0ODY3fQ.gTg-eCiYsbaCM44dNmWcPEhy2lfM7aKQ9wEOV3M0SQ0" />
+            <PartnerCard name="SONEB" url="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/soneb.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L3NvbmViLndlYnAiLCJpYXQiOjE3NzYwODg4ODgsImV4cCI6MTgwNzYyNDg4OH0.8r-KDvZ0KAXPrVZALbJTcYvo_9EVsCmHyBzbdfIibpU" />
+          </motion.div>
+        </section>
+
+        {/* PWA / App Section - Hyper Version (Moved to end) */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-24 mb-16">
+          <div className="bg-[#0B1B3D] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-12 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-12 relative overflow-hidden shadow-2xl">
+            
+            {/* Background Glows */}
+            <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(106,188,166,0.05),transparent_70%)] pointer-events-none" />
+            
+            <div className="max-w-xl relative z-10 text-center lg:text-left">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 bg-fintrack-secondary/10 border border-fintrack-secondary/20 text-fintrack-secondary px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider mb-6"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-fintrack-secondary animate-pulse" />
+                TECHNOLOGIE PWA
               </motion.div>
               
-              <h2 className="text-5xl md:text-7xl mb-10 text-white font-black leading-[1] tracking-tighter">
-                Libérez votre <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fintrack-secondary to-fintrack-accent">potentiel mobile.</span>
+              <h2 className="text-2xl sm:text-3xl md:text-5xl mb-4 text-white font-bold leading-[1.1] tracking-tight">
+                L'expérience <span className="text-fintrack-secondary">native</span>,<br />
+                sans les contraintes.
               </h2>
               
-              <p className="text-slate-400 text-xl md:text-2xl mb-14 leading-relaxed font-medium max-w-lg">
-                Plus qu'une application, un écosystème complet dans votre poche. Installez FinTrack instantanément et gérez vos flux sans aucune limite.
+              <p className="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed max-w-md mx-auto lg:mx-0">
+                Installez FinTrack directement depuis votre navigateur. Accès <span className="text-fintrack-secondary">hors-ligne</span>, <span className="text-fintrack-secondary">notifications en temps réel</span> et <span className="text-fintrack-secondary">performance éclair</span> sur tous vos appareils.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-8">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 mb-12">
                 {!isInstalled ? (
                   <motion.button 
-                    whileHover={{ scale: 1.02, y: -5 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleInstallClick}
-                    className="bg-fintrack-secondary text-fintrack-primary px-12 py-6 rounded-3xl flex items-center justify-center gap-5 hover:bg-white transition-all shadow-[0_20px_50px_rgba(106,188,166,0.3)] group relative overflow-hidden"
+                    className="w-full sm:w-auto bg-fintrack-secondary text-[#0B1B3D] px-8 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4 hover:brightness-110 transition-all shadow-[0_10px_30px_rgba(106,188,166,0.2)] group relative"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    <Download className="w-8 h-8 group-hover:animate-bounce relative z-10" />
-                    <div className="text-left relative z-10">
-                      <div className="text-[11px] uppercase font-black opacity-70 tracking-widest">Installer maintenant</div>
-                      <div className="text-xl font-black">Expérience PWA</div>
-                    </div>
-                  </motion.button>
-                ) : (
-                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 text-white px-12 py-6 rounded-3xl flex items-center gap-5 shadow-2xl">
-                    <div className="w-12 h-12 bg-fintrack-secondary/20 rounded-2xl flex items-center justify-center">
-                      <CheckCircle2 className="w-8 h-8 text-fintrack-secondary" />
+                    <div className="w-10 h-10 bg-[#0B1B3D]/10 rounded-xl flex items-center justify-center">
+                      <Download className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <div className="text-[11px] uppercase font-black opacity-50 tracking-widest">Statut Système</div>
-                      <div className="text-xl font-black">Prêt à l'emploi</div>
+                      <div className="text-[9px] uppercase font-bold opacity-70 tracking-widest">Installer sur</div>
+                      <div className="text-lg font-bold">Mon Appareil</div>
+                    </div>
+                    {/* Subtle glow effect */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-4 bg-fintrack-secondary/40 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </motion.button>
+                ) : (
+                  <div className="w-full sm:w-auto bg-white/5 border border-white/10 text-white px-8 py-4 rounded-2xl flex items-center justify-center sm:justify-start gap-4">
+                    <CheckCircle2 className="w-6 h-6 text-fintrack-secondary" />
+                    <div className="text-left">
+                      <div className="text-[9px] uppercase font-bold opacity-50 tracking-widest">Statut</div>
+                      <div className="text-lg font-bold">Installé</div>
                     </div>
                   </div>
                 )}
                 
-                <div className="flex items-center gap-5 px-8 py-5 rounded-3xl border border-white/5 bg-white/[0.02] backdrop-blur-sm hover:bg-white/[0.05] transition-colors">
-                  <div className="flex -space-x-4">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="w-12 h-12 rounded-full border-4 border-fintrack-primary bg-fintrack-dark flex items-center justify-center overflow-hidden ring-1 ring-white/10">
-                        <img src={`https://i.pravatar.cc/150?img=${i + 20}`} alt="User" referrerPolicy="no-referrer" />
+                <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <div className="flex -space-x-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0B1B3D] overflow-hidden">
+                        <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" referrerPolicy="no-referrer" />
                       </div>
                     ))}
                   </div>
                   <div className="text-left">
-                    <div className="text-white font-black text-lg">+5,000</div>
-                    <div className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Utilisateurs Actifs</div>
+                    <div className="text-white font-bold text-sm">+2.5k</div>
+                    <div className="text-slate-500 text-[8px] font-bold uppercase tracking-wider">Utilisateurs PWA</div>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-20 grid grid-cols-3 gap-12 border-t border-white/5 pt-12">
+              <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-white/5">
                 {[
-                  { label: "Offline", value: "100%", sub: "Disponibilité" },
-                  { label: "Vitesse", value: "0.2s", sub: "Lancement" },
-                  { label: "Stockage", value: "0MB", sub: "Empreinte" }
-                ].map((stat, i) => (
-                  <div key={i} className="text-left">
-                    <div className="text-fintrack-secondary font-black text-3xl mb-1">{stat.value}</div>
-                    <div className="text-white font-bold text-[10px] uppercase tracking-[0.2em] opacity-60">{stat.label}</div>
-                    <div className="text-slate-600 text-[9px] font-bold uppercase tracking-widest mt-1">{stat.sub}</div>
+                  { id: "01", label: "HORS-LIGNE" },
+                  { id: "02", label: "ZÉRO STOCKAGE" },
+                  { id: "03", label: "MISES À JOUR" }
+                ].map((item) => (
+                  <div key={item.id} className="text-left">
+                    <div className="text-fintrack-secondary font-bold text-xs sm:text-sm mb-1">{item.id}</div>
+                    <div className="text-white font-bold text-[8px] sm:text-[10px] tracking-widest opacity-80">{item.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Hyper UI Mockup Container */}
-            <div className="relative w-full max-w-md lg:max-w-lg group perspective-2000">
-              {/* Main Phone Mockup */}
+            {/* Phone Mockup Section */}
+            <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[380px] mt-12 lg:mt-0">
+              {/* Large Background Logo Watermark */}
+              <div className="absolute -top-10 sm:-top-20 -right-10 sm:-right-20 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] opacity-[0.05] pointer-events-none z-0 rotate-12">
+                <img 
+                  src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/logo-transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2xvZ28tdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzc2MDY5MjIzLCJleHAiOjE4MDc2MDUyMjN9.Tza7nG0c-8-TJgvPreIsRAtmA7E8GT4fjqLPMJuZySs" 
+                  alt="" 
+                  className="w-full h-full object-contain brightness-0 invert"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              {/* Floating Speed Badge - Moved Outside */}
               <motion.div 
-                initial={{ rotateY: 20, rotateX: 10 }}
-                whileHover={{ rotateY: 10, rotateX: 5, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 100, damping: 30 }}
-                className="relative bg-slate-800 rounded-[4.5rem] p-5 shadow-[0_50px_100px_rgba(0,0,0,0.5)] border border-white/10 transform-gpu preserve-3d"
+                initial={{ x: 20, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="absolute top-1/4 -right-4 sm:-right-8 bg-white rounded-2xl p-2 sm:p-3 shadow-xl flex items-center gap-2 sm:gap-3 border border-slate-100 z-20"
               >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-fintrack-primary rounded-b-3xl z-20" />
-                <div className="relative bg-fintrack-primary rounded-[3.5rem] overflow-hidden aspect-[9/19] border-4 border-fintrack-dark shadow-inner">
-                  <img 
-                    src="https://picsum.photos/seed/fintrack-ui-dark/1000/2000" 
-                    alt="App Interface" 
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                  
-                  {/* Simulated App UI Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-fintrack-primary via-transparent to-transparent" />
-                  <div className="absolute bottom-10 left-0 w-full px-8">
-                    <div className="h-1.5 w-12 bg-white/20 rounded-full mx-auto mb-8" />
-                    <div className="space-y-4">
-                      <div className="h-12 bg-white/5 rounded-2xl backdrop-blur-md border border-white/10" />
-                      <div className="h-12 bg-white/5 rounded-2xl backdrop-blur-md border border-white/10" />
-                    </div>
-                  </div>
+                <div className="w-6 h-6 sm:w-8 h-8 bg-fintrack-secondary/10 rounded-lg flex items-center justify-center">
+                  <Zap className="w-3 h-3 sm:w-4 h-4 text-fintrack-secondary" />
                 </div>
-
-                {/* Floating Hyper Cards */}
-                <motion.div 
-                  animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -right-12 top-20 bg-white/10 backdrop-blur-2xl p-5 rounded-[2rem] shadow-2xl border border-white/20 z-30 w-48"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 bg-fintrack-secondary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(106,188,166,0.5)]">
-                      <TrendingUp className="w-6 h-6 text-fintrack-primary" />
-                    </div>
-                    <div>
-                      <div className="text-[9px] font-black text-white/50 uppercase tracking-widest">Croissance</div>
-                      <div className="text-sm font-black text-white">+24.5%</div>
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "75%" }}
-                      className="h-full bg-fintrack-secondary"
-                    />
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  animate={{ y: [0, 15, 0], x: [0, -5, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  className="absolute -left-16 bottom-32 bg-fintrack-primary/80 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl border border-white/10 z-30 w-56"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sécurité</div>
-                    <ShieldCheck className="w-5 h-5 text-fintrack-secondary" />
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-fintrack-secondary animate-pulse" />
-                      <div className="text-xs font-bold text-white">Chiffrement AES-256</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-fintrack-secondary animate-pulse" />
-                      <div className="text-xs font-bold text-white">Biométrie Active</div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Floating Zap Icon */}
-                <motion.div 
-                  animate={{ scale: [1, 1.2, 1], rotate: [0, 10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute -top-8 -right-8 w-20 h-20 bg-gradient-to-br from-fintrack-secondary to-fintrack-accent rounded-3xl flex items-center justify-center shadow-2xl z-40"
-                >
-                  <Zap className="w-10 h-10 text-fintrack-primary fill-fintrack-primary" />
-                </motion.div>
+                <div className="text-left">
+                  <div className="text-[6px] sm:text-[7px] uppercase font-bold text-slate-400 tracking-widest">Vitesse</div>
+                  <div className="text-[9px] sm:text-[11px] font-bold text-[#0B1B3D]">Instantané</div>
+                </div>
               </motion.div>
 
-              {/* Background Glow Behind Phone */}
-              <div className="absolute inset-0 bg-fintrack-secondary/20 blur-[100px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+              <motion.div 
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                className="relative z-10 bg-[#162B55] rounded-[2.5rem] sm:rounded-[3rem] p-2 sm:p-3 shadow-2xl border border-white/10"
+              >
+                <div className="relative bg-white rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden aspect-[9/18.5] shadow-inner">
+                  {/* App Image Background */}
+                  <img 
+                    src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/Gemini_Generated_Image_6xgmof6xgmof6xgm.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L0dlbWluaV9HZW5lcmF0ZWRfSW1hZ2VfNnhnbW9mNnhnbW9mNnhnbS5wbmciLCJpYXQiOjE3NzYxNTUwNDMsImV4cCI6MTgwNzY5MTA0M30.rs-5GZQaBUU4SsEOIweuoN26JFptvMcmHXlOJNPzQgc" 
+                    alt="App Interface" 
+                    className="absolute inset-0 w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+
+                  {/* UI Overlays from Image */}
+                  <div className="absolute inset-0 p-4 sm:p-6 flex flex-col items-center justify-center">
+                    {/* Installation Card */}
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-[200px] sm:max-w-[240px] flex flex-col items-center text-center"
+                    >
+                      <div className="w-12 h-12 sm:w-16 h-16 bg-slate-50 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
+                        <Download className="w-6 h-6 sm:w-8 h-8 text-[#0B1B3D]" />
+                      </div>
+                      <p className="text-[#0B1B3D] font-bold text-xs sm:text-sm mb-3 sm:mb-4">Installation en cours...</p>
+                      <div className="w-full h-1.5 sm:h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: "0%" }}
+                          whileInView={{ width: "65%" }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="h-full bg-fintrack-secondary"
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Decorative elements behind phone */}
+              <div className="absolute -top-10 -right-10 w-32 sm:w-40 h-32 sm:h-40 bg-fintrack-secondary/10 blur-3xl rounded-full" />
+              <div className="absolute -bottom-10 -left-10 w-32 sm:w-40 h-32 sm:h-40 bg-fintrack-secondary/5 blur-3xl rounded-full" />
             </div>
           </div>
         </section>
-
       </main>
 
       <FooterSection />
@@ -842,26 +1122,72 @@ function Logo({ className = "" }: { className?: string }) {
   );
 }
 
-function NavItem({ label, hasDropdown = false }: { label: string; hasDropdown?: boolean }) {
+function NavItem({ label, href = "#", hasDropdown = false, mobile = false, dropdownItems = [] }: { label: string; href?: string; hasDropdown?: boolean; mobile?: boolean; dropdownItems?: { label: string; href: string }[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <a href="#" className="flex items-center gap-1 text-slate-600 hover:text-fintrack-secondary font-medium transition-colors">
-      {label}
-      {hasDropdown && <ChevronDown className="w-4 h-4" />}
-    </a>
+    <div 
+      className="relative group"
+      onMouseEnter={() => !mobile && setIsOpen(true)}
+      onMouseLeave={() => !mobile && setIsOpen(false)}
+    >
+      <a 
+        href={href} 
+        onClick={(e) => {
+          if (hasDropdown && mobile) {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          }
+        }}
+        className={`flex items-center gap-1 text-slate-600 hover:text-fintrack-secondary font-medium transition-colors ${mobile ? "text-lg py-2" : ""}`}
+      >
+        {label}
+        {hasDropdown && (
+          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+        )}
+      </a>
+
+      {hasDropdown && (
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: mobile ? 0 : 10, height: mobile ? 0 : "auto" }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: mobile ? 0 : 10, height: 0 }}
+              className={`${
+                mobile 
+                  ? "pl-4 flex flex-col gap-3 mt-2 overflow-hidden" 
+                  : "absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-50"
+              }`}
+            >
+              {dropdownItems.map((item, i) => (
+                <a 
+                  key={i}
+                  href={item.href}
+                  className="text-sm text-slate-500 hover:text-fintrack-primary py-2 px-3 rounded-xl hover:bg-slate-50 transition-all block"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </div>
   );
 }
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <motion.div 
-      whileHover={{ y: -10 }}
-      className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-100/50 text-center flex flex-col items-center"
+      whileHover={{ y: -8, shadow: "0 20px 40px -10px rgba(0,0,0,0.1)" }}
+      className="bg-white/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center flex flex-col items-center group transition-all duration-300"
     >
-      <div className="w-16 h-16 bg-fintrack-primary/5 rounded-2xl flex items-center justify-center mb-6">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-8 h-8 text-fintrack-primary" })}
+      <div className="w-14 h-14 bg-fintrack-primary/5 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+        {React.cloneElement(icon as React.ReactElement, { className: "w-7 h-7 text-fintrack-primary" })}
       </div>
-      <h3 className="text-2xl mb-4 text-slate-900">{title}</h3>
-      <p className="text-slate-500 leading-relaxed">
+      <h3 className="text-xl mb-3 text-slate-900 font-black tracking-tight">{title}</h3>
+      <p className="text-slate-500 text-sm leading-relaxed font-medium">
         {description}
       </p>
     </motion.div>
@@ -881,9 +1207,9 @@ function FloatingIcon({ icon, className, delay }: { icon: React.ReactNode; class
         ease: "easeInOut",
         delay 
       }}
-      className={`absolute w-14 h-14 bg-white rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center z-20 ${className}`}
+      className={`absolute w-10 h-10 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center z-20 ${className}`}
     >
-      {icon}
+      {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5 sm:w-6 h-6" })}
     </motion.div>
   );
 }
@@ -937,7 +1263,7 @@ function PartnerCard({ name, url }: { name: string; url: string }) {
       className="flex flex-col items-center gap-4 group perspective-1000"
     >
       {/* Fixed Square Container - Glassmorphism style */}
-      <div className="relative w-32 h-32 md:w-44 md:h-44 flex items-center justify-center rounded-3xl transition-all duration-500 group-hover:bg-white/5 group-hover:backdrop-blur-sm border border-transparent group-hover:border-slate-200/50 preserve-3d">
+      <div className="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center rounded-2xl transition-all duration-500 group-hover:bg-white/5 group-hover:backdrop-blur-sm border border-transparent group-hover:border-slate-200/50 preserve-3d">
         
         {/* Background Glow */}
         <div className="absolute inset-0 bg-fintrack-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
@@ -945,7 +1271,7 @@ function PartnerCard({ name, url }: { name: string; url: string }) {
         {!error ? (
           <motion.div
             style={{ transform: "translateZ(50px)" }}
-            className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center"
+            className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center"
           >
             <motion.img 
               src={url} 
@@ -988,58 +1314,77 @@ function SocialIcon({ icon }: { icon: React.ReactNode }) {
 }
 function WatchDemoButton() {
   return (
-    <button className="border-2 border-slate-200 hover:border-fintrack-primary hover:text-fintrack-primary text-slate-700 px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center gap-2 group">
-      <div className="w-6 h-6 bg-slate-100 group-hover:bg-fintrack-primary/10 rounded-full flex items-center justify-center transition-colors">
-        <Play className="w-3 h-3 fill-current" />
+    <button className="border-2 border-slate-200 hover:border-fintrack-primary hover:text-fintrack-primary text-slate-700 px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm sm:text-lg transition-all flex items-center gap-2 group">
+      <div className="w-5 h-5 sm:w-6 h-6 bg-slate-100 group-hover:bg-fintrack-primary/10 rounded-full flex items-center justify-center transition-colors">
+        <Play className="w-2 h-2 sm:w-3 h-3 fill-current" />
       </div>
       Voir la Démo
     </button>
   );
 }
 
+function ContactInfoCard({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: string; href: string }) {
+  return (
+    <a 
+      href={href}
+      className="flex items-center gap-4 group/card p-3 rounded-xl hover:bg-white/5 transition-all"
+    >
+      <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center group-hover/card:bg-fintrack-secondary group-hover/card:text-[#0B1B3D] transition-all duration-500">
+        {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+      </div>
+      <div>
+        <div className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">{label}</div>
+        <div className="text-lg font-bold group-hover/card:text-fintrack-secondary transition-colors">{value}</div>
+      </div>
+    </a>
+  );
+}
+
 function PricingCard({ title, price, description, features, isPopular = false }: { title: string; price: string; description: string; features: string[]; isPopular?: boolean }) {
   return (
     <motion.div 
-      whileHover={{ y: -10 }}
-      className={`relative p-8 rounded-[2.5rem] border flex flex-col h-full transition-all ${
+      whileHover={{ y: -10, shadow: isPopular ? "0 30px 60px -12px rgba(35, 77, 150, 0.4)" : "0 20px 40px -12px rgba(0,0,0,0.1)" }}
+      className={`relative p-8 rounded-[2.5rem] border flex flex-col h-full transition-all duration-500 ${
         isPopular 
-          ? "bg-fintrack-primary text-white border-fintrack-primary shadow-2xl shadow-fintrack-primary/30 scale-105 z-10" 
-          : "bg-white text-slate-900 border-slate-100 shadow-xl shadow-slate-100/50"
+          ? "bg-gradient-to-br from-fintrack-primary to-fintrack-dark text-white border-fintrack-primary shadow-[0_20px_50px_rgba(35,77,150,0.3)] md:scale-105 z-10" 
+          : "bg-white/70 backdrop-blur-md text-slate-900 border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
       }`}
     >
       {isPopular && (
-        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-fintrack-secondary text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-fintrack-secondary text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl border border-white/20">
           Plus Populaire
         </div>
       )}
       
       <div className="mb-8">
-        <h3 className={`text-xl font-bold mb-2 ${isPopular ? "text-white" : "text-slate-900"}`}>{title}</h3>
+        <h3 className={`text-xl font-black mb-2 tracking-tight ${isPopular ? "text-white" : "text-slate-900"}`}>{title}</h3>
         <div className="flex items-baseline gap-1 mb-4">
-          <span className="text-4xl font-black">{price === "Sur mesure" ? "" : "$"}</span>
-          <span className="text-5xl font-black">{price}</span>
-          {price !== "Sur mesure" && <span className={`text-sm font-medium ${isPopular ? "text-white/70" : "text-slate-400"}`}>/mois</span>}
+          <span className="text-3xl font-black">{price === "Sur mesure" ? "" : "$"}</span>
+          <span className="text-5xl font-black tracking-tighter">{price}</span>
+          {price !== "Sur mesure" && <span className={`text-xs font-bold uppercase tracking-widest ml-2 ${isPopular ? "text-white/70" : "text-slate-400"}`}>/mois</span>}
         </div>
-        <p className={`text-sm leading-relaxed ${isPopular ? "text-white/80" : "text-slate-500"}`}>
+        <p className={`text-sm leading-relaxed font-medium ${isPopular ? "text-white/80" : "text-slate-500"}`}>
           {description}
         </p>
       </div>
 
+      <div className={`h-px w-full mb-8 ${isPopular ? "bg-white/10" : "bg-slate-100"}`} />
+
       <ul className="space-y-4 mb-10 flex-1">
         {features.map((feature, i) => (
-          <li key={i} className="flex items-center gap-3 text-sm font-medium">
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isPopular ? "bg-white/20 text-white" : "bg-fintrack-success/10 text-fintrack-success"}`}>
+          <li key={i} className="flex items-center gap-3 text-sm font-bold">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isPopular ? "bg-white/20 text-white" : "bg-fintrack-secondary/10 text-fintrack-secondary"}`}>
               <Check className="w-3 h-3" />
             </div>
-            {feature}
+            <span className={isPopular ? "text-white/90" : "text-slate-600"}>{feature}</span>
           </li>
         ))}
       </ul>
 
-      <button className={`w-full py-4 rounded-2xl font-bold transition-all ${
+      <button className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
         isPopular 
-          ? "bg-white text-fintrack-primary hover:bg-slate-50 shadow-lg" 
-          : "bg-fintrack-primary text-white hover:bg-fintrack-dark shadow-lg shadow-fintrack-primary/10"
+          ? "bg-white text-fintrack-primary hover:bg-fintrack-secondary hover:text-white shadow-xl" 
+          : "bg-fintrack-primary text-white hover:bg-fintrack-dark shadow-lg shadow-fintrack-primary/20"
       }`}>
         {price === "Sur mesure" ? "Contacter la vente" : "Choisir ce plan"}
       </button>
@@ -1049,13 +1394,13 @@ function PricingCard({ title, price, description, features, isPopular = false }:
 
 function WhyChooseCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/20 flex items-start gap-4 text-left">
-      <div className="w-10 h-10 bg-fintrack-primary rounded-full flex items-center justify-center shrink-0 text-white shadow-md">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-lg shadow-slate-200/20 flex items-start gap-3 text-left">
+      <div className="w-8 h-8 bg-fintrack-primary rounded-full flex items-center justify-center shrink-0 text-white shadow-md">
+        {React.cloneElement(icon as React.ReactElement, { className: "w-4 h-4" })}
       </div>
       <div>
-        <h4 className="text-sm font-bold text-slate-900 mb-1">{title}</h4>
-        <p className="text-[10px] text-slate-500 leading-relaxed">{description}</p>
+        <h4 className="text-xs font-bold text-slate-900 mb-0.5">{title}</h4>
+        <p className="text-[9px] text-slate-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -1064,11 +1409,11 @@ function WhyChooseCard({ icon, title, description }: { icon: React.ReactNode; ti
 function MinimalFeature({ icon, label, sublabel }: { icon: React.ReactNode; label: string; sublabel: string }) {
   return (
     <div className="text-center flex-1">
-      <div className="w-12 h-12 bg-fintrack-light rounded-xl flex items-center justify-center mx-auto mb-3 text-fintrack-accent shadow-sm">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6" })}
+      <div className="w-10 h-10 bg-fintrack-light rounded-lg flex items-center justify-center mx-auto mb-2 text-fintrack-accent shadow-sm">
+        {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
       </div>
-      <h5 className="font-bold text-slate-900 mb-1 text-sm">{label}</h5>
-      <p className="text-[9px] text-slate-400 leading-tight font-medium">
+      <h5 className="font-bold text-slate-900 mb-0.5 text-xs">{label}</h5>
+      <p className="text-[8px] text-slate-400 leading-tight font-medium">
         {sublabel}
       </p>
     </div>
@@ -1077,39 +1422,50 @@ function MinimalFeature({ icon, label, sublabel }: { icon: React.ReactNode; labe
 
 function FooterSection() {
   return (
-    <footer className="bg-white border-t border-slate-100 pt-24 pb-12">
-      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-16 mb-24">
+    <footer className="bg-white border-t border-slate-100 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-16">
         <div className="col-span-1">
-          <div className="flex items-center w-48 h-12 md:h-14 relative mb-12">
-            <Logo className="h-20 md:h-28 absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+          <div className="flex items-center w-28 sm:w-40 h-8 sm:h-10 md:h-12 relative mb-6 sm:mb-8">
+            <Logo className="h-12 sm:h-16 md:h-24 absolute left-0 top-1/2 -translate-y-1/2 z-10" />
           </div>
-          <p className="text-slate-400 text-sm leading-relaxed max-w-[240px]">
+          <p className="text-slate-400 text-[10px] sm:text-xs leading-relaxed max-w-[200px]">
             FinTrack - La plateforme de confiance pour la gestion des opérations financières sur le terrain.
           </p>
         </div>
         
         <div>
-          <h5 className="font-bold text-slate-900 mb-8 text-lg">Produit</h5>
-          <ul className="space-y-4 text-sm text-slate-500 font-medium">
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Fonctionnalités</a></li>
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Solutions Terrain</a></li>
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Sécurité</a></li>
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Tarifs</a></li>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Services</h5>
+          <ul className="space-y-3 text-xs text-slate-500 font-medium">
+            <li><a href="#fonctionnalites" className="hover:text-fintrack-secondary transition-colors">Gestion des Ventes</a></li>
+            <li><a href="#fonctionnalites" className="hover:text-fintrack-secondary transition-colors">Dépôts Bancaires</a></li>
+            <li><a href="#fonctionnalites" className="hover:text-fintrack-secondary transition-colors">Suivi de Caisse</a></li>
+            <li><a href="#fonctionnalites" className="hover:text-fintrack-secondary transition-colors">Supervision Agents</a></li>
           </ul>
         </div>
 
         <div>
-          <h5 className="font-bold text-slate-900 mb-8 text-lg">Société</h5>
-          <ul className="space-y-4 text-sm text-slate-500 font-medium">
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">À propos</a></li>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Support & Légal</h5>
+          <ul className="space-y-3 text-xs text-slate-500 font-medium">
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">FAQ</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Support</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Mentions légales</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Politique de confidentialité</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Conditions d'utilisation</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Société</h5>
+          <ul className="space-y-3 text-xs text-slate-500 font-medium">
+            <li><a href="#a-propos" className="hover:text-fintrack-secondary transition-colors">À propos</a></li>
             <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Blog</a></li>
-            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Contact</a></li>
+            <li><a href="#contact" className="hover:text-fintrack-secondary transition-colors">Contact</a></li>
           </ul>
         </div>
 
         <div>
-          <h5 className="font-bold text-slate-900 mb-8 text-lg">Social</h5>
-          <div className="flex flex-wrap gap-3">
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Social</h5>
+          <div className="flex flex-wrap gap-2">
             <SocialIcon icon={<Twitter />} />
             <SocialIcon icon={<Linkedin />} />
             <SocialIcon icon={<Github />} />
@@ -1117,7 +1473,7 @@ function FooterSection() {
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">
+      <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
         <p>FinTrack - Gestion Mobile & Fintech</p>
         <p>Copyright &copy; 2026 FinTrack</p>
       </div>
