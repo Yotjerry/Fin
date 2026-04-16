@@ -2,21 +2,26 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Mail, 
-  Lock, 
-  User, 
+  Lock as LockIcon, 
+  User as UserIcon, 
   Eye, 
   EyeOff, 
   ArrowRight, 
   ChevronLeft,
   ShieldCheck,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [strength, setStrength] = useState(0);
@@ -58,26 +63,19 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex relative overflow-hidden font-sans">
-      {/* 75% Image Section */}
-      <div className="hidden lg:block w-3/4 h-full relative overflow-hidden">
+      {/* Background Image Section - Covers all on mobile, 75% on desktop */}
+      <div className="absolute inset-0 lg:w-3/4 h-full relative overflow-hidden z-0">
         <img 
-          src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=2000&q=80" 
+          src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=2000&q=80" 
           alt="FinTrack Experience" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-90 lg:opacity-100"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-fintrack-primary/90 via-fintrack-primary/70 to-fintrack-dark/90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-fintrack-primary/95 via-fintrack-primary/80 to-fintrack-dark lg:from-fintrack-primary/95 lg:via-fintrack-primary/80 lg:to-fintrack-dark" />
         
-        {/* Brand Content on Image */}
-        <div className="absolute inset-0 flex flex-col justify-between p-16">
-          <div className="h-20 w-auto">
-            <img 
-              src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/logo-transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2xvZ28tdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzc2MDY5MjIzLCJleHAiOjE4MDc2MDUyMjN9.Tza7nG0c-8-TJgvPreIsRAtmA7E8GT4fjqLPMJuZySs" 
-              alt="FinTrack Logo" 
-              className="h-full w-auto object-contain brightness-0 invert"
-              referrerPolicy="no-referrer"
-            />
-          </div>
+        {/* Brand Content on Image - Only visible on desktop or large tablets */}
+        <div className="hidden lg:flex absolute inset-0 flex-col justify-between p-16 z-10">
+          <Logo variant="white" className="h-28" />
 
           <div className="max-w-2xl">
             <motion.h2 
@@ -108,35 +106,39 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* 25% Empty/Space Section */}
-      <div className="hidden lg:block w-1/4 h-full bg-slate-50" />
+      {/* 25% Empty/Space Section - Only on desktop */}
+      <div className="hidden lg:block w-1/4 h-full bg-slate-50 ml-auto" />
 
       {/* Centered Form Card - Overlapping the 75/25 split */}
-      <div className="absolute inset-0 flex items-center justify-center lg:justify-end lg:pr-[12.5%] pointer-events-none z-20">
+      <div className="absolute inset-0 flex flex-col items-center justify-start lg:block pointer-events-none z-20 overflow-y-auto no-scrollbar py-8 sm:py-20">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95, x: 100 }}
           animate={{ opacity: 1, scale: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-lg mx-4 bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-100 p-10 pointer-events-auto relative lg:-translate-x-1/2"
+          className="w-full max-w-lg mx-4 bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-100 p-10 pointer-events-auto relative lg:absolute lg:top-1/2 lg:left-[75%] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:my-0"
         >
-          {/* Back Button */}
+          {/* Mobile Header: Logo + Back Button (Inside the card) */}
+          <div className="lg:hidden mb-12 flex items-center justify-between">
+            <Logo className="h-28" />
+            <button 
+              onClick={() => navigate("/")}
+              className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-fintrack-primary active:scale-95 transition-all shadow-sm"
+              title="Retour"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Back Button - Circular Arrow (Desktop only) */}
           <button 
             onClick={() => navigate("/")}
-            className="absolute -top-16 left-0 text-slate-500 hover:text-fintrack-primary flex items-center gap-2 transition-all group lg:text-white lg:hover:text-fintrack-accent"
+            className="hidden lg:flex fixed top-10 z-50 items-center justify-center w-12 h-12 rounded-full bg-white shadow-xl border border-slate-100 text-slate-600 hover:text-fintrack-primary hover:scale-110 transition-all group pointer-events-auto lg:right-[calc(12.5%-24px)]"
+            title="Retour au site"
           >
-            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-bold text-xs uppercase tracking-widest">Retour au site</span>
+            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
           </button>
 
           <div className="mb-8">
-            <div className="lg:hidden mb-8">
-              <img 
-                src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/logo-transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2xvZ28tdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzc2MDY5MjIzLCJleHAiOjE4MDc2MDUyMjN9.Tza7nG0c-8-TJgvPreIsRAtmA7E8GT4fjqLPMJuZySs" 
-                alt="FinTrack Logo" 
-                className="h-10 w-auto object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
             <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">
               {isLogin ? "Bon retour" : "Créer un compte"}
             </h3>
@@ -173,16 +175,35 @@ export default function AuthPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
+                  className="space-y-3"
                 >
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Nom complet</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
-                    <input 
-                      type="text" 
-                      placeholder="Ex: Jean Koffi" 
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Prénom</label>
+                      <div className="relative group">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
+                        <input 
+                          type="text" 
+                          placeholder="Jean" 
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom</label>
+                      <div className="relative group">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
+                        <input 
+                          type="text" 
+                          placeholder="Koffi" 
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900 text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -195,6 +216,8 @@ export default function AuthPage() {
                 <input 
                   type="email" 
                   placeholder="nom@entreprise.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
                 />
               </div>
@@ -203,15 +226,24 @@ export default function AuthPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Mot de passe</label>
-                {!isLogin && password.length > 0 && (
-                  <div className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${getStrengthColor()}`}>
-                    {strength <= 1 ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
-                    {getStrengthLabel()}
-                  </div>
+                {isLogin ? (
+                  <button 
+                    type="button"
+                    className="text-[10px] font-black text-fintrack-primary hover:text-fintrack-dark transition-colors uppercase tracking-widest"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                ) : (
+                  password.length > 0 && (
+                    <div className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${getStrengthColor()}`}>
+                      {strength <= 1 ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                      {getStrengthLabel()}
+                    </div>
+                  )
                 )}
               </div>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
+                <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
                 <input 
                   type={showPassword ? "text" : "password"} 
                   value={password}
@@ -228,7 +260,7 @@ export default function AuthPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
               </div>
               
@@ -276,9 +308,27 @@ export default function AuthPage() {
               )}
             </AnimatePresence>
 
-            <button className="w-full bg-slate-900 hover:bg-fintrack-primary text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-slate-900/20 hover:shadow-fintrack-primary/30 text-sm uppercase tracking-widest mt-4">
+            <button 
+              onClick={() => navigate("/onboarding", { state: { firstName, lastName, email } })}
+              className="w-full bg-slate-900 hover:bg-fintrack-primary text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-slate-900/20 hover:shadow-fintrack-primary/30 text-sm uppercase tracking-widest mt-4"
+            >
               <span>{isLogin ? "Se connecter" : "Créer mon compte"}</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            {/* Quick Demo Login - As requested by user */}
+            <div className="relative mt-10">
+              <div className="absolute inset-x-0 top-1/2 h-px bg-slate-100 -z-10" />
+              <span className="bg-white px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 mx-auto block w-fit">Accès Rapide</span>
+            </div>
+
+            <button 
+              type="button"
+              onClick={() => navigate("/onboarding", { state: { firstName: "Jean", lastName: "Koffi", email: "demo@fintrack.com" } })}
+              className="w-full mt-6 py-5 bg-slate-50 border border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-fintrack-primary hover:text-white hover:border-fintrack-primary transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+            >
+              <Zap className="w-4 h-4 text-amber-500 group-hover:text-white transition-colors" />
+              <span>Connexion Automatique (Démo)</span>
             </button>
           </form>
         </div>

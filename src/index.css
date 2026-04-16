@@ -37,6 +37,13 @@
   .backface-hidden {
     backface-visibility: hidden;
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @layer base {
@@ -59,6 +66,11 @@
 
   body {
     @apply font-sans text-slate-900 antialiased;
+  }
+
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
   }
   
   h1, h2, h3, h4 {

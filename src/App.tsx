@@ -18,7 +18,9 @@ import {
   useSpring, 
   useTransform 
 } from "motion/react";
+import Logo from "./components/Logo";
 import AuthPage from "./pages/AuthPage";
+import MerchantOnboarding from "./pages/MerchantOnboarding";
 import { 
   ChevronDown, 
   Search, 
@@ -38,13 +40,13 @@ import {
   MousePointer2,
   FileText,
   Database,
-  Lock,
+  Lock as LockIcon,
   Check,
   Wallet,
   Landmark,
   Smartphone,
-  History,
-  Camera,
+  History as HistoryIcon,
+  Camera as CameraIcon,
   Users,
   ShieldCheck, 
   CheckCircle2,
@@ -64,6 +66,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/onboarding" element={<MerchantOnboarding />} />
       </Routes>
     </Router>
   );
@@ -143,12 +146,10 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-transparent selection:bg-fintrack-primary selection:text-white">
       {/* Navigation */}
-      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 py-4 sm:px-6 sm:py-6">
+      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 py-1 sm:px-6 sm:py-2 animate-in fade-in slide-in-from-top duration-1000">
         <div className="max-w-7xl mx-auto">
-          <nav className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-[2rem] px-6 py-3 flex items-center justify-between shadow-[0_8px_32px_-4px_rgba(0,0,0,0.05)]">
-            <div className="flex items-center w-32 sm:w-40 h-10 sm:h-12 relative">
-              <Logo className="h-full w-full absolute left-0 top-0 z-10" />
-            </div>
+          <div className="bg-white/80 backdrop-blur-3xl border border-white/40 rounded-[2.5rem] px-8 py-0 flex items-center justify-between shadow-[0_15px_40px_-5px_rgba(0,0,0,0.08)] h-20 sm:h-24">
+            <Logo className="w-auto h-18 sm:h-20" />
 
             <div className="hidden lg:flex items-center gap-8">
               <NavItem label="Accueil" href="#accueil" />
@@ -183,7 +184,7 @@ function LandingPage() {
                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
-          </nav>
+          </div>
 
           {/* Mobile Menu Overlay */}
           <AnimatePresence>
@@ -229,7 +230,7 @@ function LandingPage() {
         </div>
       </header>
 
-      <main className="pt-32 pb-16">
+      <main className="pt-32 sm:pt-36 pb-16">
         {/* Hero Section */}
         <section id="accueil" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative">
           {/* Decorative Background Elements */}
@@ -288,18 +289,18 @@ function LandingPage() {
             </svg>
 
             {/* Hero Image Replacement */}
-            <div className="relative z-10 bg-white p-2 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-white/50 overflow-hidden group w-full h-full min-h-[350px] sm:min-h-[500px] lg:min-h-[600px]">
-              <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
+            <div className="relative z-10 bg-slate-950 p-1.5 rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5 overflow-hidden group w-full h-full min-h-[350px] sm:min-h-[500px] lg:min-h-[600px]">
+              <div className="w-full h-full rounded-[2rem] overflow-hidden relative bg-slate-900">
                 <img 
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80" 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" 
                   alt="FinTrack Dashboard Preview" 
-                  className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-1000 group-hover:scale-105 opacity-60 mix-blend-luminosity"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-tr from-fintrack-primary/40 via-transparent to-fintrack-secondary/20 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900/40 to-fintrack-primary/20 pointer-events-none" />
                 
                 {/* Overlay Badge - Glassmorphism */}
-                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 bg-white/20 backdrop-blur-2xl border border-white/30 p-4 sm:p-6 rounded-2xl flex items-center justify-between shadow-2xl">
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 bg-slate-900/40 backdrop-blur-2xl border border-white/10 p-4 sm:p-6 rounded-2xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30">
                       <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -320,7 +321,7 @@ function LandingPage() {
             <FloatingIcon icon={<Wallet className="text-amber-500 w-5 h-5" />} className="top-4 -right-6 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={0} />
             <FloatingIcon icon={<Landmark className="text-fintrack-primary w-5 h-5" />} className="bottom-20 -left-10 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={1} />
             <FloatingIcon icon={<Smartphone className="text-fintrack-secondary w-5 h-5" />} className="-top-12 left-1/2 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={0.5} />
-            <FloatingIcon icon={<History className="text-purple-500 w-5 h-5" />} className="bottom-4 right-12 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={1.5} />
+            <FloatingIcon icon={<HistoryIcon className="text-purple-500 w-5 h-5" />} className="bottom-4 right-12 bg-white shadow-2xl border border-slate-100 p-3 rounded-2xl" delay={1.5} />
             
             {/* Background Decorative Elements */}
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-fintrack-primary/10 rounded-full blur-3xl -z-10" />
@@ -347,7 +348,7 @@ function LandingPage() {
               description="Enregistrement instantané des transactions avec catégorisation automatique et suivi des stocks en temps réel."
             />
             <FeatureCard 
-              icon={<History />}
+              icon={<HistoryIcon />}
               title="Gestion de la Caisse"
               description="Suivi rigoureux des entrées et sorties, clôtures journalières automatisées et détection d'écarts."
             />
@@ -386,11 +387,11 @@ function LandingPage() {
               className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-fintrack-primary transition-all duration-500 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-fintrack-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
-              <div className="w-14 h-14 bg-fintrack-primary/10 text-fintrack-primary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+              <div className="w-14 h-14 bg-fintrack-primary/10 text-fintrack-primary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10 mx-auto">
                 <Smartphone className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Agents de Terrain</h3>
-              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Outils mobiles intuitifs pour l'encaissement, le reporting et la gestion des dépôts en toute mobilité.</p>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10 text-center">Outils mobiles intuitifs pour l'encaissement, le reporting et la gestion des dépôts en toute mobilité.</p>
               <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Encaissement rapide</li>
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Preuves de dépôt</li>
@@ -403,11 +404,11 @@ function LandingPage() {
               className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-fintrack-secondary transition-all duration-500 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-fintrack-secondary/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
-              <div className="w-14 h-14 bg-fintrack-secondary/10 text-fintrack-secondary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+              <div className="w-14 h-14 bg-fintrack-secondary/10 text-fintrack-secondary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10 mx-auto">
                 <Users className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Marchands</h3>
-              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Visibilité totale sur les opérations, gestion des stocks et optimisation des flux de trésorerie.</p>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10 text-center">Visibilité totale sur les opérations, gestion des stocks et optimisation des flux de trésorerie.</p>
               <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-primary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-primary group-hover:text-white" /></div> Suivi des ventes</li>
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-primary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-primary group-hover:text-white" /></div> Clôtures de caisse</li>
@@ -420,11 +421,11 @@ function LandingPage() {
               className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] group hover:bg-slate-900 transition-all duration-500 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
-              <div className="w-14 h-14 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10">
+              <div className="w-14 h-14 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-white/20 group-hover:text-white transition-colors relative z-10 mx-auto">
                 <ShieldCheck className="w-7 h-7" />
               </div>
               <h3 className="text-2xl font-black mb-4 group-hover:text-white transition-colors tracking-tight relative z-10">Administrateurs</h3>
-              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10">Contrôle centralisé, gestion des accès, audits de sécurité et rapports consolidés multi-sites.</p>
+              <p className="text-slate-500 text-sm leading-relaxed group-hover:text-white/80 transition-colors mb-6 font-medium relative z-10 text-center">Contrôle centralisé, gestion des accès, audits de sécurité et rapports consolidés multi-sites.</p>
               <ul className="space-y-3 text-xs font-bold group-hover:text-white/90 transition-colors relative z-10">
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Gestion des rôles</li>
                 <li className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-fintrack-secondary/20 flex items-center justify-center group-hover:bg-white/20"><Check className="w-3 h-3 text-fintrack-secondary group-hover:text-white" /></div> Audit de sécurité</li>
@@ -467,19 +468,19 @@ function LandingPage() {
         {/* Mobility Section */}
         <section className="max-w-7xl mx-auto px-6 mt-24 bg-fintrack-primary rounded-[2.5rem] p-8 md:p-12 text-white overflow-hidden relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
-            <div>
+            <div className="flex flex-col lg:items-start lg:text-left">
               <h2 className="text-3xl md:text-4xl mb-6 font-bold leading-tight">Pensé pour la Mobilité et le Terrain</h2>
               <div className="space-y-6">
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                    <Camera className="w-5 h-5 text-fintrack-secondary" />
+                    <CameraIcon className="w-5 h-5 text-fintrack-secondary" />
                   </div>
                   <div>
                     <h4 className="font-bold mb-1">Preuves Photo</h4>
                     <p className="text-white/60 text-sm">Capturez vos reçus de dépôt bancaire pour une traçabilité irréprochable.</p>
                   </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
                     <Zap className="w-5 h-5 text-fintrack-secondary" />
                   </div>
@@ -488,9 +489,9 @@ function LandingPage() {
                     <p className="text-white/60 text-sm">Une interface fluide optimisée pour les smartphones, même avec une connexion limitée.</p>
                   </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                    <History className="w-5 h-5 text-fintrack-secondary" />
+                    <HistoryIcon className="w-5 h-5 text-fintrack-secondary" />
                   </div>
                   <div>
                     <h4 className="font-bold mb-1">Historique Complet</h4>
@@ -699,7 +700,7 @@ function LandingPage() {
 
           {/* CTA Section (Moved next to Advanced Features) */}
           <section className="h-full">
-            <div className="bg-fintrack-primary/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 text-center relative overflow-hidden h-full flex flex-col justify-center border border-fintrack-primary/10">
+            <div className="bg-fintrack-primary/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 text-center relative overflow-hidden h-full flex flex-col items-center justify-center border border-fintrack-primary/10">
               <div className="relative z-10">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl mb-4 text-slate-900 font-bold leading-tight">
                   Prêt à Propulser <span className="text-fintrack-secondary">Votre</span> <br /> Activité ?
@@ -1105,23 +1106,6 @@ function LandingPage() {
   );
 }
 
-function Logo({ className = "" }: { className?: string }) {
-  return (
-    <motion.div 
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`flex items-center ${className}`}
-    >
-      <img 
-        src="https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/logo-transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2xvZ28tdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzc2MDY5MjIzLCJleHAiOjE4MDc2MDUyMjN9.Tza7nG0c-8-TJgvPreIsRAtmA7E8GT4fjqLPMJuZySs" 
-        alt="FinTrack Logo" 
-        className="h-full w-auto object-contain max-h-full drop-shadow-sm"
-        referrerPolicy="no-referrer"
-      />
-    </motion.div>
-  );
-}
-
 function NavItem({ label, href = "#", hasDropdown = false, mobile = false, dropdownItems = [] }: { label: string; href?: string; hasDropdown?: boolean; mobile?: boolean; dropdownItems?: { label: string; href: string }[] }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -1180,11 +1164,13 @@ function NavItem({ label, href = "#", hasDropdown = false, mobile = false, dropd
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <motion.div 
-      whileHover={{ y: -8, shadow: "0 20px 40px -10px rgba(0,0,0,0.1)" }}
-      className="bg-white/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center flex flex-col items-center group transition-all duration-300"
+      whileHover={{ y: -8 }}
+      className="bg-white/50 backdrop-blur-sm p-8 rounded-[2rem] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-2xl hover:shadow-slate-200/50 text-center flex flex-col items-center group transition-all duration-300"
     >
       <div className="w-14 h-14 bg-fintrack-primary/5 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-7 h-7 text-fintrack-primary" })}
+        <div className="w-7 h-7 text-fintrack-primary flex items-center justify-center">
+          {icon}
+        </div>
       </div>
       <h3 className="text-xl mb-3 text-slate-900 font-black tracking-tight">{title}</h3>
       <p className="text-slate-500 text-sm leading-relaxed font-medium">
@@ -1209,7 +1195,9 @@ function FloatingIcon({ icon, className, delay }: { icon: React.ReactNode; class
       }}
       className={`absolute w-10 h-10 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center z-20 ${className}`}
     >
-      {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5 sm:w-6 h-6" })}
+      <div className="w-5 h-5 sm:w-6 h-6">
+        {icon}
+      </div>
     </motion.div>
   );
 }
@@ -1308,7 +1296,9 @@ function PartnerCard({ name, url }: { name: string; url: string }) {
 function SocialIcon({ icon }: { icon: React.ReactNode }) {
   return (
     <a href="#" className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-fintrack-primary hover:text-white transition-all cursor-pointer shadow-sm">
-      {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+      <div className="w-5 h-5 font-bold">
+        {icon}
+      </div>
     </a>
   );
 }
@@ -1330,7 +1320,9 @@ function ContactInfoCard({ icon, label, value, href }: { icon: React.ReactNode; 
       className="flex items-center gap-4 group/card p-3 rounded-xl hover:bg-white/5 transition-all"
     >
       <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center group-hover/card:bg-fintrack-secondary group-hover/card:text-[#0B1B3D] transition-all duration-500">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+        <div className="w-5 h-5">
+          {icon}
+        </div>
       </div>
       <div>
         <div className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] mb-0.5">{label}</div>
@@ -1343,11 +1335,11 @@ function ContactInfoCard({ icon, label, value, href }: { icon: React.ReactNode; 
 function PricingCard({ title, price, description, features, isPopular = false }: { title: string; price: string; description: string; features: string[]; isPopular?: boolean }) {
   return (
     <motion.div 
-      whileHover={{ y: -10, shadow: isPopular ? "0 30px 60px -12px rgba(35, 77, 150, 0.4)" : "0 20px 40px -12px rgba(0,0,0,0.1)" }}
-      className={`relative p-8 rounded-[2.5rem] border flex flex-col h-full transition-all duration-500 ${
+      whileHover={{ y: -10 }}
+      className={`relative p-8 rounded-[2.5rem] border flex flex-col h-full transition-all duration-500 hover:shadow-2xl ${
         isPopular 
-          ? "bg-gradient-to-br from-fintrack-primary to-fintrack-dark text-white border-fintrack-primary shadow-[0_20px_50px_rgba(35,77,150,0.3)] md:scale-105 z-10" 
-          : "bg-white/70 backdrop-blur-md text-slate-900 border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
+          ? "bg-gradient-to-br from-fintrack-primary to-fintrack-dark text-white border-fintrack-primary shadow-[0_20px_50px_rgba(35,77,150,0.3)] hover:shadow-fintrack-primary/40 md:scale-105 z-10" 
+          : "bg-white/70 backdrop-blur-md text-slate-900 border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-slate-200/50"
       }`}
     >
       {isPopular && (
@@ -1394,13 +1386,15 @@ function PricingCard({ title, price, description, features, isPopular = false }:
 
 function WhyChooseCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-lg shadow-slate-200/20 flex items-start gap-3 text-left">
+    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-lg shadow-slate-200/20 flex items-center gap-3 text-left transition-all duration-300 hover:scale-105 active:scale-95 group">
       <div className="w-8 h-8 bg-fintrack-primary rounded-full flex items-center justify-center shrink-0 text-white shadow-md">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-4 h-4" })}
+        <div className="w-4 h-4 flex items-center justify-center">
+          {icon}
+        </div>
       </div>
       <div>
         <h4 className="text-xs font-bold text-slate-900 mb-0.5">{title}</h4>
-        <p className="text-[9px] text-slate-500 leading-relaxed">{description}</p>
+        <p className="text-[9px] text-slate-500 leading-relaxed font-medium">{description}</p>
       </div>
     </div>
   );
@@ -1410,7 +1404,9 @@ function MinimalFeature({ icon, label, sublabel }: { icon: React.ReactNode; labe
   return (
     <div className="text-center flex-1">
       <div className="w-10 h-10 bg-fintrack-light rounded-lg flex items-center justify-center mx-auto mb-2 text-fintrack-accent shadow-sm">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+        <div className="w-5 h-5 flex items-center justify-center">
+          {icon}
+        </div>
       </div>
       <h5 className="font-bold text-slate-900 mb-0.5 text-xs">{label}</h5>
       <p className="text-[8px] text-slate-400 leading-tight font-medium">
@@ -1425,9 +1421,7 @@ function FooterSection() {
     <footer className="bg-white border-t border-slate-100 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-16">
         <div className="col-span-1">
-          <div className="flex items-center w-28 sm:w-40 h-8 sm:h-10 md:h-12 relative mb-6 sm:mb-8">
-            <Logo className="h-12 sm:h-16 md:h-24 absolute left-0 top-1/2 -translate-y-1/2 z-10" />
-          </div>
+          <Logo className="h-28 mb-8" />
           <p className="text-slate-400 text-[10px] sm:text-xs leading-relaxed max-w-[200px]">
             FinTrack - La plateforme de confiance pour la gestion des opérations financières sur le terrain.
           </p>
