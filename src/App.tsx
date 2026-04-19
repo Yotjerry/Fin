@@ -21,6 +21,7 @@ import {
 import Logo from "./components/Logo";
 import AuthPage from "./pages/AuthPage";
 import MerchantOnboarding from "./pages/MerchantOnboarding";
+import MerchantDashboard from "./pages/MerchantDashboard";
 import { 
   ChevronDown, 
   Search, 
@@ -67,6 +68,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/onboarding" element={<MerchantOnboarding />} />
+        <Route path="/dashboard" element={<MerchantDashboard />} />
       </Routes>
     </Router>
   );

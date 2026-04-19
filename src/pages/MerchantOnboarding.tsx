@@ -19,16 +19,17 @@ import {
   Calendar,
   PenTool,
   AlertTriangle,
-  X,
   History,
   ChevronLeft,
   ChevronRight,
   Image as ImageIcon,
-  Scan,
-  UserCheck,
-  Mail
+  Menu,
+  X,
+  Twitter,
+  Linkedin,
+  Github
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 import SignatureCanvas from "react-signature-canvas";
 import { differenceInYears, format } from "date-fns";
@@ -67,6 +68,7 @@ export default function MerchantOnboarding() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [agreed, setAgreed] = useState(false);
   
   const [formData, setFormData] = useState<MerchantData>({
     firstName: location.state?.firstName || "Jean", // Mock pre-filled
@@ -103,6 +105,8 @@ export default function MerchantOnboarding() {
 
   const nextStep = () => {
     setErrors([]);
+    /* Validation relaxée pour le test utilisateur */
+    /* 
     if (currentStep === 1) {
       const age = formData.birthDate ? differenceInYears(new Date(), new Date(formData.birthDate)) : 0;
       if (age < 18) {
@@ -126,6 +130,7 @@ export default function MerchantOnboarding() {
         return;
       }
     }
+    */
     
     setCurrentStep(prev => Math.min(prev + 1, 4));
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -142,6 +147,10 @@ export default function MerchantOnboarding() {
       setErrors(["La signature est obligatoire pour finaliser l'inscription."]);
       return;
     }
+    if (!agreed) {
+      setErrors(["Vous devez accepter les conditions pour soumettre votre dossier."]);
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -151,762 +160,446 @@ export default function MerchantOnboarding() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
-        {/* Immersive Background Imagery */}
-        <div className="fixed inset-0 -z-20 pointer-events-none">
-          <img 
-            src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
-            className="w-full h-full object-cover opacity-[0.05] grayscale"
-            alt="Tech background"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50/90 to-white" />
-        </div>
-
-        <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-          <div className="absolute top-[-15%] left-[-10%] w-[60%] h-[60%] bg-fintrack-primary/10 rounded-full blur-[160px]" />
-          <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] bg-fintrack-secondary/10 rounded-full blur-[160px]" />
-        </div>
-        
-        <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-2xl bg-white/80 backdrop-blur-3xl rounded-[4.5rem] shadow-[0_48px_100px_-20px_rgba(0,0,0,0.12)] border border-white p-12 sm:p-20 text-center relative z-10"
-        >
-            <div className="w-40 h-40 bg-fintrack-secondary/15 rounded-[3.5rem] flex items-center justify-center mx-auto mb-12 relative">
-                <div className="absolute inset-0 bg-fintrack-secondary rounded-[3.5rem] animate-ping opacity-20 scale-110" />
-                <motion.div
-                  initial={{ scale: 0, rotate: -20 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", damping: 15, stiffness: 300, delay: 0.3 }}
+      <div className="min-h-screen bg-transparent selection:bg-fintrack-primary selection:text-white font-sans antialiased text-slate-900">
+        {/* Navigation - Enhanced with navigation context */}
+        <header className="fixed top-0 left-0 w-full z-50 px-4 py-2">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white/80 backdrop-blur-3xl border border-white/40 rounded-[2.5rem] px-8 py-0 flex items-center justify-between shadow-[0_15px_40px_-5px_rgba(0,0,0,0.08)] h-20 sm:h-24">
+              <Link to="/">
+                <Logo className="w-auto h-18 sm:h-20" />
+              </Link>
+              <nav className="flex items-center gap-4 sm:gap-6">
+                <Link to="/" className="text-slate-400 hover:text-fintrack-primary text-[10px] font-black uppercase tracking-widest transition-colors">Accueil</Link>
+                <div className="h-4 w-px bg-slate-100 hidden sm:block" />
+                <a 
+                  href="mailto:support@fintrack.com"
+                  className="bg-fintrack-primary/10 text-fintrack-primary px-4 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-fintrack-primary hover:text-white transition-all"
                 >
-                  <CheckCircle2 className="w-16 h-16 text-fintrack-secondary stroke-[2.5]" />
-                </motion.div>
-                <div className="absolute -bottom-2 -right-2 bg-white p-3 rounded-2xl shadow-xl border border-slate-100">
-                  <ShieldCheck className="w-6 h-6 text-fintrack-primary" />
-                </div>
+                  Support
+                </a>
+              </nav>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 pt-32 pb-24 px-6 flex items-center justify-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl bg-white rounded-[3rem] p-12 border border-slate-100 shadow-2xl text-center space-y-10"
+          >
+            <div className="w-24 h-24 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto shadow-sm rotate-3">
+              <CheckCircle2 className="w-12 h-12 text-emerald-600" />
             </div>
             
-            <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.95]">
-              Dossier Certifié! <br/><span className="text-fintrack-primary text-[0.8em]">en attente de validation</span>
-            </h2>
-            
-            <p className="text-slate-500 text-lg mb-12 leading-relaxed font-bold max-w-md mx-auto">
-                Félicitations, {formData.firstName}. Vos informations ont été scellées sous cryptage militaire et transmises à nos équipes.
-            </p>
-
-            <div className="bg-white/50 backdrop-blur-md rounded-[3rem] p-8 mb-12 text-left border border-white flex items-start gap-6 shadow-sm">
-                <div className="w-16 h-16 bg-slate-900 rounded-3xl flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                    <UserCheck className="w-8 h-8 text-fintrack-secondary relative z-10" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                      <span className="font-black text-[10px] uppercase tracking-[0.3em] text-fintrack-primary">Statut Administratif</span>
-                      <div className="px-3 py-1 bg-emerald-500/10 rounded-full text-[9px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-500/20">Audit Prioritaire</div>
-                  </div>
-                  <p className="text-slate-600 text-[13px] font-black leading-relaxed">
-                      Un <span className="text-slate-900">auditeur agréé FinTrack</span> vérifie manuellement votre RCCM et votre identité. Activation sous <span className="text-slate-900">15 à 45 minutes</span>.
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <h1 className="text-4xl font-black tracking-tight text-slate-900">Dossier Soumis avec Succès</h1>
+              <p className="text-slate-500 font-medium max-w-lg mx-auto leading-relaxed">
+                Merci {formData.firstName}. Votre demande d'adhésion est en cours de traitement. Un administrateur FinTrack Network vous contactera par email ou téléphone après vérification manuelle.
+              </p>
             </div>
 
-            <button 
-                onClick={() => navigate("/")}
-                className="group relative w-full inline-flex items-center justify-center gap-5 py-7 bg-slate-900 text-white rounded-[2.5rem] font-black uppercase tracking-[0.4em] text-[11px] overflow-hidden transition-all hover:bg-fintrack-primary hover:shadow-[0_20px_40px_rgba(35,77,150,0.3)]"
-            >
-                <span className="relative z-10">Accéder à mon tableau de bord</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform duration-500" />
-            </button>
-            <div className="mt-10 flex flex-col items-center gap-2">
-              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Référence Officielle du Dossier</span>
-              <span className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-black text-slate-900 tracking-widest">
-                FT-{Math.random().toString(36).substr(2, 9).toUpperCase()}
-              </span>
+            {/* Action Importante: Suivi de dossier */}
+            <div className="p-8 bg-slate-900 rounded-[2.2rem] text-left relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-fintrack-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-fintrack-primary/30 transition-all" />
+              <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="space-y-1 text-center sm:text-left">
+                  <p className="text-fintrack-secondary text-[10px] font-black uppercase tracking-widest">Référence de suivi</p>
+                  <p className="text-3xl font-black text-white tracking-widest sm:text-4xl">FT-{Math.floor(Math.random() * 900000 + 100000)}</p>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Conservez ce code précieusement</p>
+                </div>
+                <div className="shrink-0 w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-white text-xs font-black uppercase tracking-widest transition-all backdrop-blur-md">
+                    Imprimer le reçu
+                  </button>
+                </div>
+              </div>
             </div>
-        </motion.div>
+
+            <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 text-left flex items-start gap-5">
+              <ShieldCheck className="w-6 h-6 text-fintrack-primary shrink-0 mt-2" />
+              <div>
+                <p className="font-bold text-slate-900 leading-tight text-lg">Vérification en cours</p>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed font-medium">
+                  Nous analysons actuellement votre RCCM et vos documents d'identité. Ce processus prend généralement entre 24h et 48h ouvrées.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link 
+                to="/"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all"
+              >
+                Retour à l'accueil
+              </Link>
+              <Link 
+                to="/dashboard"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-fintrack-primary text-white rounded-2xl font-bold hover:bg-fintrack-dark transition-all shadow-xl shadow-fintrack-primary/20 hover:scale-105 active:scale-95"
+              >
+                Accéder au Dashboard
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </motion.div>
+        </main>
+
+        <FooterSectionOnboarding />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans overflow-x-hidden antialiased selection:bg-fintrack-primary/10 selection:text-fintrack-primary">
-      {/* Immersive Background Imagery */}
-      <div className="fixed inset-0 -z-20 pointer-events-none">
-        <img 
-          src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
-          className="w-full h-full object-cover opacity-[0.03] grayscale"
-          alt="Tech background"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50/95 to-white" />
-      </div>
-
-      <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-        <div className="absolute top-[-15%] left-[-10%] w-[60%] h-[60%] bg-fintrack-primary/10 rounded-full blur-[160px] animate-pulse duration-[10s]" />
-        <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] bg-fintrack-secondary/10 rounded-full blur-[160px] animate-pulse duration-[8s]" />
-      </div>
-
-      {/* Bespoke Header */}
-      <header className="px-8 border-b border-white/40 bg-white/40 backdrop-blur-3xl sticky top-0 z-50 h-20 sm:h-24 flex items-center">
-        <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
-          <div className="flex items-center gap-6">
-            <Logo className="h-14 sm:h-16 hover:scale-105 transition-transform" />
-            <div className="hidden lg:block h-8 w-[1px] bg-slate-200" />
-            <div className="hidden lg:flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900 leading-none">Certification Gérant</span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Dossier de conformité bancaire</span>
+    <div className="min-h-screen bg-[#fcfdfe] flex flex-col font-sans antialiased text-slate-900 selection:bg-fintrack-primary selection:text-white">
+      {/* Navigation - Exact same logic as Homepage navbar */}
+      <header className="fixed top-0 left-0 w-full z-50 px-4 py-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/85 backdrop-blur-3xl border border-white/50 rounded-[2.5rem] px-8 py-0 flex items-center justify-between shadow-[0_20px_50px_-10px_rgba(0,0,0,0.06)] h-20 sm:h-24">
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <Logo className="w-auto h-18 sm:h-20" />
+            </Link>
+            
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/dashboard"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 transition-all border border-emerald-100"
+              >
+                Accès Démo (Dev)
+              </Link>
+              <Link 
+                to="/"
+                className="text-slate-600 hover:text-fintrack-primary font-bold text-sm transition-colors flex items-center gap-2 pr-4"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Quitter l'inscription</span>
+                <span className="sm:hidden text-xs">Quitter</span>
+              </Link>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-              <div className="hidden sm:flex flex-col items-end mr-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Connexion Sécurisée</span>
-                </div>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">SSL / AES-256 BIT</span>
-              </div>
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 group cursor-help relative">
-                <ShieldCheck className="w-6 h-6 text-fintrack-secondary group-hover:scale-110 transition-transform" />
-                <div className="absolute top-full right-0 mt-3 w-48 p-3 bg-slate-900 text-white rounded-xl text-[8px] uppercase tracking-widest font-black opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all pointer-events-none z-[100] shadow-2xl">
-                  Vos données sont cryptées et vérifiées manuellement par nos agents.
-                </div>
-              </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 py-12 px-6 sm:px-12 max-w-7xl mx-auto w-full relative">
-        <div className="grid lg:grid-cols-[320px_1fr] gap-12 items-start">
-          {/* LEFT SIDEBAR: Advanced Steps Indicator */}
-          <aside className="lg:sticky lg:top-36 space-y-6">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white/60 backdrop-blur-xl rounded-[3rem] p-8 border border-white shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]"
-            >
-              <div className="space-y-6">
-                <div className="p-5 bg-slate-900 rounded-[2rem] text-white relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rotate-12 -translate-y-12" />
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-60 text-fintrack-secondary relative z-10">Statut du Dossier</h3>
-                  <div className="flex justify-between items-end relative z-10">
-                    <span className="text-4xl font-black tabular-nums">{Math.round((currentStep / 4) * 100)}%</span>
-                    <div className="flex flex-col items-end">
-                      <div className="w-8 h-1 bg-white/20 rounded-full mb-2 overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-fintrack-secondary"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(currentStep / 4) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-[8px] font-black uppercase opacity-70">Complété</span>
-                    </div>
+      <main className="flex-1 pt-36 sm:pt-40 pb-24 px-6 flex flex-col items-center">
+        <div className="w-full max-w-5xl space-y-12">
+          {/* Cool & Posey Step Indicator (Glassmorphic Bento) */}
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {steps.map((step) => {
+              const isActive = currentStep === step.id;
+              const isCompleted = currentStep > step.id;
+              
+              return (
+                <div 
+                  key={step.id}
+                  className={`relative flex items-center gap-3 px-6 py-3 rounded-full border transition-all duration-500 overflow-hidden group ${
+                    isActive 
+                      ? "bg-fintrack-primary text-white border-fintrack-primary shadow-2xl shadow-fintrack-primary/40 scale-105 z-10" 
+                      : isCompleted 
+                        ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                        : "bg-white/50 text-slate-400 border-slate-100 backdrop-blur-md"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div 
+                      layoutId="active-step-glow"
+                      className="absolute inset-0 bg-gradient-to-r from-fintrack-primary via-fintrack-dark to-fintrack-primary bg-[length:200%_100%] animate-pulse opacity-20"
+                      animate={{
+                        backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                      }}
+                      transition={{
+                        duration: 5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                  )}
+                  
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black font-mono transition-all duration-500 ${
+                    isActive ? "bg-white text-fintrack-primary" : isCompleted ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
+                  }`}>
+                    {isCompleted ? <Check className="w-3 h-3" /> : step.id}
                   </div>
-                </div>
-
-                <div className="space-y-3">
-                  {steps.map((step) => {
-                    const isActive = currentStep === step.id;
-                    const isCompleted = currentStep > step.id;
-                    
-                    return (
-                      <button
-                        key={step.id}
-                        onClick={() => isCompleted && setCurrentStep(step.id)}
-                        disabled={!isCompleted && !isActive}
-                        className={`w-full group relative flex items-center gap-5 p-4 rounded-[2.2rem] transition-all duration-500 border ${
-                          isActive 
-                          ? "bg-white border-slate-100 shadow-[0_15px_35px_-10px_rgba(0,0,0,0.1)] translate-x-1" 
-                          : isCompleted 
-                          ? "border-transparent text-fintrack-secondary hover:bg-fintrack-secondary/5" 
-                          : "border-transparent opacity-30 grayscale pointer-events-none"
-                        }`}
+                  
+                  <div className="flex flex-col">
+                    <span className={`text-[10px] font-black ${isActive ? "text-white" : "text-slate-900/60"}`}>
+                      {step.title}
+                    </span>
+                    {isActive && (
+                      <motion.span 
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[8px] font-bold text-white/70"
                       >
-                        <div className={`relative w-12 h-12 rounded-[1.3rem] flex items-center justify-center transition-all duration-500 ${
-                          isActive 
-                          ? "bg-fintrack-primary text-white scale-110 shadow-lg shadow-fintrack-primary/20 rotate-3" 
-                          : isCompleted 
-                          ? "bg-fintrack-secondary/10 text-fintrack-secondary" 
-                          : "bg-slate-100 text-slate-300"
-                        }`}>
-                          <div className="relative z-10">
-                            {isCompleted ? <Check className="w-6 h-6 stroke-[3]" /> : step.icon}
-                          </div>
-                          {isActive && (
-                            <div className="absolute inset-0 bg-fintrack-primary rounded-[1.3rem] blur-sm opacity-40 animate-pulse" />
-                          )}
-                        </div>
-                        <div className="text-left flex-1">
-                          <p className={`text-[8px] font-black uppercase tracking-widest ${isActive ? "text-fintrack-primary" : "text-slate-400"}`}>
-                            Phase 0{step.id}
-                          </p>
-                          <p className={`text-[11px] font-black tracking-tight uppercase ${isActive ? "text-slate-900" : "text-slate-500"}`}>
-                            {step.title}
-                          </p>
-                        </div>
-                        {isActive && (
-                          <motion.div 
-                            layoutId="activePointer"
-                            className="absolute -right-2 w-1.5 h-10 bg-fintrack-primary rounded-full shadow-[0_0_15px_rgba(35,77,150,0.4)]"
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Specialist Trust Badge */}
-            <div className="px-8 py-10 bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/60 space-y-6">
-              <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 bg-fintrack-primary/5 rounded-xl flex items-center justify-center">
-                    <History className="w-5 h-5 text-fintrack-primary" />
-                 </div>
-                 <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-widest">Audit Historique</span>
-                    <span className="text-[8px] font-bold text-slate-400 uppercase">Vérification en 15min</span>
-                 </div>
-              </div>
-              <div className="h-[1px] bg-slate-200/50 w-full" />
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-400">
-                  <span>Conformité</span>
-                  <span className="text-emerald-500">Active</span>
-                </div>
-                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-slate-400">
-                  <span>Serveur</span>
-                  <span className="text-emerald-500">Protégé</span>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* RIGHT SIDE: Immersive Form Section */}
-          <div className="space-y-12">
-            <div className="space-y-4">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-3 px-5 py-2.5 bg-fintrack-primary/10 rounded-full border border-fintrack-primary/15 text-fintrack-primary"
-              >
-                <div className="w-2 h-2 bg-fintrack-primary rounded-full animate-ping" />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] leading-none">Protocole de Sécurité BCEAO</span>
-              </motion.div>
-              <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.05]">
-                {steps[currentStep-1].title} <br/>
-                <span className="text-fintrack-primary">{steps[currentStep-1].desc}</span>
-              </h1>
-              <p className="text-slate-500 font-medium text-lg leading-relaxed max-w-2xl bg-white/30 p-2 rounded-xl backdrop-blur-sm">
-                Veuillez fournir les détails officiels. Vos données sont soumises à une vérification stricte par un administrateur agréé.
-              </p>
-            </div>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, scale: 0.98, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -30 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-white/90 backdrop-blur-2xl rounded-[4.5rem] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.06)] border border-white p-10 sm:p-16 relative group"
-              >
-                {/* Immersive Glass Overlays */}
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-fintrack-primary/5 rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
-                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-fintrack-secondary/5 rounded-full blur-[80px] -ml-36 -mb-36 pointer-events-none" />
-
-                {errors.length > 0 && (
-                  <div className="mb-12 p-8 bg-red-50 border border-red-100 rounded-[3rem] flex items-center gap-6 shadow-xl shadow-red-500/5">
-                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-red-100">
-                      <AlertTriangle className="w-7 h-7 text-red-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[11px] font-black text-red-900 uppercase tracking-widest mb-1">Audit de Conformité : Erreur</p>
-                      <ul className="text-xs font-bold text-red-600 leading-relaxed grid sm:grid-cols-2 gap-x-6">
-                        {errors.map((e, i) => <li key={i} className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-red-400 rounded-full" /> {e}
-                        </li>)}
-                      </ul>
-                    </div>
+                        {step.desc}
+                      </motion.span>
+                    )}
                   </div>
-                )}
 
-              {/* STEP 1: PERSONAL & CONTACT */}
-              {currentStep === 1 && (
-                <div className="space-y-8">
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom & Prénom(s)</label>
-                        <div className="relative">
-                          <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            value={`${formData.firstName} ${formData.lastName}`}
-                            onChange={(e) => {
-                              const [f, ...l] = e.target.value.split(" ");
-                              setFormData({...formData, firstName: f, lastName: l.join(" ")});
-                            }}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro de Téléphone Principal</label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="tel" 
-                            placeholder="+229 00 00 00 00"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Adresse Email</label>
-                        <div className="relative opacity-60">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input type="email" value={formData.email} disabled className="w-full pl-12 pr-5 py-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm cursor-not-allowed" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de naissance (18+ requis)</label>
-                        <div className="relative">
-                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="date" 
-                            value={formData.birthDate}
-                            onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Lieu de naissance</label>
-                        <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            placeholder="Ville, Pays"
-                            value={formData.birthPlace}
-                            onChange={(e) => setFormData({...formData, birthPlace: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Adresse Personnelle Complète</label>
-                        <input 
-                          type="text" 
-                          placeholder="Ville, Quartier, Repère précis"
-                          value={formData.personalAddress}
-                          onChange={(e) => setFormData({...formData, personalAddress: e.target.value})}
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  {isActive && (
+                    <div className="absolute top-0 right-0 w-8 h-8 bg-white/10 rounded-full -mr-4 -mt-4" />
+                  )}
                 </div>
+              );
+            })}
+          </div>
+
+          <motion.div 
+            layout
+            className="bg-white rounded-[3rem] border border-slate-100 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.06)] overflow-hidden"
+          >
+            <div className="p-10 sm:p-16">
+              <div className="mb-14 text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fintrack-primary/5 border border-fintrack-primary/10 text-fintrack-primary text-[9px] font-black mb-4">
+                  Étape {currentStep} sur 4
+                </div>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">
+                  {steps[currentStep-1].title}
+                </h1>
+                <p className="text-slate-500 font-medium text-base">
+                  {steps[currentStep-1].desc}
+                </p>
+              </div>
+
+              {errors.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="mb-10 p-5 bg-red-50 border border-red-100 rounded-2xl text-xs font-bold text-red-600 flex items-start gap-4"
+                >
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-black text-red-600">Erreur de conformité</p>
+                    <ul className="list-disc list-inside">
+                      {errors.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  </div>
+                </motion.div>
               )}
 
-              {/* STEP 2: BUSINESS INFO */}
-              {currentStep === 2 && (
-                <div className="space-y-8">
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dénomination de la structure / Agence</label>
-                        <div className="relative">
-                          <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            placeholder="ex: Ets La Béninoise"
-                            value={formData.businessName}
-                            onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro IFU (Identifiant Fiscal)</label>
-                        <div className="relative">
-                          <Scan className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            placeholder="Numéro à 13 chiffres"
-                            value={formData.ifu}
-                            onChange={(e) => setFormData({...formData, ifu: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  {currentStep === 1 && (
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <SimpleInput label="Nom" value={formData.lastName} onChange={(v) => setFormData(prev => ({ ...prev, lastName: v }))} />
+                      <SimpleInput label="Prénom(s)" value={formData.firstName} onChange={(v) => setFormData(prev => ({ ...prev, firstName: v }))} />
+                      <SimpleInput label="Email" type="email" value={formData.email} onChange={(v) => setFormData(prev => ({ ...prev, email: v }))} />
+                      <SimpleInput label="Téléphone" value={formData.phone} onChange={(v) => setFormData(prev => ({ ...prev, phone: v }))} />
+                      <SimpleInput label="Date de naissance" type="date" value={formData.birthDate} onChange={(v) => setFormData(prev => ({ ...prev, birthDate: v }))} />
+                      <SimpleInput label="Lieu de naissance" value={formData.birthPlace} onChange={(v) => setFormData(prev => ({ ...prev, birthPlace: v }))} />
+                      <div className="sm:col-span-2">
+                        <SimpleInput label="Adresse Personnelle" placeholder="Ville, Quartier, Repère" value={formData.personalAddress} onChange={(v) => setFormData(prev => ({ ...prev, personalAddress: v }))} />
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro RCCM (Commerce)</label>
-                        <div className="relative">
-                          <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            placeholder="ex: RB/COT/..."
-                            value={formData.rccm}
-                            onChange={(e) => setFormData({...formData, rccm: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
+                  {currentStep === 2 && (
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="sm:col-span-2">
+                        <SimpleInput label="Dénomination de l'Agence" placeholder="ex: Ets La Béninoise" value={formData.businessName} onChange={(v) => setFormData(prev => ({ ...prev, businessName: v }))} />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Adresse de la structure</label>
-                        <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                          <input 
-                            type="text" 
-                            placeholder="Ville, Quartier de l'agence"
-                            value={formData.businessAddress}
-                            onChange={(e) => setFormData({...formData, businessAddress: e.target.value})}
-                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 text-sm outline-none focus:border-fintrack-primary transition-all" 
-                          />
-                        </div>
+                      <SimpleInput label="Numéro IFU" value={formData.ifu} onChange={(v) => setFormData(prev => ({ ...prev, ifu: v }))} />
+                      <SimpleInput label="Numéro RCCM" value={formData.rccm} onChange={(v) => setFormData(prev => ({ ...prev, rccm: v }))} />
+                      <div className="sm:col-span-2">
+                        <SimpleInput label="Adresse de l'Agence" placeholder="Ville, Quartier" value={formData.businessAddress} onChange={(v) => setFormData(prev => ({ ...prev, businessAddress: v }))} />
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {/* STEP 3: DOCUMENT UPLOADS */}
-              {currentStep === 3 && (
-                <div className="space-y-8">
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* ID FRONT */}
-                    <div className="space-y-3 px-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                        <UserCheck className="w-3 h-3 text-fintrack-primary" />
-                        Pièce d'identité (Recto)
-                      </label>
-                      <label className="block aspect-video bg-white border border-slate-200 rounded-[2rem] hover:border-fintrack-primary hover:shadow-xl hover:shadow-fintrack-primary/5 transition-all cursor-pointer relative overflow-hidden group">
-                        <input 
-                          type="file" 
-                          className="hidden" 
-                          accept="image/*,application/pdf" 
-                          onChange={(e) => handleFileUpload('idFront', e.target.files?.[0] || null)}
-                        />
-                        {formData.idFront ? (
-                          <div className="w-full h-full p-2">
-                            <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center">
-                              {formData.idFront.type.includes('image') ? (
-                                <img src={URL.createObjectURL(formData.idFront)} alt="ID Front" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <FileText className="w-10 h-10 text-fintrack-primary" />
-                                  <span className="text-[10px] font-bold text-slate-500">{formData.idFront.name}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <UploadCloud className="w-6 h-6 text-slate-300 group-hover:text-fintrack-primary transition-colors" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-[10px] font-black text-slate-900 uppercase">Importer le Recto</p>
-                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">PNG, JPG ou PDF</p>
-                            </div>
-                          </div>
-                        )}
-                        {formData.idFront && <div className="absolute top-4 right-4 bg-emerald-500 text-white p-1 rounded-full shadow-lg"><Check className="w-3 h-3" /></div>}
-                      </label>
+                  {currentStep === 3 && (
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <SimpleUpload label="Pièce d'Identité (Recto)" id="idFront" file={formData.idFront} onUpload={(f) => handleFileUpload('idFront', f)} />
+                      <SimpleUpload label="Pièce d'Identité (Verso)" id="idBack" file={formData.idBack} onUpload={(f) => handleFileUpload('idBack', f)} />
+                      <SimpleUpload label="Registre de Commerce (RCCM)" id="rccmDoc" file={formData.rccmDoc} onUpload={(f) => handleFileUpload('rccmDoc', f)} />
+                      <SimpleUpload label="Selfie de Vérification" id="selfie" file={formData.selfiePhoto} onUpload={(f) => handleFileUpload('selfiePhoto', f)} />
                     </div>
+                  )}
 
-                    {/* ID BACK */}
-                    <div className="space-y-3 px-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                        <UserCheck className="w-3 h-3 text-fintrack-primary" />
-                        Pièce d'identité (Verso)
-                      </label>
-                      <label className="block aspect-video bg-white border border-slate-200 rounded-[2rem] hover:border-fintrack-primary hover:shadow-xl hover:shadow-fintrack-primary/5 transition-all cursor-pointer relative overflow-hidden group">
-                        <input 
-                          type="file" 
-                          className="hidden" 
-                          accept="image/*,application/pdf" 
-                          onChange={(e) => handleFileUpload('idBack', e.target.files?.[0] || null)}
-                        />
-                        {formData.idBack ? (
-                          <div className="w-full h-full p-2">
-                            <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center">
-                              {formData.idBack.type.includes('image') ? (
-                                <img src={URL.createObjectURL(formData.idBack)} alt="ID Back" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <FileText className="w-10 h-10 text-fintrack-primary" />
-                                  <span className="text-[10px] font-bold text-slate-500">{formData.idBack.name}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <UploadCloud className="w-6 h-6 text-slate-300 group-hover:text-fintrack-primary transition-colors" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-[10px] font-black text-slate-900 uppercase">Importer le Verso</p>
-                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">PNG, JPG ou PDF</p>
-                            </div>
-                          </div>
-                        )}
-                        {formData.idBack && <div className="absolute top-4 right-4 bg-emerald-500 text-white p-1 rounded-full shadow-lg"><Check className="w-3 h-3" /></div>}
-                      </label>
-                    </div>
-
-                    {/* RCCM */}
-                    <div className="space-y-3 px-1">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                        <Building2 className="w-3 h-3 text-fintrack-primary" />
-                        Registre de Commerce (RCCM)
-                      </label>
-                      <label className="block aspect-video bg-white border border-slate-200 rounded-[2rem] hover:border-fintrack-primary hover:shadow-xl hover:shadow-fintrack-primary/5 transition-all cursor-pointer relative overflow-hidden group">
-                        <input 
-                          type="file" 
-                          className="hidden" 
-                          accept="image/*,application/pdf" 
-                          onChange={(e) => handleFileUpload('rccmDoc', e.target.files?.[0] || null)}
-                        />
-                        {formData.rccmDoc ? (
-                          <div className="w-full h-full p-2">
-                            <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center">
-                              {formData.rccmDoc.type.includes('image') ? (
-                                <img src={URL.createObjectURL(formData.rccmDoc)} alt="RCCM" className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                  <FileText className="w-10 h-10 text-fintrack-primary" />
-                                  <span className="text-[10px] font-bold text-slate-500">{formData.rccmDoc.name}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <UploadCloud className="w-6 h-6 text-slate-300 group-hover:text-fintrack-primary transition-colors" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-[10px] font-black text-slate-900 uppercase">Importer l'attestation</p>
-                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">PNG, JPG ou PDF</p>
-                            </div>
-                          </div>
-                        )}
-                        {formData.rccmDoc && <div className="absolute top-4 right-4 bg-emerald-500 text-white p-1 rounded-full shadow-lg"><Check className="w-3 h-3" /></div>}
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="p-10 bg-white border border-slate-200 rounded-[3rem] overflow-hidden relative group shadow-sm">
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-fintrack-primary/5 rounded-full blur-3xl" />
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                       <div className="w-28 h-28 bg-slate-50 rounded-[2.5rem] flex items-center justify-center shrink-0 border border-slate-100 shadow-inner">
-                          <UserCheck className="w-12 h-12 text-fintrack-primary" />
-                       </div>
-                       <div className="flex-1 text-center md:text-left space-y-6">
-                          <div>
-                            <h4 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Selfie d'Identification</h4>
-                            <p className="text-slate-500 text-[11px] font-medium leading-relaxed">
-                              Veuillez importer une photo claire de vous en tenant votre pièce d'identité (CNI ou Passeport) près de votre visage. Ceci garantit que vous êtes bien le titulaire des documents fournis.
-                            </p>
-                          </div>
-                          <label className="inline-flex items-center gap-4 px-10 py-5 bg-fintrack-primary text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-fintrack-primary/20">
-                            <ImageIcon className="w-4 h-4" />
-                            <span>Importer le Selfie</span>
-                            <input 
-                              type="file" 
-                              className="hidden" 
-                              accept="image/*" 
-                              onChange={(e) => handleFileUpload('selfiePhoto', e.target.files?.[0] || null)}
-                            />
+                  {currentStep === 4 && (
+                    <div className="space-y-8">
+                      <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-4">
+                        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                        <p className="text-sm text-emerald-800 font-medium">
+                          Votre signature authentifie ce dossier. Il sera examiné manuellement par un administrateur FinTrack pour l'activation finale.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <label className="text-xs font-black text-slate-400">Signature officielle</label>
+                        <div className="aspect-[3/1] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl relative group hover:border-fintrack-primary transition-colors overflow-hidden">
+                          <input type="file" className="hidden" accept="image/*" id="sig-upload" onChange={(e) => {
+                            const f = e.target.files?.[0] || null;
+                            if (f) setFormData(prev => ({ ...prev, signatureFile: f, signaturePreview: URL.createObjectURL(f) }));
+                          }} />
+                          <label htmlFor="sig-upload" className="absolute inset-0 cursor-pointer flex flex-col items-center justify-center p-6 text-center">
+                            {formData.signaturePreview ? (
+                              <img src={formData.signaturePreview} className="max-w-full max-h-full object-contain mix-blend-multiply" alt="Sig" />
+                            ) : (
+                              <>
+                                <PenTool className="w-6 h-6 text-slate-300 mb-2" />
+                                <span className="text-xs font-bold text-slate-400 tracking-tight">Importer votre signature manuscrite (JPG/PNG)</span>
+                              </>
+                            )}
                           </label>
-                       </div>
-                       {formData.selfiePhoto && (
-                         <div className="w-40 h-40 rounded-[2rem] overflow-hidden border-4 border-emerald-500 shrink-0 shadow-2xl relative">
-                           <img src={URL.createObjectURL(formData.selfiePhoto)} className="w-full h-full object-cover" alt="Selfie" />
-                           <div className="absolute inset-0 bg-emerald-500/10" />
-                         </div>
-                       )}
-                    </div>
-                  </div>
-                </div>
-              )}
+                        </div>
+                      </div>
 
-              {/* STEP 4: AUTHENTICATION & SIGNATURE */}
-              {currentStep === 4 && (
-                <div className="space-y-10">
-                  <div className="grid lg:grid-cols-2 gap-10">
-                    <div className="space-y-6">
-                       <div className="p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100 flex items-start gap-4">
-                          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                            <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                          </div>
-                          <div className="space-y-2">
-                             <h4 className="text-sm font-black text-emerald-900 tracking-tight">Certification Digitale</h4>
-                             <p className="text-[11px] font-medium text-emerald-700 leading-relaxed">
-                               En fournissant votre signature ci-contre, vous vous engagez formellement envers le réseau FinTrack. Cette signature a pleine valeur juridique pour l'activation de votre compte marchand.
-                             </p>
-                          </div>
-                       </div>
-                       
-                       <div className="bg-slate-50 p-6 rounded-[2.5rem] space-y-4 border border-slate-100">
-                          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <LockIcon className="w-3 h-3" />
-                            Engagement & Sécurité
-                          </h4>
-                          <ul className="space-y-3">
-                            <li className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                              <CheckCircle2 className="w-4 h-4 text-fintrack-primary" /> Signature sur papier blanc fortement recommandée
-                            </li>
-                            <li className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                              <CheckCircle2 className="w-4 h-4 text-fintrack-primary" /> Doit correspondre à la pièce d'identité
-                            </li>
-                            <li className="flex items-center gap-3 text-[10px] font-bold text-slate-600">
-                              <CheckCircle2 className="w-4 h-4 text-fintrack-primary" /> Fichier JPG/PNG haute résolution
-                            </li>
-                          </ul>
-                       </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Déposez votre signature scannée</label>
-                      <label className="block aspect-[4/3] bg-white border-4 border-dashed border-slate-100 rounded-[3rem] hover:border-fintrack-primary hover:bg-fintrack-primary/5 transition-all cursor-pointer relative group overflow-hidden shadow-inner">
+                      <div className="flex items-center gap-3">
                         <input 
-                          type="file" 
-                          className="hidden" 
-                          accept="image/*" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            if (file) {
-                              setFormData(prev => ({ 
-                                ...prev, 
-                                signatureFile: file, 
-                                signaturePreview: URL.createObjectURL(file) 
-                              }));
-                            }
-                          }}
+                          type="checkbox" 
+                          id="agree" 
+                          className="w-5 h-5 rounded border-slate-300 text-fintrack-primary focus:ring-fintrack-primary cursor-pointer transition-all" 
+                          checked={agreed}
+                          onChange={(e) => setAgreed(e.target.checked)}
                         />
-                        {formData.signaturePreview ? (
-                          <div className="w-full h-full flex items-center justify-center p-8 bg-white">
-                            <img src={formData.signaturePreview} className="max-w-full max-h-full object-contain mix-blend-multiply" alt="Signature" />
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <PenTool className="w-8 h-8 text-slate-300 group-hover:text-fintrack-primary transition-colors" />
-                            </div>
-                            <div className="text-center px-6">
-                              <p className="text-[10px] font-black text-slate-900 uppercase">Importer ma signature</p>
-                              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Photo nette sur fond blanc</p>
-                            </div>
-                          </div>
-                        )}
-                        {formData.signatureFile && <div className="absolute top-6 right-6 bg-emerald-500 text-white p-1.5 rounded-full shadow-lg"><Check className="w-4 h-4" /></div>}
-                      </label>
-                      {formData.signatureFile && (
-                        <button 
-                          type="button" 
-                          onClick={() => setFormData(prev => ({ ...prev, signatureFile: null, signaturePreview: null }))}
-                          className="w-full text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
-                        >
-                          Changer la signature
-                        </button>
-                      )}
+                        <label htmlFor="agree" className="text-sm font-bold text-slate-600 cursor-pointer select-none">
+                          Je certifie l'exactitude des informations et j'accepte la vérification administrative.
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-                  <div className="flex items-center gap-4 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                    <input type="checkbox" required className="w-6 h-6 rounded-lg accent-fintrack-primary cursor-pointer" id="terms" />
-                    <label htmlFor="terms" className="text-[10px] font-black text-slate-500 leading-relaxed uppercase tracking-widest cursor-pointer">
-                      Je certifie l'exactitude des informations et j'accepte les clauses de sécurité du réseau marchand.
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Buttons Refined */}
-              <div className="mt-14 pt-10 border-t border-slate-50 flex flex-col sm:flex-row gap-6 relative z-10">
-                {currentStep > 1 && (
-                  <button 
-                    type="button"
-                    onClick={prevStep}
-                    className="flex-1 py-6 px-10 bg-white border border-slate-100 text-slate-400 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                    Précédent
-                  </button>
-                )}
-                
+              <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between gap-4">
+                <button 
+                  type="button" 
+                  onClick={prevStep} 
+                  disabled={currentStep === 1}
+                  className={`px-6 py-3 rounded-lg font-bold text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-0 disabled:pointer-events-none`}
+                >
+                  Précédent
+                </button>
                 {currentStep < 4 ? (
                   <button 
-                    type="button"
+                    type="button" 
                     onClick={nextStep}
-                    className="flex-[2] py-6 px-10 bg-slate-900 text-white rounded-[2.2rem] font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-center gap-3 hover:bg-fintrack-primary hover:shadow-[0_20px_40px_rgba(35,77,150,0.3)] transition-all active:scale-95"
+                    className="px-8 py-3 bg-fintrack-primary text-white rounded-lg font-bold text-sm hover:bg-fintrack-dark transition-all flex items-center gap-2"
                   >
-                    Phase Suivante
-                    <ChevronRight className="w-5 h-5" />
+                    Suivant <ChevronRight className="w-4 h-4" />
                   </button>
                 ) : (
                   <button 
-                    type="button"
-                    onClick={handleSubmit}
+                    type="button" 
+                    onClick={handleSubmit} 
                     disabled={loading}
-                    className="flex-[2] py-6 px-10 bg-emerald-600 text-white rounded-[2.2rem] font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-center gap-3 hover:bg-emerald-700 hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] transition-all active:scale-95 disabled:opacity-50"
+                    className="px-8 py-3 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 disabled:opacity-50"
                   >
-                    {loading ? (
-                      <div className="w-6 h-6 border-3 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        Soumettre mon Dossier
-                        <ShieldCheck className="w-5 h-5" />
-                      </>
-                    )}
+                    {loading ? "Chargement..." : "Soumettre le dossier"}
                   </button>
                 )}
               </div>
-            </motion.div>
-          </AnimatePresence>
-
-          <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.3em]">
-            Protégé par sécurité bancaire AES-256
-          </p>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </main>
 
-      {/* Security Footer */}
-      <footer className="py-12 px-12 border-t border-slate-100 bg-white grid md:grid-cols-3 gap-10 items-center">
-          <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0"><LockIcon className="w-5 h-5 text-slate-400" /></div>
-              <div className="flex flex-col">
-                  <span className="text-xs font-black uppercase tracking-widest text-slate-900">Cryptage AES-256</span>
-                  <p className="text-[10px] text-slate-400 font-bold">Standard de sécurité militaire</p>
-              </div>
-          </div>
-          <div className="flex flex-col items-center text-center">
-             <Logo className="h-6 grayscale opacity-20 mb-4" showText={false} />
-             <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Opéré par FinTrack Technologies S.A.</p>
-          </div>
-          <div className="flex flex-col items-center md:items-end gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Système de Vérification en Ligne</span>
-              </div>
-              <p className="text-[9px] text-slate-400 font-bold tracking-[0.1em]">© 2026 • SIÈGE SOCIAL - COTONOU, BÉNIN</p>
-          </div>
-      </footer>
+      <FooterSectionOnboarding />
     </div>
+  );
+}
+
+function SimpleInput({ label, value, onChange, type = "text", placeholder = "" }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-bold text-slate-400 ml-1">{label}</label>
+      <input 
+        type={type} 
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-fintrack-primary/10 focus:border-fintrack-primary outline-none transition-all placeholder:text-slate-300"
+      />
+    </div>
+  );
+}
+
+function SimpleUpload({ label, id, file, onUpload }: { label: string; id: string; file: File | null; onUpload: (f: File | null) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-bold text-slate-400 ml-1">{label}</label>
+      <label htmlFor={id} className={`block aspect-video rounded-2xl border-2 border-dashed cursor-pointer relative group overflow-hidden transition-all ${
+        file ? "border-emerald-500 bg-emerald-50" : "border-slate-200 bg-slate-50 hover:border-fintrack-primary hover:bg-slate-100"
+      }`}>
+        <input type="file" id={id} className="hidden" onChange={(e) => onUpload(e.target.files?.[0] || null)} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+          {file ? (
+            <div className="space-y-2">
+              <Check className="w-6 h-6 text-emerald-500 mx-auto" />
+              <p className="text-[10px] font-bold text-emerald-900 truncate max-w-[120px]">{file.name}</p>
+            </div>
+          ) : (
+            <>
+              <UploadCloud className="w-5 h-5 text-slate-300 group-hover:text-fintrack-primary transition-colors" />
+              <p className="text-[10px] font-bold text-slate-400 mt-2">Importer</p>
+            </>
+          )}
+        </div>
+      </label>
+    </div>
+  );
+}
+
+function FooterSectionOnboarding() {
+  return (
+    <footer className="bg-white border-t border-slate-100 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-16">
+        <div className="col-span-1">
+          <Logo className="h-28 mb-8" />
+          <p className="text-slate-400 text-[10px] sm:text-xs leading-relaxed max-w-[200px]">
+            FinTrack - La plateforme de confiance pour la gestion des opérations financières sur le terrain.
+          </p>
+        </div>
+        
+        <div>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Services</h5>
+          <ul className="space-y-3 text-xs text-slate-500 font-medium">
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Gestion des Ventes</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Dépôts Bancaires</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Suivi de Caisse</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Supervision Agents</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Support & Légal</h5>
+          <ul className="space-y-3 text-xs text-slate-500 font-medium">
+            <li><a href="/#faq" className="hover:text-fintrack-secondary transition-colors">FAQ</a></li>
+            <li><a href="mailto:support@fintrack.com" className="hover:text-fintrack-secondary transition-colors">Support</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Mentions légales</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Politique de confidentialité</a></li>
+            <li><a href="#" className="hover:text-fintrack-secondary transition-colors">Conditions d'utilisation</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 className="font-bold text-slate-900 mb-6 text-base">Social</h5>
+          <div className="flex flex-wrap gap-2">
+            <SocialIcon icon={<Twitter />} />
+            <SocialIcon icon={<Linkedin />} />
+            <SocialIcon icon={<Github />} />
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+        <p>FinTrack - Gestion Mobile & Fintech</p>
+        <p>Copyright &copy; 2026 FinTrack</p>
+      </div>
+    </footer>
+  );
+}
+
+function SocialIcon({ icon }: { icon: React.ReactNode }) {
+  return (
+    <a href="#" className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-fintrack-primary hover:text-white transition-all cursor-pointer shadow-sm">
+      <div className="w-5 h-5 font-bold">
+        {icon}
+      </div>
+    </a>
   );
 }
