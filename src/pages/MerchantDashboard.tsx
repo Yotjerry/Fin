@@ -25,7 +25,39 @@ import {
   Download,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  MapPin,
+  Phone,
+  Building,
+  Edit2,
+  ShieldCheck,
+  Power,
+  Clock,
+  CheckCircle,
+  RotateCcw,
+  History,
+  Wallet,
+  Banknote,
+  Landmark,
+  Activity,
+  Key,
+  Shield,
+  CreditCard,
+  HelpCircle,
+  BellRing,
+  User,
+  Info,
+  ShieldAlert,
+  Star,
+  MessageCircle,
+  Globe,
+  AlertTriangle,
+  Zap,
+  Check,
+  LayoutGrid,
+  Trash2,
+  Smartphone,
+  ExternalLink
 } from "lucide-react";
 import { 
   LineChart, 
@@ -289,17 +321,17 @@ function SidebarItem({ icon, label, active = false, onClick, badge }: { icon: Re
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group ${
+      className={`w-full flex items-center justify-between px-4 py-2 rounded-2xl transition-all duration-300 group ${
         active 
           ? "bg-[#234D96] text-white shadow-lg shadow-blue-900/20" 
           : "text-slate-400 hover:bg-slate-50 hover:text-slate-900"
       }`}
     >
-      <div className="flex items-center gap-4">
-        <span className={`${active ? "text-white" : "group-hover:scale-110 transition-all duration-300"}`}>
+      <div className="flex items-center gap-4 min-w-0 pr-2">
+        <span className={`shrink-0 ${active ? "text-white" : "group-hover:scale-110 transition-all duration-300"}`}>
           {icon}
         </span>
-        <span className="text-[13px] font-bold">{label}</span>
+        <span className="text-[13px] font-bold whitespace-nowrap truncate">{label}</span>
       </div>
       {badge && (
         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shadow-sm ${
@@ -317,7 +349,7 @@ function DashboardCard({ children, title, stat, subText, annotation, annotationT
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden ${className}`}
+      className={`bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden ${className}`}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-black text-slate-900 tracking-tight uppercase opacity-50">{title}</h3>
@@ -381,7 +413,7 @@ function DashboardView({
   ];
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 pb-12">
       {/* Welcome Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -391,7 +423,7 @@ function DashboardView({
       </div>
 
       {/* Row 1: Top KPIs */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-4">
         <DashboardCard 
           className="col-span-12 lg:col-span-4" 
           title="Volume de Transactions" 
@@ -656,13 +688,17 @@ function Modal({
   onClose, 
   title, 
   subtitle, 
-  children 
+  children,
+  className = "max-w-lg",
+  hideHeader = false
 }: { 
   isOpen: boolean; 
   onClose: () => void; 
-  title: string; 
-  subtitle: string; 
+  title?: string; 
+  subtitle?: string; 
   children: React.ReactNode;
+  className?: string;
+  hideHeader?: boolean;
 }) {
   return (
     <AnimatePresence>
@@ -679,20 +715,24 @@ function Modal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden"
+            className={`relative w-full ${className} bg-white rounded-[2rem] shadow-2xl overflow-hidden`}
           >
-            <div className="p-10 pt-12">
-              <button 
-                onClick={onClose}
-                className="absolute top-8 right-8 w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all"
-              >
-                <X size={20} />
-              </button>
+            <div className={`p-6 pt-8 ${hideHeader ? 'p-0 pt-0' : ''}`}>
+              {!hideHeader && (
+                <button 
+                  onClick={onClose}
+                  className="absolute top-8 right-8 w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-full flex items-center justify-center transition-all"
+                >
+                  <X size={20} />
+                </button>
+              )}
               
-              <div className="mb-10 text-center">
-                <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{title}</h3>
-                <p className="text-sm font-semibold text-slate-400">{subtitle}</p>
-              </div>
+              {!hideHeader && (
+                <div className="mb-10 text-center">
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{title}</h3>
+                  {subtitle && <p className="text-sm font-semibold text-slate-400">{subtitle}</p>}
+                </div>
+              )}
 
               {children}
             </div>
@@ -738,6 +778,7 @@ function Input({ label, placeholder, value, onChange, type = "text", icon }: { l
 function AgencesView() {
   const [viewTab, setViewTab] = useState<"Agences" | "Agents">("Agences");
   const [modalMode, setModalMode] = useState<"none" | "new_agence" | "edit_agence" | "new_agent">("none");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Form States
   const [agenceName, setAgenceName] = useState("");
@@ -751,14 +792,15 @@ function AgencesView() {
   const [agentPass, setAgentPass] = useState("");
   
   const agences = [
-    { id: 1, name: "Agence Cotonou Centre", status: "ACTIVE", profit: "0 F", agents: 1, plafond: 5000000, current: 4200000, address: "Sans adresse" },
-    { id: 2, name: "Agence Calavi", status: "ACTIVE", profit: "0 F", agents: 1, plafond: 3000000, current: 1500000, address: "Sans adresse" },
-    { id: 3, name: "Agence Porto-Novo", status: "ACTIVE", profit: "0 F", agents: 0, plafond: 2000000, current: 1800000, address: "Sans adresse" },
+    { id: 1, name: "Agence Cotonou Centre", status: "ACTIVE", profitToday: "0 F", topActivity: "RESEAUX", agentsCount: 1, plafond: "5 000 000 F", current: 4200000, address: "Cadjehoun, Rue 125" },
+    { id: 2, name: "Agence Calavi", status: "ACTIVE", profitToday: "0 F", topActivity: "RESEAUX", agentsCount: 1, plafond: "3 000 000 F", current: 1500000, address: "Kpota, Face Université" },
+    { id: 3, name: "Agence Porto-Novo", status: "ACTIVE", profitToday: "0 F", topActivity: "RESEAUX", agentsCount: 0, plafond: "2 000 000 F", current: 1800000, address: "Ouando, Carré 14" },
   ];
 
   const agents = [
-    { id: 1, name: "Agent Cotonou", phone: "+22900000003", agence: "Agence Cotonou Centre", status: "Actif" },
-    { id: 2, name: "Agent Calavi", phone: "+22900000004", agence: "Agence Calavi", status: "Actif" },
+    { id: 1, name: "Marius Ahonon", phone: "+229 97 00 00 01", agence: "Agence Cotonou Centre", status: "Actif", lastActive: "Il y a 2 min", role: "Superviseur Senior", bio: "Expert en gestion de flux et relation client.", waiting: true },
+    { id: 2, name: "Lisa Koukpaki", phone: "+229 96 00 00 02", agence: "Agence Calavi", status: "Actif", lastActive: "En ligne", role: "Gestionnaire Caisse", bio: "Spécialisée dans les remontées de fonds.", waiting: true },
+    { id: 3, name: "Jean Koffi", phone: "+229 95 00 00 03", agence: "Agence Porto-Novo", status: "Inactif", lastActive: "Il y a 4h", role: "Agent de Terrain", bio: "Responsable des collectes de proximité.", waiting: false },
   ];
 
   const formatCurrency = (val: number) => {
@@ -772,186 +814,195 @@ function AgencesView() {
     setModalMode("edit_agence");
   };
 
+  const filteredAgences = agences.filter(a => 
+    a.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    a.address.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredAgents = agents.filter(a => 
+    a.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    a.phone.includes(searchQuery) ||
+    a.agence.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Agences & Agents</h2>
-          <p className="text-xs font-semibold text-slate-400 mt-1">Gérez vos points de vente et votre équipe depuis un seul endroit.</p>
+    <div className="space-y-6 pb-16">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-0.5">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Réseau d'Agences</h2>
+          <p className="text-sm font-bold text-slate-400">Supervision et gestion en temps réel de vos points de vente.</p>
         </div>
-        <div className="flex gap-3">
+        
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#234D96] transition-colors" size={18} />
+            <input 
+              type="text" 
+              placeholder="Rechercher une agence ou un agent..." 
+              className="pl-12 pr-6 py-2.5 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-50/50 w-full md:w-80 shadow-sm transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <button 
-            onClick={() => { setModalMode("new_agence"); setAgenceName(""); setAgenceAddress(""); setAgencePlafond(""); setAgenceHasGas(false); }}
-            className="px-5 py-3 bg-white text-[#234D96] rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 border border-slate-100 shadow-sm"
+            onClick={() => { setModalMode("new_agence"); }}
+            className="px-4 py-2.5 bg-white border border-slate-100 text-slate-900 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
           >
-            <Plus size={16} /> Agence
+            <Plus size={16} /> Nouvelle Agence
           </button>
           <button 
-            onClick={() => { setModalMode("new_agent"); setAgentName(""); setAgentPhone(""); setAgentAgence("Agence Cotonou Centre"); setAgentPass(""); }}
-            className="px-5 py-3 bg-[#234D96] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20"
+            onClick={() => { setModalMode("new_agent"); }}
+            className="px-4 py-2.5 bg-[#234D96] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-xl shadow-blue-900/20 active:scale-95"
           >
-            <Plus size={16} /> Agent
+            <Plus size={18} /> Ajouter un Agent
           </button>
         </div>
       </div>
 
-      <div className="inline-flex p-1.5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+      <div className="flex items-center gap-8 border-b border-slate-100 pb-1">
         <button 
           onClick={() => setViewTab("Agences")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
-            viewTab === "Agences" ? "bg-[#234D96] text-white shadow-md shadow-blue-900/10" : "text-slate-400 hover:text-slate-600"
+          className={`pb-4 text-sm font-black transition-all relative ${
+            viewTab === "Agences" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
           }`}
         >
-          <LayoutDashboard size={14} />
-          Agences
-          <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${viewTab === "Agences" ? "bg-white/20" : "bg-slate-100"}`}>4</span>
+          Agences ({filteredAgences.length})
+          {viewTab === "Agences" && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-[#234D96] rounded-full" />}
         </button>
         <button 
           onClick={() => setViewTab("Agents")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black transition-all ${
-            viewTab === "Agents" ? "bg-[#234D96] text-white shadow-md shadow-blue-900/10" : "text-slate-400 hover:text-slate-600"
+          className={`pb-4 text-sm font-black transition-all relative ${
+            viewTab === "Agents" ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
           }`}
         >
-          <Users size={14} />
-          Agents
-          <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${viewTab === "Agents" ? "bg-white/20" : "bg-slate-100"}`}>2</span>
+          Agents ({filteredAgents.length})
+          {viewTab === "Agents" && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-[#234D96] rounded-full" />}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {viewTab === "Agences" ? agences.map((agence) => {
-          const usage = (agence.current / agence.plafond) * 100;
-          const isCritical = usage >= 85;
-          const isWarning = usage >= 60 && usage < 85;
-
-          return (
-            <motion.div 
-              key={agence.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden"
-            >
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-[#F1F5F9] rounded-2xl flex items-center justify-center text-[#234D96] shadow-sm">
-                    <LayoutDashboard size={24} />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {viewTab === "Agences" ? filteredAgences.map((agence) => (
+          <motion.div 
+            key={agence.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 group flex flex-col"
+          >
+            {/* Agency Header - As per screenshot */}
+            <div className="flex items-start justify-between mb-6">
+               <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-[#234D96] to-[#6ABCA6] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                     <Building size={24} />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900">{agence.name}</h3>
-                    <div className="mt-1">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest">Active</span>
-                    </div>
+                  <div className="space-y-1">
+                     <h3 className="text-[18px] font-black text-slate-900 leading-tight">{agence.name}</h3>
+                     <span className="inline-flex px-2 py-0.5 bg-emerald-50 text-emerald-500 text-[9px] font-black rounded-lg uppercase tracking-widest border border-emerald-100/30">ACTIVE</span>
                   </div>
-                </div>
-                
-                <div className="relative w-12 h-12">
-                   <svg className="w-full h-full -rotate-90">
-                      <circle cx="24" cy="24" r="20" className="fill-none stroke-slate-100" strokeWidth="4" />
-                      <motion.circle 
-                        cx="24" cy="24" r="20" 
-                        className={`fill-none ${isCritical ? 'stroke-red-500' : isWarning ? 'stroke-orange-400' : 'stroke-blue-900'}`} 
-                        strokeWidth="4" 
-                        strokeDasharray={125.6}
-                        initial={{ strokeDashoffset: 125.6 }}
-                        animate={{ strokeDashoffset: 125.6 - (125.6 * usage) / 100 }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
-                      />
-                   </svg>
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`text-[8px] font-black ${isCritical ? 'text-red-500' : 'text-blue-900'}`}>{Math.round(usage)}%</span>
-                   </div>
-                </div>
-              </div>
+               </div>
+            </div>
 
-              <div className="flex items-center gap-2 text-slate-400 mb-6 px-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                <span className="text-[10px] font-bold italic">{agence.address}</span>
-              </div>
+            {/* Address */}
+            <div className="flex items-center gap-2 text-slate-400 mb-6">
+               <MapPin size={14} className="text-slate-300" />
+               <span className="text-[11px] font-bold text-slate-400">{agence.address}</span>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-[#F8FAFC] rounded-2xl p-4 border border-slate-50 transition-colors group-hover:bg-white group-hover:border-blue-50">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Profit Auj.</p>
-                  <p className="text-sm font-black text-[#234D96]">{agence.profit}</p>
-                </div>
-                <div className="bg-[#F8FAFC] rounded-2xl p-4 border border-slate-50 transition-colors group-hover:bg-white group-hover:border-blue-50">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Agents</p>
-                  <p className="text-sm font-black text-[#234D96]">{agence.agents}</p>
-                </div>
-              </div>
+            {/* Stats Row - As per screenshot */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+               <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">PROFIT AUJ.</p>
+                  <p className="text-[13px] font-black text-slate-900">{agence.profitToday}</p>
+               </div>
+               <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">ACTIVITÉ TOP</p>
+                  <p className="text-[11px] font-black text-slate-900">{agence.topActivity}</p>
+               </div>
+               <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-50">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">AGENTS</p>
+                  <p className="text-[13px] font-black text-slate-900">{agence.agentsCount}</p>
+               </div>
+            </div>
 
-              <div className={`mb-8 p-4 rounded-2xl flex items-center justify-between border ${
-                isCritical ? 'bg-red-50/50 border-red-100' : isWarning ? 'bg-orange-50/50 border-orange-100' : 'bg-[#EBF1FA] border-[#234D96]/10'
-              }`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isCritical ? 'bg-red-100 text-red-600' : 'bg-white shadow-sm text-blue-900'}`}>
-                    <TrendingUp size={16} />
-                  </div>
-                  <div>
-                    <p className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${isCritical ? 'text-red-600' : 'text-slate-400'}`}>Seuil Plafond</p>
-                    <p className="text-[11px] font-black text-slate-900">{formatCurrency(agence.plafond)}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 italic">Dispo:</p>
-                  <p className={`text-[11px] font-black ${isCritical ? 'text-red-600' : 'text-emerald-600'}`}>
-                    {formatCurrency(agence.plafond - agence.current)}
-                  </p>
-                </div>
-              </div>
+            {/* Plafond - As per screenshot */}
+            <div className="px-5 py-3 bg-amber-50/50 border border-amber-100/30 rounded-2xl flex items-center gap-2 mb-6">
+               <Star size={12} className="text-amber-500" />
+               <span className="text-[11px] font-bold text-amber-900/60 tracking-tight">Plafond: {agence.plafond}</span>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-50">
-                <button 
-                  onClick={() => handleEditAgence(agence)}
-                  className="py-3 bg-white border border-slate-100 text-[#234D96] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#F8FAFC] transition-all"
-                >
-                  Modifier
-                </button>
-                <button className="py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all">Désactiver</button>
-              </div>
-            </motion.div>
-          );
-        }) : agents.map((agent) => (
+            <div className="h-px bg-slate-50 mb-6" />
+
+            {/* Action Buttons - As per screenshot */}
+            <div className="grid grid-cols-2 gap-4 mt-auto">
+               <button 
+                 onClick={() => handleEditAgence(agence)}
+                 className="py-3.5 bg-white border border-slate-100 text-slate-900 rounded-xl font-black text-[11px] hover:bg-slate-50 transition-all uppercase tracking-widest shadow-sm"
+               >
+                 Modifier
+               </button>
+               <button className="py-3.5 bg-red-50 text-red-500 border border-red-100 rounded-xl font-black text-[11px] hover:bg-red-100 transition-all uppercase tracking-widest shadow-sm">
+                 Désactiver
+               </button>
+            </div>
+          </motion.div>
+        )) : filteredAgents.map((agent) => (
           <motion.div 
             key={agent.id}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden"
+            className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col group"
           >
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-[#234D96] rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-900/10">
-                  {agent.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900">{agent.name}</h3>
-                  <div className="flex items-center gap-1.5 text-slate-400 mt-1">
-                    <ShoppingCart size={12} className="opacity-40" />
-                    <span className="text-[10px] font-medium tracking-tight">{agent.phone}</span>
+            {/* Agent Header - As per screenshot */}
+            <div className="flex items-start justify-between mb-6">
+               <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#234D96] to-[#6ABCA6] rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-500/20">
+                     A
                   </div>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest">Actif</span>
+                  <div className="space-y-1">
+                     <h3 className="text-[17px] font-black text-slate-900 leading-tight">{agent.name}</h3>
+                     <div className="flex items-center gap-1.5 text-slate-400">
+                        <Phone size={14} strokeWidth={2.5} />
+                        <span className="text-[12px] font-bold">{agent.phone}</span>
+                     </div>
+                  </div>
+               </div>
+               <span className="px-3 py-1 bg-emerald-50 text-emerald-500 text-[10px] font-black rounded-lg uppercase tracking-widest border border-emerald-100/30">Actif</span>
             </div>
 
-            <div className="space-y-3 mb-8">
-              <div className="p-4 bg-[#F8FAFC] rounded-2xl flex items-center justify-between border border-slate-50 group-hover:border-blue-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <LayoutDashboard size={14} className="text-[#234D96] opacity-60" />
-                  <p className="text-[10px] font-bold text-slate-600">{agent.agence}</p>
-                </div>
-                <ChevronDown size={12} className="-rotate-90 text-slate-300" />
-              </div>
-              <div className="p-4 bg-orange-50/50 rounded-2xl flex items-center gap-3 border border-orange-100/30">
-                <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-                <p className="text-[10px] font-bold text-orange-900/60 uppercase tracking-tight">Vérification identité requise</p>
-              </div>
+            {/* Agence Card */}
+            <div className="px-5 py-4 bg-[#F8FAFC] border border-slate-100 rounded-2xl flex items-center gap-3 mb-3">
+               <Building size={14} className="text-[#234D96]" />
+               <span className="text-[11px] font-black text-blue-950 uppercase tracking-tight">{agent.agence}</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-50">
-              <button className="py-3 bg-slate-50/50 text-slate-400 rounded-xl font-black text-[10px] uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2">
-                <Users size={14} /> Désactiver
-              </button>
-              <button className="py-3 bg-white border border-slate-100 text-[#234D96] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50/30 transition-all focus:ring-2 focus:ring-blue-100 outline-none">Modifier</button>
+            {/* Agent Information Section */}
+            <div className="px-5 py-4 bg-blue-50/30 border border-blue-100/20 rounded-2xl flex flex-col gap-2 mb-3">
+               <div className="flex items-center gap-2">
+                  <Info size={14} className="text-[#234D96]" />
+                  <span className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">Information sur l'agent</span>
+               </div>
+               <p className="text-[11px] font-bold text-slate-500 leading-relaxed italic">
+                  "{agent.bio}"
+               </p>
+            </div>
+
+            {/* Waiting Notice - As per screenshot */}
+            {agent.waiting && (
+              <div className="px-5 py-4 bg-amber-50/50 border border-amber-100/30 rounded-2xl flex items-center gap-3 mb-6">
+                 <ShieldAlert size={14} className="text-amber-500" />
+                 <span className="text-[11px] font-black text-amber-900/60 uppercase tracking-tight">En attente d'activation</span>
+              </div>
+            )}
+
+            <div className="h-px bg-slate-50 mb-6" />
+
+            {/* Buttons - As per screenshot */}
+            <div className="grid grid-cols-2 gap-4 mt-auto">
+               <button className="py-3.5 bg-slate-50 text-slate-400 rounded-xl font-black text-[11px] hover:bg-slate-100 transition-all uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm border border-slate-50">
+                 <Users size={14} /> Désactiver
+               </button>
+               <button className="py-3.5 bg-white border border-slate-100 text-slate-900 rounded-xl font-black text-[11px] hover:bg-slate-50 transition-all uppercase tracking-widest shadow-sm">
+                 Modifier
+               </button>
             </div>
           </motion.div>
         ))}
@@ -999,7 +1050,7 @@ function AgencesView() {
           <Input label="Plafond Cash (FCFA)" placeholder="3000000,00" value={agencePlafond} onChange={setAgencePlafond} />
           
           <button className="w-full mt-4 py-5 bg-[#234D96] text-white rounded-[1.8rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.98]">
-            Enregistrer
+            Enregistrer les modifications
           </button>
         </div>
       </Modal>
@@ -1019,7 +1070,7 @@ function AgencesView() {
             <select 
               value={agentAgence}
               onChange={(e) => setAgentAgence(e.target.value)}
-              className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.5rem] px-6 py-4 text-sm font-bold text-slate-900 transition-all outline-none appearance-none"
+              className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.5rem] px-6 py-4 text-sm font-bold text-slate-900 transition-all outline-none appearance-none cursor-pointer"
             >
               {agences.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
             </select>
@@ -1037,167 +1088,444 @@ function AgencesView() {
 }
 
 function TransactionsView() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTx, setSelectedTx] = useState<any>(null);
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  
   const transactions = [
-    { ref: "TXN-8492", date: "18/04 14:32", nature: "DEPOT", reseau: "MTN", montant: "50.000", comm: "750", agent: "Marius", agence: "Cotonou Star", status: "CONFIRME" },
-    { ref: "TXN-8493", date: "18/04 14:45", nature: "RETRAIT", reseau: "Moov", montant: "15.000", comm: "225", agent: "Jean K.", agence: "Calavi Center", status: "EN_ATTENTE" },
-    { ref: "TXN-8494", date: "18/04 15:10", nature: "VENTE", reseau: "GazPlus", montant: "8.500", comm: "425", agent: "Marius", agence: "Cotonou Star", status: "CONFIRME" },
-    { ref: "TXN-8495", date: "18/04 15:22", nature: "DEPOT", reseau: "Celtis", montant: "100.000", comm: "1.500", agent: "Lisa", agence: "Porto-Novo", status: "ECHEC" },
+    { ref: "TXN-890740B6", date: "15/04/2026", time: "01:57", dateTime: "15/04/2026 01:57", service: "Moov Money", type: "RESEAUX", agent: "Agent Cotonou", agence: "Agence Porto-Novo", montant: "155 776", comm: "778,88", status: "EN ATTENTE", refOp: "Non renseigné" },
+    { ref: "TXN-8906F0B7", date: "14/04/2026", time: "11:57", dateTime: "14/04/2026 11:57", service: "MTN MoMo", type: "RESEAUX", agent: "Agent Cotonou", agence: "Agence Cotonou Centre", montant: "399 191", comm: "1995,96", status: "CONFIRME", refOp: "OP-44920" },
+    { ref: "TXN-89060AB2", date: "14/04/2026", time: "01:57", dateTime: "14/04/2026 01:57", service: "Moov Money", type: "RESEAUX", agent: "Agent Cotonou", agence: "Agence Porto-Novo", montant: "138 537", comm: "692,69", status: "EN ATTENTE", refOp: "Non renseigné" },
+    { ref: "TXN-890788A2", date: "13/04/2026", time: "18:57", dateTime: "13/04/2026 18:57", service: "MTN MoMo", type: "RESEAUX", agent: "Agent Calavi", agence: "Agence Cotonou Centre", montant: "266 858", comm: "1334,29", status: "EN ATTENTE", refOp: "Non renseigné" },
+    { ref: "TXN-8907A175", date: "11/04/2026", time: "02:57", dateTime: "11/04/2026 02:57", service: "Orange Money", type: "RESEAUX", agent: "Agent Calavi", agence: "Agence Calavi", montant: "405 294", comm: "2026,47", status: "CONFIRME", refOp: "OP-88210" },
+    { ref: "TXN-89071018", date: "10/04/2026", time: "05:57", dateTime: "10/04/2026 05:57", service: "Orange Money", type: "RESEAUX", agent: "Agent Calavi", agence: "Agence Porto-Novo", montant: "56 583", comm: "282,92", status: "CONFIRME", refOp: "OP-11202" },
+    { ref: "TXN-8907B83A", date: "09/04/2026", time: "22:57", dateTime: "09/04/2026 22:57", service: "Celtis", type: "RESEAUX", agent: "Agent Calavi", agence: "Agence Calavi", montant: "116 650", comm: "583,25", status: "EN ATTENTE", refOp: "Non renseigné" },
+    { ref: "TXN-890649A5", date: "09/04/2026", time: "18:57", dateTime: "09/04/2026 18:57", service: "Moov Money", type: "RESEAUX", agent: "Agent Cotonou", agence: "Agence Cotonou Centre", montant: "90 846", comm: "454,23", status: "EN ATTENTE", refOp: "Non renseigné" },
   ];
 
+  const handleOpenTxModal = (tx: any) => {
+    setSelectedTx(tx);
+    setTxModalOpen(true);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Historique des Transactions</h2>
-          <p className="text-xs font-medium text-slate-400">Toutes les opérations de votre réseau d'agences.</p>
-        </div>
-        <div className="flex gap-3">
-          <button className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2">
-            <Download size={14} /> Exporter CSV
+    <div className="space-y-6 pb-12">
+      {/* Search & Filters Bar */}
+      <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex-1 min-w-[200px] space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">RECHERCHE</label>
+            <div className="relative">
+              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text"
+                placeholder="Réf, commentaire..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300"
+              />
+            </div>
+          </div>
+
+          <div className="w-48 space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">SECTEUR</label>
+            <div className="relative">
+              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-2.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
+                <option>Tous les secteurs</option>
+                <option>RESEAUX</option>
+                <option>GAZ</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="w-48 space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">STATUT</label>
+            <div className="relative">
+              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-2.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
+                <option>Tous les statuts</option>
+                <option>CONFIRME</option>
+                <option>EN ATTENTE</option>
+              </select>
+              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+          </div>
+
+          <button className="px-6 py-2.5 bg-[#3F51B5] text-white rounded-xl font-black text-[11px] hover:bg-[#303F9F] transition-all shadow-lg shadow-blue-500/10 h-[40px]">
+            Filtrer
           </button>
         </div>
       </div>
 
-      <DashboardCard title="Base de données Transactions" className="!p-0 overflow-hidden">
+      {/* Transactions Table */}
+      <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-50">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Référence</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Date & Heure</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Nature</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Réseau</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Montant</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comm.</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Statut</th>
+              <tr className="border-b border-slate-50">
+                <th className="pl-10 pr-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉFÉRENCE & COMMENTAIRE</th>
+                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉSEAU / SERVICE</th>
+                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">AGENCE & AGENT</th>
+                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">MONTANT & COM.</th>
+                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">DATE</th>
+                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">STATUT</th>
+                <th className="pl-4 pr-10 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {transactions.map((tx) => (
-                <tr key={tx.ref} className="group hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="text-[11px] font-black text-slate-900 tracking-wider">{tx.ref}</span>
+            <tbody className="divide-y divide-slate-50/60">
+              {transactions.map((tx, idx) => (
+                <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                  <td className="pl-10 pr-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-black text-slate-900 tracking-tight">{tx.ref}</span>
+                      <span className="text-[10px] font-bold text-slate-300">—</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-[11px] font-bold text-slate-500">{tx.date}</span>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500">
+                        <Smartphone size={14} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[12px] font-black text-slate-900">{tx.service}</span>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{tx.type}</span>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${
-                      tx.nature === 'DEPOT' ? "bg-blue-50 text-blue-600" : tx.nature === 'RETRAIT' ? "bg-emerald-50 text-emerald-600" : "bg-orange-50 text-orange-600"
-                    }`}>{tx.nature}</span>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-slate-900">{tx.agence}</span>
+                      <span className="text-[10px] font-bold text-slate-400">{tx.agent}</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-[11px] font-bold text-slate-700">{tx.reseau}</span>
+                  <td className="px-4 py-3 font-mono">
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-black text-slate-900">{tx.montant} F</span>
+                      <span className="text-[10px] font-bold text-emerald-500">+{tx.comm} F</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-[11px] font-black text-slate-900">{tx.montant} FCFA</span>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black text-slate-900">{tx.date}</span>
+                      <span className="text-[10px] font-bold text-slate-400">{tx.time}</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-emerald-600">
-                    <span className="text-[11px] font-black">+{tx.comm} FCFA</span>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                        tx.status === 'CONFIRME' 
+                          ? "bg-emerald-50 text-emerald-600" 
+                          : "bg-orange-50 text-orange-600"
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${tx.status === 'CONFIRME' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+                        {tx.status}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${
-                      tx.status === 'CONFIRME' ? "bg-emerald-50 text-emerald-600" : tx.status === 'EN_ATTENTE' ? "bg-blue-50 text-blue-600" : "bg-red-50 text-red-600"
-                    }`}>{tx.status.replace('_', ' ')}</span>
+                  <td className="pl-4 pr-10 py-3 text-right">
+                    <button 
+                      onClick={() => handleOpenTxModal(tx)}
+                      className="p-2 text-slate-400 hover:text-[#234D96] transition-colors"
+                    >
+                      <Eye size={16} />
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </DashboardCard>
+      </div>
+
+      {/* Transaction Detail Modal - Fiche d'Opération */}
+      <Modal 
+        isOpen={txModalOpen} 
+        onClose={() => setTxModalOpen(false)} 
+        title="" 
+        hideHeader 
+        className="max-w-md !p-0"
+      >
+        {selectedTx && (
+          <div className="bg-white overflow-hidden rounded-[2rem]">
+            {/* Blue Header */}
+            <div className="bg-[#3F51B5] p-8 pb-10 text-white relative">
+               <button 
+                 onClick={() => setTxModalOpen(false)}
+                 className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white"
+               >
+                 <X size={18} />
+               </button>
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                     <Activity size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-0.5">FICHE D'OPÉRATION</p>
+                    <h3 className="text-2xl font-black tracking-tight">{selectedTx.ref}</h3>
+                  </div>
+               </div>
+            </div>
+
+            {/* Content Body */}
+            <div className="p-8 -mt-6 bg-white rounded-t-[2rem] relative z-10 space-y-8">
+               {/* Badges Row */}
+               <div className="flex gap-3">
+                  <div className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase flex items-center gap-2 ${
+                    selectedTx.status === 'CONFIRME' ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                  }`}>
+                    <Clock size={14} />
+                    {selectedTx.status}
+                  </div>
+                  <div className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border border-slate-100">
+                    Mise à jour :
+                  </div>
+               </div>
+
+               {/* Info Multi-Grid */}
+               <div className="grid grid-cols-2 gap-y-8 gap-x-6">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3F51B5]">
+                       <Calendar size={18} />
+                    </div>
+                    <div className="space-y-0.5">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">DATE INITIATION</p>
+                       <p className="text-xs font-black text-slate-900">{selectedTx.dateTime}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3F51B5]">
+                       <Building size={18} />
+                    </div>
+                    <div className="space-y-0.5">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">POINT DE VENTE</p>
+                       <p className="text-xs font-black text-slate-900">{selectedTx.agence}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3F51B5]">
+                       <User size={18} />
+                    </div>
+                    <div className="space-y-0.5">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">AGENT RESPONSABLE</p>
+                       <p className="text-xs font-black text-slate-900">{selectedTx.agent}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3F51B5]">
+                       <ExternalLink size={18} />
+                    </div>
+                    <div className="space-y-0.5">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉF. OPÉRATEUR</p>
+                       <p className="text-xs font-black text-slate-900">{selectedTx.refOp}</p>
+                    </div>
+                  </div>
+               </div>
+
+               {/* Financial Details Card */}
+               <div className="p-8 bg-[#F8FAFC] rounded-[2rem] border border-slate-100 space-y-6">
+                  <div className="flex items-center justify-between">
+                     <span className="text-[13px] font-black text-slate-500">Montant Transaction</span>
+                     <span className="text-xl font-black text-slate-900">{selectedTx.montant} F</span>
+                  </div>
+                  <div className="border-t border-dashed border-slate-200" />
+                  <div className="flex items-center justify-between">
+                     <span className="text-[13px] font-black text-slate-500">Commission Entreprise</span>
+                     <span className="text-xl font-black text-emerald-600">+{selectedTx.comm} F</span>
+                  </div>
+               </div>
+
+               {/* Evidence Warning / Alert */}
+               <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-100/50 flex gap-4">
+                  <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[12px] font-bold text-amber-900/70 leading-relaxed">
+                    <span className="font-black text-amber-900">En attente de preuve :</span> L'agent n'a pas encore téléchargé de document pour confirmer cette opération.
+                  </p>
+               </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-8 bg-slate-50/30 border-t border-slate-50 flex justify-end">
+               <button 
+                 onClick={() => setTxModalOpen(false)}
+                 className="px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all shadow-sm"
+               >
+                 Fermer la vue
+               </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
 
-function CaissesView() {
-  const [activeSubTab, setActiveSubTab] = useState("Remontées");
+function CaissesView({ agences }: { agences: any[] }) {
+  const fluxHistory = []; // Empty as per screenshot
+
+  const kpis = [
+    { label: "SOLDE CASH (COFFRE)", value: "0 F", sub: "Cash physique disponible au siège.", icon: <Wallet size={18} />, color: "emerald" },
+    { label: "SOLDE BANQUES", value: "0 F", sub: "Total des fonds déposés en banque.", icon: <Landmark size={18} />, color: "blue" },
+    { label: "COMPTE PLATEFORME", value: "0 F", sub: "Solde du compte virtuel entreprise.", icon: <Globe size={18} />, color: "purple" }
+  ];
+
+  const secondaryKpis = [
+    { label: "VERSÉES EN BANQUE", value: "0 F", sub: "0 remontées confirmées.", icon: <CheckCircle size={18} />, color: "emerald" },
+    { label: "EN ATTENTE (TRANSIT)", value: "0 F", sub: "À valider dans la liste ci-dessous.", icon: <AlertTriangle size={18} />, color: "orange" }
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Caisses & Remontées</h2>
+    <div className="space-y-8 pb-10">
+      {/* Header */}
+      <div className="space-y-1">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Caisse & Flux Financiers</h2>
+        <p className="text-sm font-medium text-slate-400 font-bold italic">Gérez les fonds globaux de l'entreprise et les dotations agences.</p>
       </div>
 
-      <div className="flex gap-4 border-b border-slate-100 pb-px">
-        {["Remontées", "Dotations"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveSubTab(tab)}
-            className={`pb-4 px-2 text-xs font-black uppercase tracking-widest transition-all relative ${
-              activeSubTab === tab ? "text-blue-900" : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            {tab}
-            {activeSubTab === tab && (
-              <motion.div layoutId="activeSubTab" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-900 rounded-t-full" />
-            )}
-          </button>
+      {/* KPI Top Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {kpis.map((k, i) => (
+          <div key={i} className="bg-white rounded-[1.5rem] p-8 border border-slate-100 shadow-sm relative group overflow-hidden">
+            <div className={`absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700`}>
+              {k.icon}
+            </div>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-xl bg-${k.color}-50 flex items-center justify-center text-${k.color}-500`}>
+                  {k.icon}
+                </div>
+                <span className="px-2.5 py-1 bg-slate-50 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-100">ACTIF</span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{k.label}</p>
+                <h4 className="text-3xl font-black text-slate-900 tracking-tighter">{k.value}</h4>
+                <p className="text-[11px] font-medium text-slate-400 italic">{k.sub}</p>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
-      {activeSubTab === "Remontées" ? (
-        <div className="grid grid-cols-1 gap-6">
-          <DashboardCard title="Versements Bancaires en attente">
-            <div className="space-y-6">
-              {[1, 2].map((i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-slate-50 rounded-3xl gap-6 border border-slate-100">
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-white rounded-2xl border border-slate-200 flex items-center justify-center text-slate-300">
-                      <Plus size={30} strokeWidth={1} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-900 italic">Preuve_banque_{i}.jpg</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase">Agence {i === 1 ? "Cotonou" : "Calavi"}</p>
-                      <p className="text-xl font-black text-blue-900 mt-1">{i === 1 ? "250.000" : "450.000"} FCFA</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button className="px-6 py-3 bg-white text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest border border-red-50 border-b-2 shadow-sm hover:bg-red-50 transition-all">Rejeter</button>
-                    <button className="px-6 py-3 bg-blue-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all">Valider le versement</button>
-                  </div>
+      {/* KPI Middle Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        {secondaryKpis.map((k, i) => (
+          <div key={i} className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm flex items-center gap-6 group hover:shadow-md transition-all">
+             <div className={`w-12 h-12 rounded-2xl bg-${k.color}-50 flex items-center justify-center text-${k.color}-500 group-hover:scale-110 transition-transform`}>
+                {k.icon}
+             </div>
+             <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{k.label}</p>
                 </div>
-              ))}
+                <h4 className={`text-4xl font-black text-slate-900 tracking-tighter group-hover:text-${k.color}-600 transition-colors`}>{k.value}</h4>
+                <p className="text-[11px] font-medium text-slate-400 italic">{k.sub}</p>
+             </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Main Content Area */}
+        <div className="lg:col-span-9 space-y-8">
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[500px] flex flex-col">
+             <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+                <History size={18} className="text-[#234D96]" />
+                <h3 className="text-base font-black text-slate-900 tracking-tight">Historique des flux</h3>
+             </div>
+             
+             <div className="flex-1 overflow-x-auto relative">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-50 bg-slate-50/20">
+                      <th className="pl-10 pr-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                      <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type/Ref</th>
+                      <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Auteur/Agence</th>
+                      <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant</th>
+                      <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Statut</th>
+                      <th className="pl-4 pr-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50/60">
+                    {fluxHistory.map((flux: any, i: number) => (
+                      <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
+                        {/* Map flux history if available */}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {fluxHistory.length === 0 && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-20 text-center space-y-6">
+                     <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center animate-pulse">
+                        <AlertCircle size={40} strokeWidth={1} className="text-slate-200" />
+                     </div>
+                     <p className="text-[15px] font-black text-slate-400/80">Aucun mouvement enregistre.</p>
+                  </div>
+                )}
+             </div>
+          </div>
+        </div>
+
+        {/* Sidebar Forms */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Capital de depart Form */}
+          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+               <Plus size={16} className="text-[#234D96]" />
+               <h3 className="text-sm font-black text-slate-900">Capital de depart</h3>
             </div>
-          </DashboardCard>
+            <div className="space-y-3">
+               <div className="space-y-1.5">
+                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 leading-none">Fonds propres (Caisse)</label>
+                 <input type="text" placeholder="0,00" defaultValue="0,00" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-3 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
+               </div>
+               <button className="w-full py-3.5 bg-[#234D96] text-white rounded-xl font-black text-[10px] uppercase tracking-wider shadow-lg shadow-blue-900/10 hover:bg-blue-900 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                 <Banknote size={16} /> Mettre a jour la caisse
+               </button>
+            </div>
+          </div>
+
+          {/* Dotation Agence Form */}
+          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+               <Building size={16} className="text-emerald-500" />
+               <h3 className="text-sm font-black text-slate-900">Dotation agence</h3>
+            </div>
+            <div className="space-y-4">
+               <div className="space-y-1.5">
+                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Agence Cible</label>
+                 <div className="relative">
+                    <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm font-black outline-none appearance-none cursor-pointer">
+                      <option>Selectionner...</option>
+                      {agences?.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                 </div>
+               </div>
+               <div className="space-y-1.5">
+                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant</label>
+                 <input type="text" placeholder="0" defaultValue="0" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
+               </div>
+               <button className="w-full py-3.5 bg-[#4BCA9D] text-white rounded-xl font-black text-[10px] uppercase tracking-wider shadow-lg shadow-emerald-900/10 hover:bg-[#3fac85] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                 <ShieldCheck size={16} /> Financer l'agence
+               </button>
+            </div>
+          </div>
+
+          {/* Security Note */}
+          <div className="bg-[#1E293B] rounded-[1.5rem] p-6 text-white space-y-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="text-amber-500" size={20} />
+              <h4 className="text-sm font-black tracking-tight tracking-wide">Note Securite</h4>
+            </div>
+            <p className="text-[12px] font-medium text-slate-400 leading-relaxed">
+              Toute validation de remontee vers la <span className="text-white font-black">Banque</span> exige un recu scanne lisible. Les soldes sont synchronises en temps reel des votre validation.
+            </p>
+          </div>
         </div>
-      ) : (
-        <div className="max-w-2xl mx-auto pt-8">
-           <DashboardCard title="Nouvelle Dotation (Flotte)">
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Agence bénéficiaire</label>
-                      <div className="relative">
-                        <select className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-4 pr-10 text-xs font-bold appearance-none outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
-                          <option>Choisir l'agence...</option>
-                          <option>Cotonou Star</option>
-                          <option>Calavi Center</option>
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={16} />
-                      </div>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Type d'unité</label>
-                      <div className="relative">
-                        <select className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-4 pr-10 text-xs font-bold appearance-none outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all">
-                          <option>MTN Moov</option>
-                          <option>Orange Money</option>
-                          <option>Celtis</option>
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={16} />
-                      </div>
-                   </div>
-                </div>
-                <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Montant de la dotation (FCFA)</label>
-                   <input type="number" placeholder="Ex: 500.000" className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 text-sm font-black outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all" />
-                </div>
-                <button className="w-full py-5 bg-blue-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all">Confirmer l'envoi</button>
-              </div>
-           </DashboardCard>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -1249,11 +1577,11 @@ function StocksView() {
              <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-50">
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Produit</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Agence</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Quantité</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Prix</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Statut</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Produit</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Agence</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase text-center">Quantité</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase text-center">Prix</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Statut</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -1280,151 +1608,959 @@ function StocksView() {
 }
 
 function CloturesView() {
+  const stats = [
+    { label: "TOTAL CLOTURES", value: "11", color: "slate-900" },
+    { label: "EN ATTENTE", value: "6", color: "orange-500" },
+    { label: "DETTES CREEES", value: "2", color: "red-600" },
+    { label: "VOLUME DES ECARTS", value: "135 000 F", color: "#234D96", isSpecial: true },
+  ];
+
   const clotures = [
-    { date: "18/04/2026", agent: "Marius D.", agence: "Cotonou Star", theory: "154.200", physical: "154.200", gap: 0 },
-    { date: "17/04/2026", agent: "Jean K.", agence: "Calavi Center", theory: "98.500", physical: "93.500", gap: -5000 },
-    { date: "17/04/2026", agent: "Marius D.", agence: "Cotonou Star", theory: "142.000", physical: "144.500", gap: 2500 },
+    { agence: "Agence Calavi", agent: "Agent Calavi", date: "10/04/2026", ecart: -50000, justification: "Erreur de caisse inex...", statut: "VALIDEE", subStatut: "DETTE CREEÉ" },
+    { agence: "Agence Cotonou Centre", agent: "Agent Cotonou", date: "15/04/2026", ecart: -25000, justification: "Perte de 25.000 durin...", statut: "VALIDEE", subStatut: "DETTE CREEÉ" },
+    { agence: "Agence Porto-Novo", agent: "Agent Cotonou", date: "17/04/2026", ecart: 5000, justification: "Oubli d'enregistremen...", statut: "EN ATTENTE" },
+    { agence: "Agence Porto-Novo", agent: "Agent Calavi", date: "18/04/2026", ecart: -15000, justification: "Faux billet détecté lor...", statut: "VALIDEE" },
+    { agence: "Agence Porto-Novo", agent: "Agent Cotonou", date: "19/04/2026", ecart: 0, justification: "Aucune", statut: "EN ATTENTE" },
+    { agence: "Agence Calavi", agent: "Agent Cotonou", date: "17/04/2026", ecart: 5000, justification: "Oubli d'enregistremen...", statut: "EN ATTENTE" },
+    { agence: "Agence Calavi", agent: "Agent Calavi", date: "18/04/2026", ecart: -15000, justification: "Faux billet détecté lor...", statut: "VALIDEE" },
+    { agence: "Agence Calavi", agent: "Agent Cotonou", date: "19/04/2026", ecart: 0, justification: "Aucune", statut: "EN ATTENTE" },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Clôtures & Bilans</h2>
-          <p className="text-xs font-medium text-slate-400">Vérification de l'équilibre des caisses en fin de journée.</p>
+    <div className="space-y-6 pb-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Suivi des Clotures</h2>
+          <p className="text-sm font-medium text-slate-400 font-bold italic">Validez les clotures et gerez les ecarts de votre reseau.</p>
         </div>
+        <button className="px-4 py-2.5 bg-white border border-slate-100 rounded-xl flex items-center gap-2 text-xs font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
+          <FileText size={16} className="text-[#234D96]" />
+          <span>Rapports</span>
+        </button>
       </div>
 
-      <DashboardCard title="Journal des clôtures d'agents" className="p-0 overflow-hidden">
-         <table className="w-full text-left">
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {stats.map((s, i) => (
+          <div key={i} className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm space-y-3">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
+            <h4 className={`text-2xl font-black ${s.isSpecial ? "text-[#234D96]" : `text-${s.color}`}`}>{s.value}</h4>
+          </div>
+        ))}
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 relative group">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#234D96] transition-colors" size={18} />
+          <input 
+            type="text" 
+            placeholder="Rechercher une agence ou un agent..." 
+            className="w-full bg-white border border-slate-100 rounded-[1.5rem] py-4 pl-16 pr-6 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-[#234D96]/10 transition-all"
+          />
+        </div>
+        <button className="px-8 py-4 bg-white border border-slate-100 rounded-[1.5rem] flex items-center gap-4 text-sm font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
+          <Filter size={18} className="text-slate-400" />
+          <span>Toutes les clotures</span>
+          <ChevronDown size={14} className="text-slate-300 ml-4" />
+        </button>
+      </div>
+
+      {/* Table Section */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-50">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Date</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Agent & Agence</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Système</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Déclaré</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Écart</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center tracking-widest pl-12">Action</th>
+              <tr className="border-b border-slate-50 uppercase tracking-widest">
+                <th className="pl-10 pr-4 py-6 text-[10px] font-black text-slate-400">Agence & Agent</th>
+                <th className="px-4 py-6 text-[10px] font-black text-slate-400">Date</th>
+                <th className="px-4 py-6 text-[10px] font-black text-slate-400">Ecart</th>
+                <th className="px-4 py-6 text-[10px] font-black text-slate-400">Justification</th>
+                <th className="px-4 py-6 text-[10px] font-black text-slate-400">Statut</th>
+                <th className="pl-4 pr-10 py-6 text-[10px] font-black text-slate-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50/60">
               {clotures.map((c, i) => (
-                <tr key={i}>
-                   <td className="px-6 py-4 text-[11px] font-bold text-slate-500">{c.date}</td>
-                   <td className="px-6 py-4">
-                      <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{c.agent}</p>
-                      <p className="text-[10px] font-bold text-slate-400">{c.agence}</p>
-                   </td>
-                   <td className="px-6 py-4 text-[11px] font-black text-slate-700 text-center">{c.theory} FCFA</td>
-                   <td className="px-6 py-4 text-[11px] font-black text-slate-900 text-center">{c.physical} FCFA</td>
-                   <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                         <div className={`w-2 h-2 rounded-full ${c.gap === 0 ? "bg-emerald-500" : c.gap < 0 ? "bg-red-500" : "bg-blue-500"}`} />
-                         <span className={`text-[11px] font-black ${c.gap === 0 ? "text-emerald-600" : c.gap < 0 ? "text-red-500" : "text-blue-500"}`}>
-                            {c.gap === 0 ? "Équilibre" : `${c.gap > 0 ? '+' : ''}${c.gap} FCFA`}
-                         </span>
+                <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
+                  <td className="pl-10 pr-4 py-5">
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-slate-900">{c.agence}</p>
+                      <div className="flex items-center gap-1.5 text-slate-400">
+                         <User size={12} strokeWidth={2.5} />
+                         <span className="text-[11px] font-bold tracking-tight">{c.agent}</span>
                       </div>
-                   </td>
-                   <td className="px-6 py-4 text-center pl-12">
-                      {c.gap < 0 ? (
-                        <button className="px-4 py-2 bg-red-50 text-red-600 rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100">Transformer en dette</button>
-                      ) : (
-                        <button className="px-4 py-2 bg-slate-50 text-slate-400 rounded-lg font-black text-[9px] uppercase tracking-widest hover:text-slate-900 transition-all border border-slate-100">Valider</button>
-                      )}
-                   </td>
+                    </div>
+                  </td>
+                  <td className="px-4 py-5 font-black text-slate-900 text-[12px]">{c.date}</td>
+                  <td className={`px-4 py-5 font-black text-[13px] ${c.ecart < 0 ? "text-red-500" : c.ecart > 0 ? "text-emerald-500" : "text-slate-900"}`}>
+                    {c.ecart > 0 ? "+" : ""}{new Intl.NumberFormat().format(c.ecart)} F
+                  </td>
+                  <td className="px-4 py-5">
+                    <div className="flex items-center gap-2 text-slate-400 max-w-[200px]">
+                       {c.justification !== "Aucune" && <Info size={14} className="shrink-0 text-blue-400" />}
+                       <span className="text-[11px] font-bold truncate italic">{c.justification}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-5">
+                    <div className="flex flex-col gap-1 items-start">
+                       <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider ${
+                         c.statut === 'VALIDEE' ? "bg-emerald-50 text-emerald-600" : "bg-orange-50 text-orange-400"
+                       }`}>
+                         {c.statut}
+                       </span>
+                       {c.subStatut && (
+                         <span className="px-2 py-0.5 bg-red-50 text-red-500 text-[8px] font-black rounded-md border border-red-100">
+                           {c.subStatut}
+                         </span>
+                       )}
+                    </div>
+                  </td>
+                  <td className="pl-4 pr-10 py-5 text-right">
+                    <button className="px-5 py-2 bg-white border border-slate-100 rounded-xl text-[10px] font-black text-[#234D96] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                      Details
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
-         </table>
-      </DashboardCard>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
 
 function RapportsView() {
+  const [reportPeriod, setReportPeriod] = useState("Global");
+  const [serviceFilter, setServiceFilter] = useState("Tous les services");
+
+  const serviceData = [
+    { name: "Celtis", value: 534752, transactions: 2, profit: 2673.76, color: "#234D96" },
+    { name: "Moov Money", value: 703973, transactions: 5, profit: 3519.88, color: "#6ABCA6" },
+    { name: "MTN MoMo", value: 975266, transactions: 3, profit: 4876.34, color: "#8B5CF6" },
+    { name: "Orange Money", value: 1333485, transactions: 10, profit: 6667.45, color: "#F59E0B" },
+  ];
+
+  const volumeEvolution = [
+    { name: "01", vol: 0 },
+    { name: "02", vol: 0 },
+    { name: "03", vol: 450000 },
+    { name: "04", vol: 800000 },
+    { name: "05", vol: 0 },
+  ];
+
   return (
-    <div className="space-y-6">
-       <h2 className="text-2xl font-black text-slate-900 tracking-tight">Rapports & Archives</h2>
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {["Journalier", "Hebdomadaire", "Mensuel", "Comptabilité Gaz"].map((title) => (
-             <DashboardCard key={title} title={title}>
-                <div className="flex flex-col items-center justify-center py-6 space-y-4">
-                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-900">
-                      <BarChart2 size={30} />
+    <div className="space-y-8 pb-10">
+      {/* Header section with controls */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Statistiques & Analyses</h2>
+          <p className="text-sm font-medium text-slate-400 font-bold italic">Analysez vos performances et archivez vos rapports officiels.</p>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <Dropdown
+            onSelect={setReportPeriod}
+            trigger={
+              <button className="flex items-center gap-3 px-5 py-3 bg-white rounded-[1.2rem] border border-slate-100 text-xs font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
+                <Calendar size={16} className="text-slate-400" />
+                <span>{reportPeriod}</span>
+                <ChevronDown size={14} className="text-slate-300" />
+              </button>
+            }
+            options={[
+              { label: "Global", value: "Global" },
+              { label: "Ce mois", value: "Ce mois" },
+              { label: "Mois dernier", value: "Mois dernier" },
+            ]}
+          />
+
+          <Dropdown
+            onSelect={setServiceFilter}
+            trigger={
+              <button className="flex items-center gap-3 px-5 py-3 bg-white rounded-[1.2rem] border border-slate-100 text-xs font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
+                <Search size={16} className="text-slate-300" />
+                <span>{serviceFilter}</span>
+                <ChevronDown size={14} className="text-slate-300" />
+              </button>
+            }
+            options={[
+              { label: "Tous les services", value: "Tous les services" },
+              { label: "Réseaux", value: "Réseaux" },
+              { label: "Gaz", value: "Gaz" },
+            ]}
+          />
+
+          <button className="px-6 py-3 bg-[#234D96] text-white rounded-[1.2rem] font-bold text-xs uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20">
+            <FileText size={16} /> Exporter le Rapport
+          </button>
+        </div>
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <DashboardCard title="Évolution du Volume" icon={<TrendingUp size={14} className="text-blue-500" />}>
+           <div className="h-64 w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={volumeEvolution}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94A3B8' }} dy={10} />
+                  <YAxis hide />
+                  <Tooltip 
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Bar dataKey="vol" fill="#234D96" radius={[6, 6, 0, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+           </div>
+        </DashboardCard>
+
+        <DashboardCard title="Répartition par Service" icon={<Activity size={14} className="text-emerald-500" />}>
+           <div className="h-64 w-full mt-4 flex items-center gap-8">
+              <div className="flex-1 h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={serviceData}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {serviceData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-48 space-y-3">
+                 {serviceData.map((s, i) => (
+                   <div key={i} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-md" style={{ backgroundColor: s.color }} />
+                      <span className="text-[10px] font-black text-slate-900">{s.name}</span>
                    </div>
-                   <button className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
-                      <Download size={14} /> Télécharger
-                   </button>
-                </div>
-             </DashboardCard>
-          ))}
-       </div>
+                 ))}
+              </div>
+           </div>
+        </DashboardCard>
+      </div>
+
+      {/* Detail Performance table */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+         <div className="p-8 border-b border-slate-50">
+            <h3 className="text-base font-black text-slate-900 tracking-tight">Détail des Performances</h3>
+         </div>
+         <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+               <thead>
+                  <tr className="border-b border-slate-50 uppercase tracking-widest">
+                     <th className="pl-8 pr-4 py-6 text-[10px] font-black text-slate-400">Service / Réseau</th>
+                     <th className="px-4 py-6 text-[10px] font-black text-slate-400 text-center">Transactions</th>
+                     <th className="px-4 py-6 text-[10px] font-black text-slate-400 text-center">V. d'affaires</th>
+                     <th className="pl-4 pr-8 py-6 text-[10px] font-black text-slate-400 text-right">Profit Brut</th>
+                  </tr>
+               </thead>
+               <tbody className="divide-y divide-slate-50/60">
+                  {serviceData.map((s, i) => (
+                    <tr key={i} className="group hover:bg-slate-50/50 transition-colors font-black">
+                       <td className="pl-8 pr-4 py-5 text-sm text-slate-900">{s.name}</td>
+                       <td className="px-4 py-5 text-sm text-slate-400 text-center">{s.transactions} tx</td>
+                       <td className="px-4 py-5 text-sm text-[#234D96] text-center">{new Intl.NumberFormat().format(s.value)} F</td>
+                       <td className="pl-4 pr-8 py-5 text-sm text-emerald-600 text-right tracking-tight">{new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2 }).format(s.profit)} F</td>
+                    </tr>
+                  ))}
+               </tbody>
+            </table>
+         </div>
+      </div>
+
+      {/* Archived Reports Histroy */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+         <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+             <History size={18} className="text-[#234D96]" />
+            <h3 className="text-base font-black text-slate-900 tracking-tight">Historique des Rapports Archivés</h3>
+         </div>
+         <div className="p-20 text-center space-y-2 opacity-50">
+            <p className="text-sm font-black text-slate-900">Aucun rapport n'a encore été archivé.</p>
+            <p className="text-xs font-bold text-slate-400">Utilisez le bouton "Exporter" pour sauvegarder un rapport ici.</p>
+         </div>
+      </div>
     </div>
   );
 }
 
 function SettingsView({ user }: { user: any }) {
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [feedbackCategory, setFeedbackCategory] = useState("Interface");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const categories = ["Interface", "Performance", "Nouveaux Services", "Support Client"];
+
+  const handleSubmitFeedback = () => {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 3000);
+    }, 1500);
+  };
+
   return (
-    <div className="space-y-8 max-w-4xl">
-       <div className="flex items-center gap-6">
-          <div className="relative group">
-            <img src={`https://ui-avatars.com/api/?name=${user.nom}&background=F1F5F9&color=234D96&size=128&bold=true`} className="w-32 h-32 rounded-[2.5rem] border-4 border-white shadow-xl group-hover:opacity-80 transition-all" alt="" />
-            <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-               <div className="bg-blue-900/80 p-2 rounded-xl text-white backdrop-blur-md">
-                  <Plus size={20} />
-               </div>
+    <div className="space-y-8 pb-10">
+      {/* Header */}
+      <div className="space-y-1">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Configuration du compte</h2>
+        <p className="text-[13px] font-medium text-slate-400 font-bold italic">Gerez vos informations, votre securite et le suivi de votre abonnement.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Profil Personnel */}
+        <DashboardCard 
+          title="Profil personnel" 
+          icon={<div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-900"><Users size={16} /></div>}
+        >
+          <div className="space-y-6 py-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom complet</label>
+                <input type="text" defaultValue={user.nom} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Téléphone</label>
+                <input type="text" defaultValue="+22900000002" className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Adresse email</label>
+              <input type="email" defaultValue={user.email} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+            </div>
+            <button className="px-6 py-3 bg-[#234D96] text-white rounded-[1.2rem] font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shadow-lg shadow-blue-900/10">
+              <Download size={14} className="rotate-180" /> Enregistrer les modifications
             </button>
           </div>
-          <div>
-             <h2 className="text-3xl font-black text-slate-900 tracking-tight">{user.nom}</h2>
-             <p className="text-slate-400 font-bold">{user.entreprise.nom} • Marchand</p>
+        </DashboardCard>
+
+        {/* Informations Entreprise */}
+        <DashboardCard 
+          title="Informations entreprise"
+          icon={<div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900"><Building size={16} /></div>}
+        >
+          <div className="space-y-5 py-2">
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Raison sociale</label>
+              <input type="text" defaultValue={user.entreprise.nom} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro IFU</label>
+                <input type="text" defaultValue="IFU-2024-001" className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Statut</label>
+                <div className="w-full bg-[#F8FAFC] rounded-[1.2rem] px-5 py-3 text-sm font-bold flex items-center gap-2 text-emerald-600">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> ACTIF
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-emerald-50/50 rounded-[1.2rem] flex items-center gap-3 border border-emerald-100/50">
+               <ShieldCheck size={18} className="text-emerald-500" />
+               <p className="text-[11px] font-bold text-emerald-600">Votre entreprise est verifiée et active.</p>
+            </div>
           </div>
-       </div>
+        </DashboardCard>
 
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-          <DashboardCard title="Informations de l'entreprise">
-             <div className="space-y-4 py-2">
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-slate-400 uppercase">Raison sociale</p>
-                   <p className="text-sm font-bold text-slate-900">{user.entreprise.nom}</p>
-                </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-slate-400 uppercase">Téléphone pro</p>
-                   <p className="text-sm font-bold text-slate-900">{user.entreprise.telephone}</p>
-                </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-slate-400 uppercase">Email facturation</p>
-                   <p className="text-sm font-bold text-slate-900">{user.email}</p>
-                </div>
-                <button className="text-[10px] font-black text-blue-900 uppercase underline decoration-2 underline-offset-2">Modifier les informations</button>
-             </div>
-          </DashboardCard>
+        {/* Boite de notifications */}
+        <DashboardCard 
+          title="Boite de notifications"
+          headerAction={<button className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-lg text-[9px] font-black text-slate-900 uppercase tracking-tighter transition-all">Tout marquer lu</button>}
+          icon={<div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500"><Bell size={16} /></div>}
+        >
+          <div className="min-h-[160px] flex flex-col justify-center relative">
+            <p className="absolute top-0 left-0 text-[10px] font-black text-slate-300">0 non lues</p>
+            <div className="text-center space-y-2 opacity-50">
+               <p className="text-xs font-black text-slate-400">Aucune notification pour le moment.</p>
+            </div>
+            <div className="absolute inset-x-0 bottom-0 top-10 border-2 border-dashed border-slate-50 rounded-[2rem]" />
+          </div>
+        </DashboardCard>
 
-          <DashboardCard title="Paramètres du compte">
-             <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all">
-                   <div className="flex items-center gap-3">
-                      <Settings size={18} className="text-slate-400" />
-                      <span className="text-xs font-bold text-slate-800">Sécurité & Mot de passe</span>
+        {/* Securite du compte */}
+        <DashboardCard 
+          title="Securite du compte"
+          icon={<div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500"><Shield size={16} /></div>}
+        >
+          <div className="space-y-5 py-2">
+            <div className="space-y-1 relative">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mot de passe actuel</label>
+              <div className="relative">
+                <input type="password" defaultValue="********" className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+                <Eye size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 cursor-pointer" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nouveau mot de passe</label>
+                <input type="password" placeholder="••••••••" className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirmation</label>
+                <input type="password" placeholder="••••••••" className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.2rem] px-5 py-3 text-sm font-bold outline-none" />
+              </div>
+            </div>
+            <button className="w-full py-4 bg-white border-2 border-[#234D96]/20 text-[#234D96] rounded-[1.2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+              <Key size={14} /> Actualiser ma securite
+            </button>
+          </div>
+        </DashboardCard>
+
+        {/* Abonnement et plan */}
+        <DashboardCard 
+          title="Abonnement et plan"
+          icon={<div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600"><CreditCard size={16} /></div>}
+        >
+          <div className="space-y-6 pt-2">
+             <div className="bg-[#2D3A4B] rounded-[2rem] p-8 text-white relative overflow-hidden group shadow-xl">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                   <Activity size={80} strokeWidth={1} />
+                </div>
+                <div className="relative space-y-6">
+                   <div className="space-y-1">
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Plan de service</p>
+                      <div className="flex items-center gap-3">
+                         <h4 className="text-4xl font-black tracking-tighter">PRO</h4>
+                         <span className="px-2 py-0.5 bg-slate-500/20 rounded-md text-[9px] font-black uppercase">Annuel</span>
+                      </div>
                    </div>
-                   <ChevronDown size={14} className="-rotate-90 text-slate-300" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all">
-                   <div className="flex items-center gap-3">
-                      <Bell size={18} className="text-slate-400" />
-                      <span className="text-xs font-bold text-slate-800">Alertes SMS & Notifications</span>
+                   <div className="grid grid-cols-2 gap-y-4 pt-2">
+                      <div className="space-y-0.5">
+                         <p className="text-[9px] font-black text-slate-400 uppercase">Statut du compte</p>
+                         <p className="text-[11px] font-black text-emerald-400 uppercase">ACTIF</p>
+                      </div>
+                      <div className="space-y-0.5 text-right">
+                         <p className="text-[9px] font-black text-slate-400 uppercase">Limite agences</p>
+                         <p className="text-[11px] font-black uppercase">5 agences</p>
+                      </div>
+                      <div className="space-y-0.5">
+                         <p className="text-[9px] font-black text-slate-400 uppercase">Tarif</p>
+                         <p className="text-[11px] font-black uppercase tracking-tight">29 900 F CFA</p>
+                      </div>
                    </div>
-                   <ChevronDown size={14} className="-rotate-90 text-slate-300" />
-                </button>
-                <button className="w-full flex items-center justify-between p-4 bg-red-50 text-red-600 rounded-2xl hover:bg-red-100 transition-all mt-4">
-                   <div className="flex items-center gap-3 font-bold">
-                      <LogOut size={18} />
-                      <span className="text-xs">Fermer la session</span>
-                   </div>
-                </button>
+                </div>
              </div>
-          </DashboardCard>
-       </div>
+             <button className="w-full py-4 text-[10px] font-black text-slate-900 uppercase tracking-wider hover:bg-slate-50 rounded-[1.2rem] border border-slate-100 transition-all">Historique des factures</button>
+          </div>
+        </DashboardCard>
+
+        {/* Preferences */}
+        <DashboardCard 
+          title="Preferences"
+          icon={<div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-950"><BellRing size={16} /></div>}
+        >
+          <div className="space-y-8 pt-4">
+             <div className="flex items-center justify-between">
+                <div>
+                   <p className="text-[12px] font-black text-slate-900">Alertes de cloture</p>
+                   <p className="text-[10px] font-bold text-slate-400 italic">Notifications quand une cloture demande votre validation.</p>
+                </div>
+                <div className="w-12 h-6 bg-emerald-500 rounded-full relative p-1 cursor-pointer">
+                   <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                </div>
+             </div>
+             <div className="flex items-center justify-between">
+                <div>
+                   <p className="text-[12px] font-black text-slate-900">Rapports hebdomadaires</p>
+                   <p className="text-[10px] font-bold text-slate-400 italic">Recapitulatif regulier de votre activite.</p>
+                </div>
+                <div className="w-12 h-6 bg-emerald-500 rounded-full relative p-1 cursor-pointer">
+                   <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                </div>
+             </div>
+             <div className="flex items-center justify-between">
+                <div>
+                   <p className="text-[12px] font-black text-slate-900">Notifications push</p>
+                   <p className="text-[10px] font-bold text-slate-400 italic">Active la memorisation de cet appareil pour les alertes serveur navigateur.</p>
+                </div>
+                <div className="w-12 h-6 bg-slate-200 rounded-full relative p-1 cursor-pointer">
+                   <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                </div>
+             </div>
+          </div>
+        </DashboardCard>
+
+        {/* Avis & Feedback */}
+        <DashboardCard 
+          title="Avis & Feedback"
+          icon={<div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-950"><MessageCircle size={16} /></div>}
+          className="lg:col-span-2"
+        >
+          <div className="space-y-8 pt-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2 border-b border-slate-50">
+               <div className="space-y-1">
+                  <p className="text-[14px] font-black text-slate-900 tracking-tight">Votre expérience compte</p>
+                  <p className="text-[12px] font-medium text-slate-400">Aidez-nous à faire de FinTrack l'outil idéal pour votre business.</p>
+               </div>
+               
+               <div className="flex flex-col items-center sm:items-end gap-1">
+                  <div className="flex items-center gap-1.5 bg-slate-50/80 p-2 rounded-2xl">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <motion.div
+                        key={star}
+                        whileHover={{ scale: 1.2, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setRating(star)}
+                        className="cursor-pointer"
+                      >
+                        <Star 
+                          size={28} 
+                          className={`transition-all duration-300 ${
+                            (hoverRating || rating) >= star 
+                              ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" 
+                              : "text-slate-200"
+                          }`} 
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mr-2">
+                    {rating === 5 ? "Excellent !" : rating === 4 ? "Très bon" : rating === 3 ? "Satisfaisant" : "À améliorer"}
+                  </p>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Qu'est-ce qui vous intéresse le plus ?</p>
+               <div className="flex flex-wrap gap-2">
+                  {categories.map(cat => (
+                     <button
+                        key={cat}
+                        onClick={() => setFeedbackCategory(cat)}
+                        className={`px-5 py-2.5 rounded-full text-[11px] font-black transition-all border-2 ${
+                           feedbackCategory === cat 
+                           ? "bg-[#234D96] border-[#234D96] text-white shadow-lg shadow-blue-900/20" 
+                           : "bg-white border-slate-100 text-slate-600 hover:border-[#234D96]/30 hover:bg-slate-50"
+                        }`}
+                     >
+                        {cat}
+                     </button>
+                  ))}
+               </div>
+            </div>
+
+            <div className="relative group">
+              <textarea 
+                placeholder="Un détail précis ? Une suggestion ? Nous vous lisons avec attention..." 
+                className="w-full bg-[#F8FAFC] border-2 border-slate-50 focus:border-[#234D96] focus:bg-white rounded-[2rem] px-8 py-6 text-sm font-bold outline-none min-h-[160px] shadow-inner transition-all duration-300"
+              />
+              <div className="absolute bottom-6 right-8 text-slate-200 group-focus-within:text-[#234D96]/20 transition-colors">
+                <Edit2 size={24} />
+              </div>
+            </div>
+
+            <button 
+              onClick={handleSubmitFeedback}
+              disabled={isSubmitting || isSuccess}
+              className={`w-full py-5 rounded-[1.5rem] font-black text-[13px] uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 relative overflow-hidden ${
+                isSuccess 
+                  ? "bg-emerald-500 text-white" 
+                  : "bg-[#234D96] text-white hover:bg-blue-900 shadow-xl shadow-blue-900/20"
+              }`}
+            >
+              {isSubmitting ? (
+                <RotateCcw className="animate-spin" size={20} />
+              ) : isSuccess ? (
+                <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="flex items-center gap-3">
+                  <CheckCircle size={20} /> Merci pour votre avis !
+                </motion.div>
+              ) : (
+                <>
+                  <MessageCircle size={20} /> Envoyer le feedback
+                </>
+              )}
+              
+              {isSubmitting && <div className="absolute inset-0 bg-white/10 animate-pulse" />}
+            </button>
+          </div>
+        </DashboardCard>
+      </div>
+
+      <div className="pt-10 flex items-center justify-center gap-2 text-slate-300">
+         <HelpCircle size={16} />
+         <p className="text-xs font-bold">Besoin d'aide ? <span className="text-blue-900 underline decoration-2 cursor-pointer">Guide complet</span></p>
+      </div>
+    </div>
+  );
+}
+
+function ServicesView() {
+  const [selectedNetwork, setSelectedNetwork] = useState<any>(null);
+  const [baremeModalOpen, setBaremeModalOpen] = useState(false);
+  const [activationModalOpen, setActivationModalOpen] = useState(false);
+  const [selectedServiceToActivate, setSelectedServiceToActivate] = useState("");
+
+  const categories = [
+    "ABONNEMENT",
+    "CREDIT",
+    "DEPOT",
+    "FORFAIT INTERNET",
+    "FORFAIT VOIX",
+    "PAIEMENT FACTURE",
+    "RETRAIT"
+  ];
+
+  const availableCatalogue = [
+    { name: "BOA", type: "BANQUE" },
+    { name: "Ecobank", type: "BANQUE" },
+    { name: "NSIA Banque", type: "BANQUE" },
+    { name: "UBA", type: "BANQUE" },
+    { name: "CANAL+", type: "FACTURIER" },
+    { name: "SBEE", type: "FACTURIER" },
+    { name: "SONEB", type: "FACTURIER" },
+    { name: "StarTimes", type: "FACTURIER" },
+    { name: "Celtis", type: "MOBILE_MONEY" },
+    { name: "Celtis Cash", type: "MOBILE_MONEY" },
+    { name: "Moov Money", type: "MOBILE_MONEY" },
+    { name: "MTN Mobile Money", type: "MOBILE_MONEY" },
+    { name: "MTN MoMo", type: "MOBILE_MONEY" },
+    { name: "Orange Money", type: "MOBILE_MONEY" },
+    { name: "Wave", type: "MOBILE_MONEY" },
+  ];
+
+  type Palier = { min: string; max: string; fixe: string; taux: string };
+  const [paliers, setPaliers] = useState<{ [category: string]: Palier[] }>({
+    "ABONNEMENT": [{ min: "0", max: "Infini", fixe: "0", taux: "0" }],
+    "CREDIT": [{ min: "0", max: "Infini", fixe: "0", taux: "0" }],
+    "DEPOT": [],
+    "FORFAIT INTERNET": [],
+    "FORFAIT VOIX": [],
+    "PAIEMENT FACTURE": [],
+    "RETRAIT": []
+  });
+
+  const handleAddPalier = (cat: string) => {
+    setPaliers(prev => ({
+      ...prev,
+      [cat]: [...prev[cat], { min: "0", max: "Infini", fixe: "0", taux: "0" }]
+    }));
+  };
+
+  const handleRemovePalier = (cat: string, index: number) => {
+    setPaliers(prev => ({
+      ...prev,
+      [cat]: prev[cat].filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleUpdatePalier = (cat: string, index: number, field: keyof Palier, value: string) => {
+    setPaliers(prev => {
+      const newCatPaliers = [...prev[cat]];
+      newCatPaliers[index] = { ...newCatPaliers[index], [field]: value };
+      return { ...prev, [cat]: newCatPaliers };
+    });
+  };
+
+  const [networks, setNetworks] = useState([
+    { id: "1", name: "Orange Money", type: "TÉLÉCOM / MM", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/1024px-Orange_logo.svg.png", active: true },
+    { id: "2", name: "MTN MoMo", type: "TÉLÉCOM / MM", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/MTN_Logo.svg/1024px-MTN_Logo.svg.png", active: true },
+    { id: "3", name: "Moov Money", type: "TÉLÉCOM / MM", logo: "https://logos-marques.com/wp-content/uploads/2021/03/Moov-Africa-Logo.png", active: true },
+    { id: "4", name: "Celtis", type: "TÉLÉCOM / MM", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfIuD_BqV_0y2yC7k5L1_q_J5yJ9E_X1f1ZQ&s", active: false }
+  ]);
+
+  const toggleNetwork = (id: string) => {
+    setNetworks(prev => prev.map(n => n.id === id ? { ...n, active: !n.active } : n));
+  };
+
+  const assignedAgencies = ["Agence Calavi", "Agence Cotonou Centre", "Agence Porto-Novo"];
+
+  return (
+    <div className="space-y-8 pb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Services & Commissions</h2>
+          <p className="text-[13px] font-medium text-slate-400 font-bold italic">Configurez vos réseaux et les paliers de commissions (Vraie Vie).</p>
+        </div>
+        <button 
+          onClick={() => setActivationModalOpen(true)}
+          className="px-6 py-4 bg-[#234D96] text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl shadow-blue-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          <Plus size={18} /> Activer un Nouveau Service
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {networks.map((network) => (
+          <motion.div 
+            key={network.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 group hover:shadow-xl transition-all duration-500 overflow-hidden relative"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+               <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-[1.2rem] bg-white border border-slate-100 flex items-center justify-center p-3 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                     <img src={network.logo} alt={network.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  </div>
+                  <div className="space-y-1">
+                     <div className="flex items-center gap-3">
+                        <h3 className="text-xl font-black text-slate-900">{network.name}</h3>
+                        <span className="px-3 py-1 bg-blue-50 text-[#234D96] text-[9px] font-black rounded-lg uppercase tracking-widest">
+                           {network.type}
+                        </span>
+                     </div>
+                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">ID: #{network.id}</p>
+                  </div>
+               </div>
+
+               <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => { setSelectedNetwork(network); setBaremeModalOpen(true); }}
+                    className="px-6 py-3 bg-[#EEF2FF] text-[#234D96] rounded-[1rem] font-black text-[10px] uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all flex items-center gap-2 border border-blue-100/50"
+                  >
+                    <Banknote size={14} /> Commissions
+                  </button>
+                  <button 
+                    onClick={() => toggleNetwork(network.id)}
+                    className={`px-6 py-3 rounded-[1rem] font-black text-[10px] uppercase tracking-widest transition-all border ${
+                      network.active 
+                        ? "bg-red-50 text-red-500 border-red-100/30 hover:bg-red-500 hover:text-white" 
+                        : "bg-emerald-50 text-emerald-600 border-emerald-100/30 hover:bg-emerald-600 hover:text-white"
+                    }`}
+                  >
+                    {network.active ? "Désactiver" : "Activer"}
+                  </button>
+               </div>
+            </div>
+
+            {/* Auto-deployment Notice - Minimalist Design */}
+            <div className="p-4 bg-[#F8FAFC] border border-slate-100 rounded-2xl flex items-center gap-3">
+               <Check size={14} strokeWidth={3} className="text-emerald-500 shrink-0" />
+               <p className="text-[12px] font-medium text-slate-500">
+                  Ce service est déployé automatiquement sur <span className="font-black text-slate-700">toutes vos agences</span>.
+               </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Bareme Modal */}
+      <Modal
+        isOpen={baremeModalOpen}
+        onClose={() => setBaremeModalOpen(false)}
+        title={`Barèmes: ${selectedNetwork?.name || ""}`}
+        subtitle="Définissez vos tranches de commissions pour ce réseau."
+        className="max-w-2xl"
+      >
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-2 mb-8">
+          {categories.map((cat) => (
+            <div key={cat} className="p-6 bg-white border border-slate-100 rounded-3xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Activity className="text-[#234D96]" size={18} />
+                  <h4 className="text-sm font-black text-slate-900">{cat}</h4>
+                </div>
+                <button 
+                  onClick={() => handleAddPalier(cat)}
+                  className="px-3 py-1.5 bg-blue-50 text-blue-900 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all"
+                >
+                  + Ajouter un palier
+                </button>
+              </div>
+
+              {paliers[cat].length > 0 ? (
+                <div className="space-y-4">
+                  {paliers[cat].map((palier, idx) => (
+                    <div key={idx} className="grid grid-cols-5 gap-3 items-end">
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase">Min (F)</label>
+                        <input 
+                          type="text" 
+                          value={palier.min} 
+                          onChange={(e) => handleUpdatePalier(cat, idx, "min", e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase">Max (F)</label>
+                        <input 
+                          type="text" 
+                          value={palier.max} 
+                          onChange={(e) => handleUpdatePalier(cat, idx, "max", e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase">Fixe (F)</label>
+                        <input 
+                          type="text" 
+                          value={palier.fixe} 
+                          onChange={(e) => handleUpdatePalier(cat, idx, "fixe", e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase">Taux (%)</label>
+                        <input 
+                          type="text" 
+                          value={palier.taux} 
+                          onChange={(e) => handleUpdatePalier(cat, idx, "taux", e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
+                        />
+                      </div>
+                      <button 
+                        onClick={() => handleRemovePalier(cat, idx)}
+                        className="h-10 w-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all group"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-4 text-[10px] font-bold text-slate-400 italic">Aucun barème défini.</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <button 
+          onClick={() => setBaremeModalOpen(false)}
+          className="w-full py-5 bg-[#234D96] text-white rounded-[1.8rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.98]"
+        >
+          Enregistrer les Barèmes
+        </button>
+      </Modal>
+
+      {/* Service Activation Modal */}
+      <Modal
+        isOpen={activationModalOpen}
+        onClose={() => setActivationModalOpen(false)}
+        title="Activation de Service (Catalogue Admin)"
+        subtitle="Service disponible dans le Catalogue"
+      >
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <select 
+              value={selectedServiceToActivate}
+              onChange={(e) => setSelectedServiceToActivate(e.target.value)}
+              className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-[1.5rem] px-6 py-4 text-sm font-bold text-slate-900 transition-all outline-none appearance-none cursor-pointer"
+            >
+              <option value="">Sélectionnez un service à activer...</option>
+              {availableCatalogue.map((service, idx) => (
+                <option key={idx} value={service.name}>
+                  {service.name} — [{service.type}]
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="p-6 bg-amber-50/50 border border-amber-100 rounded-[1.8rem] text-amber-900">
+             <p className="text-xs leading-relaxed">
+               <span className="font-black text-amber-700">Note :</span> Une fois activé, ce service sera disponible automatiquement pour <span className="font-black">tous vos agents</span> dans <span className="font-black">toutes vos agences</span> actuelles et futures.
+             </p>
+          </div>
+
+          <button 
+            onClick={() => setActivationModalOpen(false)}
+            className="w-full py-5 bg-[#234D96] text-white rounded-[1.2rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.95]"
+          >
+            Enregistrer le réseau
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+function DettesView() {
+  const dettes = [
+    { 
+      agent: "Agent Calavi", 
+      agence: "Agence Calavi", 
+      phone: "+229000000004", 
+      reste: "15 000", 
+      initiale: "50 000", 
+      date: "10/04/2026", 
+      motif: "Justification rejetée" 
+    },
+    { 
+      agent: "Agent Cotonou", 
+      agence: "Agence Cotonou Centre", 
+      phone: "+229000000003", 
+      reste: "25 000", 
+      initiale: "25 000", 
+      date: "15/04/2026", 
+      motif: "Justification rejetée" 
+    },
+  ];
+
+  return (
+    <div className="space-y-8 pb-10">
+      <div className="space-y-1">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Suivi des Dettes Agents</h2>
+        <p className="text-[13px] font-medium text-slate-400 font-bold italic">Consultez et régularisez les écarts de caisse rejetés.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {dettes.map((d, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden group hover:shadow-xl transition-all duration-500"
+          >
+            <div className="p-8 space-y-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500">
+                    <User size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900 tracking-tight">{d.agent}</h3>
+                    <p className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 mt-0.5">
+                       <Building size={12} /> {d.agence}
+                    </p>
+                    <p className="text-[11px] font-black text-[#234D96] mt-0.5">{d.phone}</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-red-50 text-red-500 text-[9px] font-black rounded-lg uppercase tracking-widest border border-red-100/50">EN ATTENTE</span>
+              </div>
+
+              <div className="p-6 bg-white border border-red-100 rounded-[2rem] space-y-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                <p className="text-[9px] font-black text-red-400 uppercase tracking-[0.2em]">Reste à payer</p>
+                <h4 className="text-4xl font-black text-red-500 tracking-tighter">{d.reste} F</h4>
+                <p className="text-[10px] font-bold text-slate-400">Dette initiale : {d.initiale} F</p>
+              </div>
+
+              <div className="space-y-3 px-1">
+                <div className="flex items-center gap-3 text-slate-400">
+                  <Calendar size={14} className="text-slate-300" />
+                  <p className="text-[11px] font-bold">Date du bilan : <span className="text-slate-600">{d.date}</span></p>
+                </div>
+                <div className="flex items-center gap-3 text-slate-400">
+                  <Info size={14} className="text-slate-300" />
+                  <p className="text-[11px] font-bold">Motif : <span className="text-slate-600">{d.motif}</span></p>
+                </div>
+              </div>
+
+              <button className="w-full flex items-center justify-center gap-3 py-4 bg-[#F8FAFC] border border-slate-100 rounded-[1.5rem] text-slate-400 hover:text-[#234D96] hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest">
+                <RotateCcw size={14} className="animate-spin-slow" />
+                <span>En attente d'ajustement agent</span>
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1451,10 +2587,12 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
         />
       );
       case "Agences": return <AgencesView />;
+      case "Services": return <ServicesView />;
       case "Transactions": return <TransactionsView />;
-      case "Caisses": return <CaissesView />;
+      case "Caisses": return <CaissesView agences={data.liveSupervision.agencies} />;
       case "Stocks": return <StocksView />;
       case "Clôtures": return <CloturesView />;
+      case "Dettes": return <DettesView />;
       case "Rapports": return <RapportsView />;
       case "Paramètres": return <SettingsView user={data.user} />;
       default: return (
@@ -1475,18 +2613,20 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
       {/* Sidebar - Fintrack2 Style */}
-      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-32 items-center">
-          <Logo className="h-24 w-auto drop-shadow-sm" />
+      <aside className="w-56 bg-white border-r border-slate-100 flex flex-col shrink-0">
+        <div className="p-5 flex justify-center border-b border-slate-50 mb-4 h-28 items-center">
+          <Logo className="h-18 w-auto drop-shadow-sm" />
         </div>
         
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-8">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto no-scrollbar pb-8">
           <SidebarItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => setActiveTab("Dashboard")} />
           <SidebarItem icon={<Users size={20} />} label="Agences & Agents" active={activeTab === "Agences"} onClick={() => setActiveTab("Agences")} />
-          <SidebarItem icon={<ShoppingCart size={20} />} label="Transactions" active={activeTab === "Transactions"} onClick={() => setActiveTab("Transactions")} />
-          <SidebarItem icon={<MessageSquare size={20} />} label="Caisses & Remontées" active={activeTab === "Caisses"} onClick={() => setActiveTab("Caisses")} badge={data.liveSupervision.summary.pending_remontees} />
+          <SidebarItem icon={<LayoutGrid size={20} />} label="Services & Commissions" active={activeTab === "Services"} onClick={() => setActiveTab("Services")} />
+          <SidebarItem icon={<Activity size={20} />} label="Transactions" active={activeTab === "Transactions"} onClick={() => setActiveTab("Transactions")} />
+          <SidebarItem icon={<MessageSquare size={20} />} label="Caisses & Remontées" active={activeTab === "Caisses"} onClick={() => setActiveTab("Caisses")} />
           <SidebarItem icon={<Package size={20} />} label="Produits & Stocks" active={activeTab === "Stocks"} onClick={() => setActiveTab("Stocks")} />
-          <SidebarItem icon={<Calendar size={20} />} label="Clôtures & Bilans" active={activeTab === "Clôtures"} onClick={() => setActiveTab("Clôtures")} badge={data.liveSupervision.summary.pending_closures} />
+          <SidebarItem icon={<Calendar size={20} />} label="Clôtures & Bilans" active={activeTab === "Clôtures"} onClick={() => setActiveTab("Clôtures")} />
+          <SidebarItem icon={<ShieldAlert size={20} />} label="Dettes agents" active={activeTab === "Dettes"} onClick={() => setActiveTab("Dettes")} />
           <SidebarItem icon={<BarChart2 size={20} />} label="Rapports" active={activeTab === "Rapports"} onClick={() => setActiveTab("Rapports")} />
           <SidebarItem icon={<Settings size={20} />} label="Paramètres" active={activeTab === "Paramètres"} onClick={() => setActiveTab("Paramètres")} />
         </nav>
@@ -1524,7 +2664,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header - Functional Search & User Controls */}
-        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-8 shrink-0 relative z-40">
+        <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-6 shrink-0 relative z-40">
           <div className="relative w-full max-w-xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-900 transition-colors" size={16} />
             <input 
