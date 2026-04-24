@@ -160,7 +160,7 @@ export default function MerchantOnboarding() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-transparent selection:bg-fintrack-primary selection:text-white font-sans antialiased text-slate-900">
+      <div className="min-h-full bg-transparent selection:bg-fintrack-primary selection:text-white font-sans antialiased text-slate-900">
         {/* Navigation - Enhanced with navigation context */}
         <header className="fixed top-0 left-0 w-full z-50 px-4 py-2">
           <div className="max-w-7xl mx-auto">
@@ -250,7 +250,7 @@ export default function MerchantOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfdfe] flex flex-col font-sans antialiased text-slate-900 selection:bg-fintrack-primary selection:text-white">
+    <div className="min-h-full bg-[#fcfdfe] flex flex-col font-sans antialiased text-slate-900 selection:bg-fintrack-primary selection:text-white">
       {/* Navigation - Exact same logic as Homepage navbar */}
       <header className="fixed top-0 left-0 w-full z-50 px-4 py-2">
         <div className="max-w-7xl mx-auto">

@@ -20,8 +20,10 @@ import {
 } from "motion/react";
 import Logo from "./components/Logo";
 import AuthPage from "./pages/AuthPage";
+import AgentAuthPage from "./pages/AgentAuthPage";
 import MerchantOnboarding from "./pages/MerchantOnboarding";
 import MerchantDashboard from "./pages/MerchantDashboard";
+import AgentDashboard from "./pages/AgentDashboard";
 import { 
   ChevronDown, 
   Search, 
@@ -67,8 +69,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/agent/auth" element={<AgentAuthPage />} />
         <Route path="/onboarding" element={<MerchantOnboarding />} />
         <Route path="/dashboard" element={<MerchantDashboard />} />
+        <Route path="/agent/dashboard" element={<AgentDashboard />} />
       </Routes>
     </Router>
   );
@@ -146,7 +150,7 @@ function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-transparent selection:bg-fintrack-primary selection:text-white">
+    <div className="min-h-full bg-transparent selection:bg-fintrack-primary selection:text-white">
       {/* Navigation */}
       <header className="fixed top-0 left-0 w-full z-50 transition-all duration-500 px-4 py-1 sm:px-6 sm:py-2 animate-in fade-in slide-in-from-top duration-1000">
         <div className="max-w-7xl mx-auto">

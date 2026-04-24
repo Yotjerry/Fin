@@ -48,7 +48,14 @@
 
 @layer base {
   html {
-    font-size: 90%;
+    height: 100%;
+    font-size: 15px;
+    zoom: 0.82;
+    background-color: #F8FAFC;
+  }
+
+  body, #root {
+    height: 100%;
   }
 
   html, body {

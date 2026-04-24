@@ -23,6 +23,8 @@ import {
   Plus,
   LogOut,
   Download,
+  Database,
+  Lock as LockIcon,
   X,
   Eye,
   EyeOff,
@@ -57,7 +59,9 @@ import {
   LayoutGrid,
   Trash2,
   Smartphone,
-  ExternalLink
+  ExternalLink,
+  PenTool,
+  Stamp
 } from "lucide-react";
 import { 
   LineChart, 
@@ -75,6 +79,7 @@ import {
   BarChart,
   Bar
 } from "recharts";
+import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
 // --- Data Model Interfaces ---
@@ -321,7 +326,7 @@ function SidebarItem({ icon, label, active = false, onClick, badge }: { icon: Re
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-2 rounded-2xl transition-all duration-300 group ${
+      className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group ${
         active 
           ? "bg-[#234D96] text-white shadow-lg shadow-blue-900/20" 
           : "text-slate-400 hover:bg-slate-50 hover:text-slate-900"
@@ -349,7 +354,7 @@ function DashboardCard({ children, title, stat, subText, annotation, annotationT
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden ${className}`}
+      className={`bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 relative group overflow-hidden ${className}`}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-black text-slate-900 tracking-tight uppercase opacity-50">{title}</h3>
@@ -413,7 +418,7 @@ function DashboardView({
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-8 pb-12">
       {/* Welcome Area */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -423,7 +428,7 @@ function DashboardView({
       </div>
 
       {/* Row 1: Top KPIs */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-6">
         <DashboardCard 
           className="col-span-12 lg:col-span-4" 
           title="Volume de Transactions" 
@@ -694,7 +699,7 @@ function Modal({
 }: { 
   isOpen: boolean; 
   onClose: () => void; 
-  title?: string; 
+  title?: React.ReactNode; 
   subtitle?: string; 
   children: React.ReactNode;
   className?: string;
@@ -715,9 +720,9 @@ function Modal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className={`relative w-full ${className} bg-white rounded-[2rem] shadow-2xl overflow-hidden`}
+            className={`relative w-full ${className} bg-white rounded-[3rem] shadow-2xl overflow-hidden`}
           >
-            <div className={`p-6 pt-8 ${hideHeader ? 'p-0 pt-0' : ''}`}>
+            <div className={`p-10 pt-12 ${hideHeader ? 'p-0 pt-0' : ''}`}>
               {!hideHeader && (
                 <button 
                   onClick={onClose}
@@ -776,6 +781,7 @@ function Input({ label, placeholder, value, onChange, type = "text", icon }: { l
 // --- Sub-pages Views ---
 
 function AgencesView() {
+  const navigate = useNavigate();
   const [viewTab, setViewTab] = useState<"Agences" | "Agents">("Agences");
   const [modalMode, setModalMode] = useState<"none" | "new_agence" | "edit_agence" | "new_agent">("none");
   const [searchQuery, setSearchQuery] = useState("");
@@ -791,6 +797,28 @@ function AgencesView() {
   const [agentAgence, setAgentAgence] = useState("");
   const [agentPass, setAgentPass] = useState("");
   
+  const handleCreateAgent = () => {
+    if (!agentName || !agentPhone || !agentAgence || !agentPass) {
+       alert("Veuillez remplir tous les champs.");
+       return;
+    }
+
+    const agentLoginUrl = `${window.location.origin}/agent/auth`;
+    const message = `Bonjour ${agentName},\n\nVotre compte agent sur la plateforme FinTrack a été créé avec succès.\n\nVoici vos accès :\n- Téléphone : ${agentPhone}\n- Mot de passe initial : ${agentPass}\n- Agence : ${agentAgence}\n\nVous pouvez vous connecter via ce lien : ${agentLoginUrl}\n\nMerci de changer votre mot de passe dès votre première connexion.`;
+    
+    // Clean phone number for WhatsApp link
+    const cleanedPhone = agentPhone.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+    
+    // Close modal and reset
+    setModalMode("none");
+    setAgentName("");
+    setAgentPhone("");
+    setAgentPass("");
+  };
+
   const agences = [
     { id: 1, name: "Agence Cotonou Centre", status: "ACTIVE", profitToday: "0 F", topActivity: "RESEAUX", agentsCount: 1, plafond: "5 000 000 F", current: 4200000, address: "Cadjehoun, Rue 125" },
     { id: 2, name: "Agence Calavi", status: "ACTIVE", profitToday: "0 F", topActivity: "RESEAUX", agentsCount: 1, plafond: "3 000 000 F", current: 1500000, address: "Kpota, Face Université" },
@@ -799,8 +827,8 @@ function AgencesView() {
 
   const agents = [
     { id: 1, name: "Marius Ahonon", phone: "+229 97 00 00 01", agence: "Agence Cotonou Centre", status: "Actif", lastActive: "Il y a 2 min", role: "Superviseur Senior", bio: "Expert en gestion de flux et relation client.", waiting: true },
-    { id: 2, name: "Lisa Koukpaki", phone: "+229 96 00 00 02", agence: "Agence Calavi", status: "Actif", lastActive: "En ligne", role: "Gestionnaire Caisse", bio: "Spécialisée dans les remontées de fonds.", waiting: true },
-    { id: 3, name: "Jean Koffi", phone: "+229 95 00 00 03", agence: "Agence Porto-Novo", status: "Inactif", lastActive: "Il y a 4h", role: "Agent de Terrain", bio: "Responsable des collectes de proximité.", waiting: false },
+    { id: 2, name: "Lisa Koukpaki", phone: "+229 96 00 00 02", agence: "Agence Calavi", status: "En attente", lastActive: "Jamais connecté", role: "Gestionnaire Caisse", bio: "Spécialisée dans les remontées de fonds.", waiting: true },
+    { id: 3, name: "Jean Koffi", phone: "+229 95 00 00 03", agence: "Agence Porto-Novo", status: "Actif", lastActive: "Il y a 4h", role: "Agent de Terrain", bio: "Responsable des collectes de proximité.", waiting: false },
   ];
 
   const formatCurrency = (val: number) => {
@@ -826,33 +854,40 @@ function AgencesView() {
   );
 
   return (
-    <div className="space-y-6 pb-16">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-0.5">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Réseau d'Agences</h2>
+    <div className="space-y-8 pb-20">
+      {/* ... (Header remains same) */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Réseau d'Agences</h2>
           <p className="text-sm font-bold text-slate-400">Supervision et gestion en temps réel de vos points de vente.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-4">
+          <button 
+                onClick={() => navigate("/agent/auth")}
+                className="px-6 py-3.5 bg-blue-50 text-[#234D96] rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-3 border border-blue-100"
+              >
+                <Smartphone size={18} /> Demo: Interface Agent
+          </button>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#234D96] transition-colors" size={18} />
             <input 
               type="text" 
               placeholder="Rechercher une agence ou un agent..." 
-              className="pl-12 pr-6 py-2.5 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-50/50 w-full md:w-80 shadow-sm transition-all"
+              className="pl-12 pr-6 py-3.5 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-50/50 w-full md:w-80 shadow-sm transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button 
             onClick={() => { setModalMode("new_agence"); }}
-            className="px-4 py-2.5 bg-white border border-slate-100 text-slate-900 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+            className="px-6 py-3.5 bg-white border border-slate-100 text-slate-900 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm"
           >
-            <Plus size={16} /> Nouvelle Agence
+            <Plus size={18} /> Nouvelle Agence
           </button>
           <button 
             onClick={() => { setModalMode("new_agent"); }}
-            className="px-4 py-2.5 bg-[#234D96] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-xl shadow-blue-900/20 active:scale-95"
+            className="px-6 py-3.5 bg-[#234D96] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-3 shadow-xl shadow-blue-900/20 active:scale-95"
           >
             <Plus size={18} /> Ajouter un Agent
           </button>
@@ -965,7 +1000,18 @@ function AgencesView() {
                      </div>
                   </div>
                </div>
-               <span className="px-3 py-1 bg-emerald-50 text-emerald-500 text-[10px] font-black rounded-lg uppercase tracking-widest border border-emerald-100/30">Actif</span>
+               <div className="flex flex-col items-end gap-1">
+                 <span className={`px-3 py-1 text-[10px] font-black rounded-lg uppercase tracking-widest border transition-colors ${
+                   agent.status === "Actif" 
+                     ? "bg-emerald-50 text-emerald-500 border-emerald-100/30" 
+                     : "bg-amber-50 text-amber-500 border-amber-100/30"
+                 }`}>
+                   {agent.status}
+                 </span>
+                 {agent.status === "En attente" && (
+                   <span className="text-[9px] font-bold text-amber-400 italic">Compte non activé</span>
+                 )}
+               </div>
             </div>
 
             {/* Agence Card */}
@@ -1078,7 +1124,10 @@ function AgencesView() {
 
           <Input label="Mot de passe initial" placeholder="••••••••" value={agentPass} onChange={setAgentPass} type="password" />
           
-          <button className="w-full mt-4 py-5 bg-[#234D96] text-white rounded-[1.8rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.98]">
+          <button 
+            onClick={handleCreateAgent}
+            className="w-full mt-4 py-5 bg-[#234D96] text-white rounded-[1.8rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.98]"
+          >
             Créer le compte agent
           </button>
         </div>
@@ -1111,10 +1160,10 @@ function TransactionsView() {
   return (
     <div className="space-y-6 pb-12">
       {/* Search & Filters Bar */}
-      <div className="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm">
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[200px] space-y-1.5">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">RECHERCHE</label>
+      <div className="bg-white p-8 rounded-[1.5rem] border border-slate-100 shadow-sm">
+        <div className="flex flex-wrap items-end gap-6">
+          <div className="flex-1 min-w-[200px] space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">RECHERCHE</label>
             <div className="relative">
               <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
@@ -1122,15 +1171,15 @@ function TransactionsView() {
                 placeholder="Réf, commentaire..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300"
+                className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl pl-10 pr-4 py-3.5 text-[11px] font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300"
               />
             </div>
           </div>
 
-          <div className="w-48 space-y-1.5">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">SECTEUR</label>
+          <div className="w-56 space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SECTEUR</label>
             <div className="relative">
-              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-2.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
+              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-3.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
                 <option>Tous les secteurs</option>
                 <option>RESEAUX</option>
                 <option>GAZ</option>
@@ -1139,10 +1188,10 @@ function TransactionsView() {
             </div>
           </div>
 
-          <div className="w-48 space-y-1.5">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">STATUT</label>
+          <div className="w-56 space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">STATUT</label>
             <div className="relative">
-              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-2.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
+              <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-3.5 text-[11px] font-black text-slate-900 outline-none appearance-none cursor-pointer">
                 <option>Tous les statuts</option>
                 <option>CONFIRME</option>
                 <option>EN ATTENTE</option>
@@ -1151,8 +1200,8 @@ function TransactionsView() {
             </div>
           </div>
 
-          <button className="px-6 py-2.5 bg-[#3F51B5] text-white rounded-xl font-black text-[11px] hover:bg-[#303F9F] transition-all shadow-lg shadow-blue-500/10 h-[40px]">
-            Filtrer
+          <button className="px-8 py-3.5 bg-[#3F51B5] text-white rounded-xl font-black text-[12px] hover:bg-[#303F9F] transition-all shadow-lg shadow-blue-500/10 h-[46px]">
+            Filtrer les résultats
           </button>
         </div>
       </div>
@@ -1163,25 +1212,25 @@ function TransactionsView() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-50">
-                <th className="pl-10 pr-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉFÉRENCE & COMMENTAIRE</th>
-                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉSEAU / SERVICE</th>
-                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">AGENCE & AGENT</th>
-                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">MONTANT & COM.</th>
-                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">DATE</th>
-                <th className="px-4 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">STATUT</th>
-                <th className="pl-4 pr-10 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</th>
+                <th className="pl-10 pr-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉFÉRENCE & COMMENTAIRE</th>
+                <th className="px-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">RÉSEAU / SERVICE</th>
+                <th className="px-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">AGENCE & AGENT</th>
+                <th className="px-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">MONTANT & COM.</th>
+                <th className="px-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">DATE</th>
+                <th className="px-4 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">STATUT</th>
+                <th className="pl-4 pr-10 py-6 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/60">
               {transactions.map((tx, idx) => (
                 <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
-                  <td className="pl-10 pr-4 py-3">
+                  <td className="pl-10 pr-4 py-5">
                     <div className="flex flex-col">
                       <span className="text-[12px] font-black text-slate-900 tracking-tight">{tx.ref}</span>
                       <span className="text-[10px] font-bold text-slate-300">—</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500">
                         <Smartphone size={14} />
@@ -1192,25 +1241,25 @@ function TransactionsView() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-5">
                     <div className="flex flex-col">
                       <span className="text-[11px] font-black text-slate-900">{tx.agence}</span>
                       <span className="text-[10px] font-bold text-slate-400">{tx.agent}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono">
+                  <td className="px-4 py-5 font-mono">
                     <div className="flex flex-col">
                       <span className="text-[12px] font-black text-slate-900">{tx.montant} F</span>
                       <span className="text-[10px] font-bold text-emerald-500">+{tx.comm} F</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-5">
                     <div className="flex flex-col">
                       <span className="text-[11px] font-black text-slate-900">{tx.date}</span>
                       <span className="text-[10px] font-bold text-slate-400">{tx.time}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-5 text-center">
                     <div className="flex justify-center">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
                         tx.status === 'CONFIRME' 
@@ -1222,7 +1271,7 @@ function TransactionsView() {
                       </span>
                     </div>
                   </td>
-                  <td className="pl-4 pr-10 py-3 text-right">
+                  <td className="pl-4 pr-10 py-5 text-right">
                     <button 
                       onClick={() => handleOpenTxModal(tx)}
                       className="p-2 text-slate-400 hover:text-[#234D96] transition-colors"
@@ -1364,6 +1413,7 @@ function TransactionsView() {
 
 function CaissesView({ agences }: { agences: any[] }) {
   const fluxHistory = []; // Empty as per screenshot
+  const [capitalInitialized, setCapitalInitialized] = useState(false);
 
   const kpis = [
     { label: "SOLDE CASH (COFFRE)", value: "0 F", sub: "Cash physique disponible au siège.", icon: <Wallet size={18} />, color: "emerald" },
@@ -1400,7 +1450,7 @@ function CaissesView({ agences }: { agences: any[] }) {
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{k.label}</p>
-                <h4 className="text-3xl font-black text-slate-900 tracking-tighter">{k.value}</h4>
+                <h4 className="text-4xl font-black text-slate-900 tracking-tighter">{k.value}</h4>
                 <p className="text-[11px] font-medium text-slate-400 italic">{k.sub}</p>
               </div>
             </div>
@@ -1411,7 +1461,7 @@ function CaissesView({ agences }: { agences: any[] }) {
       {/* KPI Middle Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         {secondaryKpis.map((k, i) => (
-          <div key={i} className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm flex items-center gap-6 group hover:shadow-md transition-all">
+          <div key={i} className="bg-white rounded-[1.5rem] p-8 border border-slate-100 shadow-sm flex items-center gap-6 group hover:shadow-md transition-all">
              <div className={`w-12 h-12 rounded-2xl bg-${k.color}-50 flex items-center justify-center text-${k.color}-500 group-hover:scale-110 transition-transform`}>
                 {k.icon}
              </div>
@@ -1471,51 +1521,66 @@ function CaissesView({ agences }: { agences: any[] }) {
         {/* Sidebar Forms */}
         <div className="lg:col-span-3 space-y-6">
           {/* Capital de depart Form */}
-          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-6 space-y-4">
-            <div className="flex items-center gap-3">
-               <Plus size={16} className="text-[#234D96]" />
-               <h3 className="text-sm font-black text-slate-900">Capital de depart</h3>
-            </div>
-            <div className="space-y-3">
-               <div className="space-y-1.5">
-                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 leading-none">Fonds propres (Caisse)</label>
-                 <input type="text" placeholder="0,00" defaultValue="0,00" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-xl px-4 py-3 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
+          {capitalInitialized ? (
+            <div className="bg-emerald-50/30 border-2 border-dashed border-emerald-200 rounded-[2rem] p-8 space-y-4 animate-in fade-in zoom-in duration-500">
+               <div className="flex items-center gap-3">
+                 <ShieldCheck size={20} className="text-emerald-500" />
+                 <h3 className="text-sm font-black text-emerald-600">Capital initialisé</h3>
                </div>
-               <button className="w-full py-3.5 bg-[#234D96] text-white rounded-xl font-black text-[10px] uppercase tracking-wider shadow-lg shadow-blue-900/10 hover:bg-blue-900 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                 <Banknote size={16} /> Mettre a jour la caisse
-               </button>
+               <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+                 Votre capital de départ a été verrouillé. Pour toute nouvelle entrée de fonds, veuillez utiliser les flux de dotation admin.
+               </p>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 space-y-6">
+              <div className="flex items-center gap-3">
+                 <Plus size={16} className="text-[#234D96]" />
+                 <h3 className="text-sm font-black text-slate-900">Capital de depart</h3>
+              </div>
+              <div className="space-y-4">
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 leading-none">Fonds propres (Caisse)</label>
+                   <input type="text" placeholder="0,00" defaultValue="0,00" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-[#234D96] rounded-[1.2rem] px-5 py-4 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
+                 </div>
+                 <button 
+                  onClick={() => setCapitalInitialized(true)}
+                  className="w-full py-5 bg-[#234D96] text-white rounded-[1.2rem] font-black text-[11px] uppercase tracking-wider shadow-lg shadow-blue-900/10 hover:bg-blue-900 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                 >
+                   <Banknote size={16} /> Mettre a jour la caisse
+                 </button>
+              </div>
+            </div>
+          )}
 
           {/* Dotation Agence Form */}
-          <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm p-6 space-y-4">
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 space-y-6">
             <div className="flex items-center gap-3">
                <Building size={16} className="text-emerald-500" />
                <h3 className="text-sm font-black text-slate-900">Dotation agence</h3>
             </div>
-            <div className="space-y-4">
-               <div className="space-y-1.5">
-                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Agence Cible</label>
+            <div className="space-y-5">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Agence Cible</label>
                  <div className="relative">
-                    <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm font-black outline-none appearance-none cursor-pointer">
+                    <select className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-[1.2rem] px-5 py-4 text-sm font-black outline-none appearance-none cursor-pointer">
                       <option>Selectionner...</option>
                       {agences?.map(a => <option key={a.id} value={a.id}>{a.nom}</option>)}
                     </select>
                     <ChevronDown size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
                  </div>
                </div>
-               <div className="space-y-1.5">
-                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant</label>
-                 <input type="text" placeholder="0" defaultValue="0" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
+               <div className="space-y-2">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant</label>
+                 <input type="text" placeholder="0" defaultValue="0" className="w-full bg-[#F8FAFC] border border-slate-100 focus:border-emerald-500 rounded-[1.2rem] px-5 py-4 text-sm font-black outline-none transition-all placeholder:text-slate-300" />
                </div>
-               <button className="w-full py-3.5 bg-[#4BCA9D] text-white rounded-xl font-black text-[10px] uppercase tracking-wider shadow-lg shadow-emerald-900/10 hover:bg-[#3fac85] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+               <button className="w-full py-5 bg-[#4BCA9D] text-white rounded-[1.2rem] font-black text-[11px] uppercase tracking-wider shadow-lg shadow-emerald-900/10 hover:bg-[#3fac85] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
                  <ShieldCheck size={16} /> Financer l'agence
                </button>
             </div>
           </div>
 
           {/* Security Note */}
-          <div className="bg-[#1E293B] rounded-[1.5rem] p-6 text-white space-y-4 shadow-xl">
+          <div className="bg-[#1E293B] rounded-[2rem] p-8 text-white space-y-4 shadow-xl">
             <div className="flex items-center gap-3">
               <AlertTriangle className="text-amber-500" size={20} />
               <h4 className="text-sm font-black tracking-tight tracking-wide">Note Securite</h4>
@@ -1577,11 +1642,11 @@ function StocksView() {
              <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-50">
-                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Produit</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Agence</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase text-center">Quantité</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase text-center">Prix</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase">Statut</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Produit</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Agence</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Quantité</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Prix</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Statut</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -1627,14 +1692,14 @@ function CloturesView() {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-8 pb-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Suivi des Clotures</h2>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Suivi des Clotures</h2>
           <p className="text-sm font-medium text-slate-400 font-bold italic">Validez les clotures et gerez les ecarts de votre reseau.</p>
         </div>
-        <button className="px-4 py-2.5 bg-white border border-slate-100 rounded-xl flex items-center gap-2 text-xs font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
+        <button className="px-6 py-3 bg-white border border-slate-100 rounded-[1.2rem] flex items-center gap-2 text-xs font-black text-slate-900 shadow-sm hover:shadow-md transition-all">
           <FileText size={16} className="text-[#234D96]" />
           <span>Rapports</span>
         </button>
@@ -1643,9 +1708,9 @@ function CloturesView() {
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm space-y-3">
+          <div key={i} className="bg-white p-6 rounded-[2.2rem] border border-slate-100 shadow-sm space-y-4">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
-            <h4 className={`text-2xl font-black ${s.isSpecial ? "text-[#234D96]" : `text-${s.color}`}`}>{s.value}</h4>
+            <h4 className={`text-3xl font-black ${s.isSpecial ? "text-[#234D96]" : `text-${s.color}`}`}>{s.value}</h4>
           </div>
         ))}
       </div>
@@ -1732,15 +1797,125 @@ function CloturesView() {
   );
 }
 
+function ReportTemplate({ data, period }: { data: any[]; period: string }) {
+  const totalVolume = data.reduce((acc, curr) => acc + curr.value, 0);
+  const totalProfit = data.reduce((acc, curr) => acc + curr.profit, 0);
+  const totalTransactions = data.reduce((acc, curr) => acc + curr.transactions, 0);
+
+  return (
+    <div className="bg-white p-8 sm:p-12 border border-slate-100 rounded-[2rem] shadow-sm font-sans text-slate-900 max-h-[70vh] overflow-y-auto no-scrollbar">
+      {/* Report Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-8 border-b border-slate-100 pb-10">
+        <div>
+          <Logo className="h-24 w-auto mb-4" />
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">RAPPORT D'ACTIVITÉ</h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{period} - DOCUMENT OFFICIEL</p>
+        </div>
+        <div className="text-left sm:text-right space-y-1">
+          <p className="text-xs font-black text-slate-900 uppercase">Généré le: {new Date().toLocaleDateString('fr-FR')}</p>
+          <p className="text-[10px] font-bold text-slate-400">ID Rapport: RT-{Math.floor(Math.random() * 1000000)}</p>
+          <p className="text-[10px] font-bold text-slate-400">Entreprise: GazPlus Bénin S.A.R.L</p>
+        </div>
+      </div>
+
+      {/* Summary KPI Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-10">
+        <div className="p-4 bg-slate-50 rounded-2xl">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Volume Total</p>
+          <p className="text-lg font-black text-[#234D96]">{new Intl.NumberFormat().format(totalVolume)} F</p>
+        </div>
+        <div className="p-4 bg-slate-50 rounded-2xl">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Profit Net</p>
+          <p className="text-lg font-black text-emerald-600">{new Intl.NumberFormat().format(totalProfit)} F</p>
+        </div>
+        <div className="p-4 bg-slate-50 rounded-2xl">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Transactions</p>
+          <p className="text-lg font-black text-slate-900">{totalTransactions}</p>
+        </div>
+        <div className="p-4 bg-slate-50 rounded-2xl">
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Taux Marge</p>
+          <p className="text-lg font-black text-slate-900">{(totalProfit / totalVolume * 100).toFixed(2)} %</p>
+        </div>
+      </div>
+
+      {/* Main Table */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4">Ventilation par Réseau</h3>
+        <div className="overflow-hidden rounded-2xl border border-slate-50">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                <th className="px-6 py-4">Réseau / Service</th>
+                <th className="px-6 py-4 text-center">TXS</th>
+                <th className="px-6 py-4 text-center">Volume</th>
+                <th className="px-6 py-4 text-right">Commission</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {data.map((item, i) => (
+                <tr key={i} className="text-xs font-bold text-slate-700 hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
+                        {item.logo ? (
+                          <img src={item.logo} alt={item.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }} />
+                        )}
+                      </div>
+                      <span className="font-black text-slate-900 uppercase text-sm tracking-tight">{item.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">{item.transactions}</td>
+                  <td className="px-6 py-4 text-center text-[#234D96]">{new Intl.NumberFormat().format(item.value)} F</td>
+                  <td className="px-6 py-4 text-right text-emerald-600">{new Intl.NumberFormat().format(item.profit)} F</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-slate-50/50 text-xs font-black text-slate-900">
+                <td className="px-6 py-5">TOTAL CONSOLIDÉ</td>
+                <td className="px-6 py-5 text-center">{totalTransactions}</td>
+                <td className="px-6 py-5 text-center text-[#234D96]">{new Intl.NumberFormat().format(totalVolume)} F</td>
+                <td className="px-6 py-5 text-right text-emerald-600 font-black">{new Intl.NumberFormat().format(totalProfit)} F</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Footer / Signature & Actions - SWAPPED FOR RIGHT ALIGNMENT */}
+      <div className="mt-16 pt-12 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-end gap-12">
+        <button className="w-full sm:w-auto px-10 py-5 bg-[#234D96] text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/40 flex items-center justify-center gap-3 order-2 sm:order-1">
+          <Download size={18} /> Télécharger le PDF
+        </button>
+
+        <div className="space-y-4 w-full max-w-[250px] text-right order-1 sm:order-2">
+           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Signature du Marchand</div>
+           <div className="w-full h-32 border-2 border-slate-100 rounded-2xl bg-white shadow-inner" />
+        </div>
+      </div>
+
+      <div className="mt-12 flex items-center gap-2 opacity-20 grayscale">
+        <Logo className="h-8" />
+        <div className="h-4 w-px bg-slate-900" />
+        <span className="text-[9px] font-black tracking-widest uppercase text-slate-900">Fintrack Intelligence Unit</span>
+      </div>
+    </div>
+  );
+}
+
 function RapportsView() {
+
   const [reportPeriod, setReportPeriod] = useState("Global");
   const [serviceFilter, setServiceFilter] = useState("Tous les services");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const serviceData = [
-    { name: "Celtis", value: 534752, transactions: 2, profit: 2673.76, color: "#234D96" },
-    { name: "Moov Money", value: 703973, transactions: 5, profit: 3519.88, color: "#6ABCA6" },
-    { name: "MTN MoMo", value: 975266, transactions: 3, profit: 4876.34, color: "#8B5CF6" },
-    { name: "Orange Money", value: 1333485, transactions: 10, profit: 6667.45, color: "#F59E0B" },
+    { name: "Celtis", value: 534752, transactions: 2, profit: 2673.76, color: "#234D96", logo: "https://yt3.googleusercontent.com/f9-K0j6x1q6I971708XlyXN3dD2_W3F2X8U9t-p9f3YhX_v_d9XpY199_9eFvFvF9f-9=s900-c-k-c0x00ffffff-no-rj" },
+    { name: "Moov Money", value: 703973, transactions: 5, profit: 3519.88, color: "#6ABCA6", logo: "https://upload.wikimedia.org/wikipedia/fr/b/bc/Moov_Africa_Logo.png" },
+    { name: "MTN MoMo", value: 975266, transactions: 3, profit: 4876.34, color: "#8B5CF6", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/MTN_Logo.svg/1024px-MTN_Logo.svg.png" },
+    { name: "Orange Money", value: 1333485, transactions: 10, profit: 6667.45, color: "#F59E0B", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/1024px-Orange_logo.svg.png" },
   ];
 
   const volumeEvolution = [
@@ -1793,11 +1968,24 @@ function RapportsView() {
             ]}
           />
 
-          <button className="px-6 py-3 bg-[#234D96] text-white rounded-[1.2rem] font-bold text-xs uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20">
-            <FileText size={16} /> Exporter le Rapport
+          <button 
+            onClick={() => setIsPreviewOpen(true)}
+            className="px-6 py-3 bg-[#234D96] text-white rounded-[1.2rem] font-bold text-xs uppercase tracking-widest hover:bg-blue-900 transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20"
+          >
+            <Eye size={16} /> Aperçu du Rapport
           </button>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)}
+        title="Rapport d'Activité Professionnel"
+        subtitle="Visualisation du document certifié"
+        className="max-w-4xl"
+      >
+        <ReportTemplate data={serviceData} period={reportPeriod} />
+      </Modal>
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1901,6 +2089,7 @@ function SettingsView({ user }: { user: any }) {
   const [feedbackCategory, setFeedbackCategory] = useState("Interface");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isInvoicesOpen, setIsInvoicesOpen] = useState(false);
 
   const categories = ["Interface", "Performance", "Nouveaux Services", "Support Client"];
 
@@ -2056,9 +2245,54 @@ function SettingsView({ user }: { user: any }) {
                    </div>
                 </div>
              </div>
-             <button className="w-full py-4 text-[10px] font-black text-slate-900 uppercase tracking-wider hover:bg-slate-50 rounded-[1.2rem] border border-slate-100 transition-all">Historique des factures</button>
+             <button 
+                onClick={() => setIsInvoicesOpen(true)}
+                className="w-full py-4 text-[10px] font-black text-slate-900 uppercase tracking-wider hover:bg-slate-50 rounded-[1.2rem] border border-slate-100 transition-all"
+             >
+                Historique des factures
+             </button>
           </div>
         </DashboardCard>
+
+        <Modal
+          isOpen={isInvoicesOpen}
+          onClose={() => setIsInvoicesOpen(false)}
+          title="Historique des Factures"
+          subtitle="Suivi de vos paiements d'abonnement FinTrack"
+          className="max-w-2xl"
+        >
+          <div className="space-y-4">
+            {[
+              { id: "FT-B-88392", date: "12 Avril 2024", amount: "29 900 F", method: "MTN MoMo", status: "Payée" },
+              { id: "FT-B-77291", date: "12 Avril 2023", amount: "29 900 F", method: "Moov Money", status: "Payée" },
+              { id: "FT-B-66510", date: "12 Avril 2022", amount: "25 000 F", method: "Orange Money", status: "Payée" },
+            ].map((invoice, idx) => (
+              <div key={idx} className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-slate-100/80 transition-colors border border-transparent hover:border-slate-200">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-slate-400">
+                    <FileText size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-900">Facture #{invoice.id}</p>
+                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">{invoice.date} • {invoice.method}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-xs font-black text-slate-900">{invoice.amount}</p>
+                    <p className="text-[9px] font-black uppercase text-emerald-600 mt-0.5">{invoice.status}</p>
+                  </div>
+                  <button className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-fintrack-primary hover:border-fintrack-primary transition-all">
+                    <Download size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <div className="pt-4 text-center">
+              <p className="text-[10px] font-bold text-slate-400 italic">Pour toute réclamation, contactez notre support technique.</p>
+            </div>
+          </div>
+        </Modal>
 
         {/* Preferences */}
         <DashboardCard 
@@ -2208,18 +2442,20 @@ function ServicesView() {
   const [activationModalOpen, setActivationModalOpen] = useState(false);
   const [selectedServiceToActivate, setSelectedServiceToActivate] = useState("");
 
-  const categories = [
-    "ABONNEMENT",
-    "CREDIT",
-    "DEPOT",
-    "FORFAIT INTERNET",
-    "FORFAIT VOIX",
-    "PAIEMENT FACTURE",
-    "RETRAIT"
+  const servicesConfig = [
+    { name: "ABONNEMENT", icon: <CreditCard size={18} />, subItems: ["Canal+", "StarTimes", "Autres"] },
+    { name: "CREDIT", icon: <Smartphone size={18} />, subItems: [] },
+    { name: "FORFAIT INTERNET", icon: <Globe size={18} />, subItems: [] },
+    { name: "FORFAIT VOIX", icon: <Activity size={18} />, subItems: [] },
+    { name: "PAIEMENT FACTURE", icon: <FileText size={18} />, subItems: ["SBEE (Électricité)", "SONEB (Eau)"] },
+    { name: "DEPOT/RETRAIT", icon: <ArrowUpRight size={18} />, isGroup: true, items: [
+      { name: "DEPOT", icon: <ArrowUpRight size={18} /> },
+      { name: "RETRAIT", icon: <ArrowDownRight size={18} /> }
+    ]}
   ];
 
   const availableCatalogue = [
-    { name: "BOA", type: "BANQUE" },
+    { name: "BOA", type: "BANQUE", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Bank_of_Africa_Group_logo.svg/1200px-Bank_of_Africa_Group_logo.svg.png" },
     { name: "Ecobank", type: "BANQUE" },
     { name: "NSIA Banque", type: "BANQUE" },
     { name: "UBA", type: "BANQUE" },
@@ -2238,19 +2474,24 @@ function ServicesView() {
 
   type Palier = { min: string; max: string; fixe: string; taux: string };
   const [paliers, setPaliers] = useState<{ [category: string]: Palier[] }>({
-    "ABONNEMENT": [{ min: "0", max: "Infini", fixe: "0", taux: "0" }],
+    "ABONNEMENT": [],
+    "Canal+": [],
+    "StarTimes": [],
+    "Autres": [],
     "CREDIT": [{ min: "0", max: "Infini", fixe: "0", taux: "0" }],
     "DEPOT": [],
     "FORFAIT INTERNET": [],
     "FORFAIT VOIX": [],
     "PAIEMENT FACTURE": [],
+    "SBEE (Électricité)": [],
+    "SONEB (Eau)": [],
     "RETRAIT": []
   });
 
   const handleAddPalier = (cat: string) => {
     setPaliers(prev => ({
       ...prev,
-      [cat]: [...prev[cat], { min: "0", max: "Infini", fixe: "0", taux: "0" }]
+      [cat]: [...(prev[cat] || []), { min: "0", max: "Infini", fixe: "0", taux: "0" }]
     }));
   };
 
@@ -2272,8 +2513,8 @@ function ServicesView() {
   const [networks, setNetworks] = useState([
     { id: "1", name: "Orange Money", type: "TÉLÉCOM / MM", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Orange_logo.svg/1024px-Orange_logo.svg.png", active: true },
     { id: "2", name: "MTN MoMo", type: "TÉLÉCOM / MM", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/MTN_Logo.svg/1024px-MTN_Logo.svg.png", active: true },
-    { id: "3", name: "Moov Money", type: "TÉLÉCOM / MM", logo: "https://logos-marques.com/wp-content/uploads/2021/03/Moov-Africa-Logo.png", active: true },
-    { id: "4", name: "Celtis", type: "TÉLÉCOM / MM", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfIuD_BqV_0y2yC7k5L1_q_J5yJ9E_X1f1ZQ&s", active: false }
+    { id: "3", name: "Moov Money", type: "TÉLÉCOM / MM", logo: "https://upload.wikimedia.org/wikipedia/fr/b/bc/Moov_Africa_Logo.png", active: true },
+    { id: "4", name: "Celtis", type: "TÉLÉCOM / MM", logo: "https://yt3.googleusercontent.com/f9-K0j6x1q6I971708XlyXN3dD2_W3F2X8U9t-p9f3YhX_v_d9XpY199_9eFvFvF9f-9=s900-c-k-c0x00ffffff-no-rj", active: false }
   ]);
 
   const toggleNetwork = (id: string) => {
@@ -2356,77 +2597,178 @@ function ServicesView() {
       <Modal
         isOpen={baremeModalOpen}
         onClose={() => setBaremeModalOpen(false)}
-        title={`Barèmes: ${selectedNetwork?.name || ""}`}
-        subtitle="Définissez vos tranches de commissions pour ce réseau."
-        className="max-w-2xl"
+        title={
+          <div className="flex items-center justify-center gap-4">
+            {selectedNetwork?.logo && (
+              <img src={selectedNetwork.logo} alt="" className="w-12 h-12 object-contain" referrerPolicy="no-referrer" />
+            )}
+            <span>Configuration: {selectedNetwork?.name || ""}</span>
+          </div>
+        }
+        subtitle="Définissez vos tranches de commissions de manière fluide et précise."
+        className="max-w-3xl"
       >
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-2 mb-8">
-          {categories.map((cat) => (
-            <div key={cat} className="p-6 bg-white border border-slate-100 rounded-3xl space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Activity className="text-[#234D96]" size={18} />
-                  <h4 className="text-sm font-black text-slate-900">{cat}</h4>
-                </div>
-                <button 
-                  onClick={() => handleAddPalier(cat)}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-900 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-900 hover:text-white transition-all"
-                >
-                  + Ajouter un palier
-                </button>
-              </div>
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar pr-2 mb-8 -mx-2 px-2">
+          {servicesConfig.map((service) => (
+            <div key={service.name}>
+              {service.isGroup ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {service.items?.map((item) => (
+                    <div key={item.name} className="p-6 bg-[#F8FAFC]/50 border border-slate-100 rounded-[2.5rem] space-y-6 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 group/card">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-[#234D96] shadow-sm group-hover/card:scale-110 transition-transform">
+                            {item.icon}
+                          </div>
+                          <h4 className="text-sm font-black text-slate-900 tracking-tight uppercase tracking-wider">{item.name}</h4>
+                        </div>
+                        <button 
+                          onClick={() => handleAddPalier(item.name)}
+                          className="p-2 bg-[#EEF2FF] text-[#234D96] rounded-lg font-black text-[10px] hover:bg-[#234D96] hover:text-white transition-all shadow-sm"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
 
-              {paliers[cat].length > 0 ? (
-                <div className="space-y-4">
-                  {paliers[cat].map((palier, idx) => (
-                    <div key={idx} className="grid grid-cols-5 gap-3 items-end">
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-slate-400 uppercase">Min (F)</label>
-                        <input 
-                          type="text" 
-                          value={palier.min} 
-                          onChange={(e) => handleUpdatePalier(cat, idx, "min", e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
-                        />
+                      <div className="space-y-3">
+                        {(paliers[item.name] || []).length > 0 ? (
+                          paliers[item.name].map((palier, idx) => (
+                            <div key={idx} className="bg-white border border-slate-100 p-4 rounded-[1.5rem] space-y-3 shadow-sm">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Min</label>
+                                  <input type="text" value={palier.min} onChange={(e) => handleUpdatePalier(item.name, idx, "min", e.target.value)} className="w-full bg-[#F8FAFC] border border-slate-100 rounded-lg px-3 py-1.5 text-[10px] font-bold" />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Max</label>
+                                  <input type="text" value={palier.max} onChange={(e) => handleUpdatePalier(item.name, idx, "max", e.target.value)} className="w-full bg-[#F8FAFC] border border-slate-100 rounded-lg px-3 py-1.5 text-[10px] font-bold" />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fixe</label>
+                                  <input type="text" value={palier.fixe} onChange={(e) => handleUpdatePalier(item.name, idx, "fixe", e.target.value)} className="w-full bg-[#F8FAFC] border border-slate-100 rounded-lg px-3 py-1.5 text-[10px] font-bold" />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Taux %</label>
+                                  <input type="text" value={palier.taux} onChange={(e) => handleUpdatePalier(item.name, idx, "taux", e.target.value)} className="w-full bg-[#F8FAFC] border border-slate-100 rounded-lg px-3 py-1.5 text-[10px] font-bold" />
+                                </div>
+                              </div>
+                              <button onClick={() => handleRemovePalier(item.name, idx)} className="w-full py-1.5 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all text-[8px] font-black uppercase">Supprimer</button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-6 text-center border-2 border-dashed border-slate-100 rounded-[1.5rem] bg-slate-50/30">
+                            <p className="text-[9px] font-black text-slate-400">Aucun barème</p>
+                          </div>
+                        )}
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-slate-400 uppercase">Max (F)</label>
-                        <input 
-                          type="text" 
-                          value={palier.max} 
-                          onChange={(e) => handleUpdatePalier(cat, idx, "max", e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-slate-400 uppercase">Fixe (F)</label>
-                        <input 
-                          type="text" 
-                          value={palier.fixe} 
-                          onChange={(e) => handleUpdatePalier(cat, idx, "fixe", e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[8px] font-black text-slate-400 uppercase">Taux (%)</label>
-                        <input 
-                          type="text" 
-                          value={palier.taux} 
-                          onChange={(e) => handleUpdatePalier(cat, idx, "taux", e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-[#234D96]" 
-                        />
-                      </div>
-                      <button 
-                        onClick={() => handleRemovePalier(cat, idx)}
-                        className="h-10 w-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all group"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center py-4 text-[10px] font-bold text-slate-400 italic">Aucun barème défini.</p>
+                <div className="p-8 bg-[#F8FAFC]/50 border border-slate-100 rounded-[2.5rem] space-y-6 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 group/card">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#234D96] shadow-sm group-hover/card:scale-110 transition-transform">
+                        {service.icon}
+                      </div>
+                      <h4 className="text-base font-black text-slate-900 tracking-tight uppercase tracking-wider">{service.name}</h4>
+                    </div>
+                    {service.subItems?.length === 0 && (
+                      <button 
+                        onClick={() => handleAddPalier(service.name)}
+                        className="px-5 py-2.5 bg-[#EEF2FF] text-[#234D96] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#234D96] hover:text-white transition-all shadow-sm flex items-center gap-2"
+                      >
+                        <Plus size={14} /> Ajouter un palier
+                      </button>
+                    )}
+                  </div>
+
+                  {service.subItems?.length === 0 ? (
+                    <div className="space-y-4">
+                      {(paliers[service.name] || []).length > 0 ? (
+                        <div className="space-y-3">
+                          {paliers[service.name].map((palier, idx) => (
+                            <motion.div 
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              key={idx} 
+                              className="bg-white border border-slate-100 p-5 rounded-[1.5rem] grid grid-cols-1 sm:grid-cols-5 gap-4 items-end shadow-sm hover:border-[#234D96]/30 transition-all"
+                            >
+                              {/* ... fields ... */}
+                              <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Min (F)</label>
+                                <input type="text" value={palier.min} onChange={(e) => handleUpdatePalier(service.name, idx, "min", e.target.value)} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-xl px-4 py-2.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Max (F)</label>
+                                <input type="text" value={palier.max} onChange={(e) => handleUpdatePalier(service.name, idx, "max", e.target.value)} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-xl px-4 py-2.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300" placeholder="10 000" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Fixe (F)</label>
+                                <input type="text" value={palier.fixe} onChange={(e) => handleUpdatePalier(service.name, idx, "fixe", e.target.value)} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-xl px-4 py-2.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300" placeholder="100" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Taux (%)</label>
+                                <input type="text" value={palier.taux} onChange={(e) => handleUpdatePalier(service.name, idx, "taux", e.target.value)} className="w-full bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-xl px-4 py-2.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-300" placeholder="0.5" />
+                              </div>
+                              <button onClick={() => handleRemovePalier(service.name, idx)} className="w-full sm:w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all group/trash">
+                                <Trash2 size={16} />
+                              </button>
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-10 text-center space-y-2 border-2 border-dashed border-slate-100 rounded-[2rem] bg-slate-50/30">
+                          <p className="text-[11px] font-black text-slate-400 tracking-tight">Aucun barème général défini.</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {service.subItems?.map((sub) => (
+                        <div key={sub} className="p-6 bg-white border border-slate-100 rounded-[2rem] space-y-6">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-sm font-black text-[#234D96]">{sub}</h5>
+                            <button onClick={() => handleAddPalier(sub)} className="px-4 py-2 bg-blue-50/50 text-[#234D96] rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-[#234D96] hover:text-white transition-all flex items-center gap-2 border border-blue-100/50">
+                              <Plus size={12} /> Nouveau palier
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            {(paliers[sub] || []).length > 0 ? (
+                              paliers[sub].map((palier, sIdx) => (
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={sIdx} className="bg-[#F8FAFC] p-4 rounded-2xl grid grid-cols-1 sm:grid-cols-5 gap-4 items-end border border-transparent hover:border-slate-200 transition-all">
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Min (F)</label>
+                                    <input type="text" value={palier.min} onChange={(e) => handleUpdatePalier(sub, sIdx, "min", e.target.value)} className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[11px] font-bold outline-none" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Max (F)</label>
+                                    <input type="text" value={palier.max} onChange={(e) => handleUpdatePalier(sub, sIdx, "max", e.target.value)} className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[11px] font-bold outline-none" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Fixe (F)</label>
+                                    <input type="text" value={palier.fixe} onChange={(e) => handleUpdatePalier(sub, sIdx, "fixe", e.target.value)} className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[11px] font-bold outline-none" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Taux (%)</label>
+                                    <input type="text" value={palier.taux} onChange={(e) => handleUpdatePalier(sub, sIdx, "taux", e.target.value)} className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[11px] font-bold outline-none" />
+                                  </div>
+                                  <button onClick={() => handleRemovePalier(sub, sIdx)} className="w-full sm:w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors">
+                                    <Trash2 size={14} />
+                                  </button>
+                                </motion.div>
+                              ))
+                            ) : (
+                              <p className="text-center py-4 text-[10px] font-bold text-slate-400 italic">Aucun barème pour {sub}.</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ))}
@@ -2434,9 +2776,10 @@ function ServicesView() {
 
         <button 
           onClick={() => setBaremeModalOpen(false)}
-          className="w-full py-5 bg-[#234D96] text-white rounded-[1.8rem] font-black text-sm shadow-xl shadow-blue-900/20 hover:bg-blue-900 transition-all active:scale-[0.98]"
+          className="w-full py-5 bg-[#234D96] text-white rounded-[2rem] font-black text-sm shadow-2xl shadow-blue-900/30 hover:bg-blue-900 transition-all active:scale-[0.98] group relative overflow-hidden"
         >
-          Enregistrer les Barèmes
+          <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-[30deg]" />
+          <span className="relative z-10 uppercase tracking-widest">Enregistrer les Configurations</span>
         </button>
       </Modal>
 
@@ -2448,7 +2791,7 @@ function ServicesView() {
         subtitle="Service disponible dans le Catalogue"
       >
         <div className="space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-4">
             <select 
               value={selectedServiceToActivate}
               onChange={(e) => setSelectedServiceToActivate(e.target.value)}
@@ -2461,6 +2804,23 @@ function ServicesView() {
                 </option>
               ))}
             </select>
+
+            {selectedServiceToActivate && (
+              <div className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[1.8rem] animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl flex items-center justify-center p-2 shadow-sm overflow-hidden">
+                  <img 
+                    src={availableCatalogue.find(s => s.name === selectedServiceToActivate)?.logo} 
+                    alt="" 
+                    className="w-full h-full object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div>
+                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Aperçu du service</p>
+                   <p className="text-lg font-black text-[#234D96]">{selectedServiceToActivate}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="p-6 bg-amber-50/50 border border-amber-100 rounded-[1.8rem] text-amber-900">
@@ -2573,6 +2933,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("Mai 02 - Juin 02");
   const [timeframe, setTimeframe] = useState("24h");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -2611,14 +2972,14 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+    <div className="flex h-full bg-[#F8FAFC] overflow-hidden font-sans">
       {/* Sidebar - Fintrack2 Style */}
-      <aside className="w-56 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-5 flex justify-center border-b border-slate-50 mb-4 h-28 items-center">
-          <Logo className="h-18 w-auto drop-shadow-sm" />
+      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
+        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-32 items-center">
+          <Logo className="h-24 w-auto drop-shadow-sm" />
         </div>
         
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto no-scrollbar pb-8">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-8">
           <SidebarItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => setActiveTab("Dashboard")} />
           <SidebarItem icon={<Users size={20} />} label="Agences & Agents" active={activeTab === "Agences"} onClick={() => setActiveTab("Agences")} />
           <SidebarItem icon={<LayoutGrid size={20} />} label="Services & Commissions" active={activeTab === "Services"} onClick={() => setActiveTab("Services")} />
@@ -2664,7 +3025,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header - Functional Search & User Controls */}
-        <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-6 shrink-0 relative z-40">
+        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-8 shrink-0 relative z-40">
           <div className="relative w-full max-w-xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-900 transition-colors" size={16} />
             <input 
@@ -2714,10 +3075,56 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
             
             <div className="flex items-center gap-4 pl-4 border-l border-slate-100">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 border border-slate-100 hover:text-blue-950 hover:bg-slate-50 cursor-pointer transition-all">
+                  <div 
+                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer border ${
+                      isNotificationsOpen 
+                        ? "bg-blue-50 text-blue-900 border-blue-100" 
+                        : "text-slate-400 border-slate-100 hover:text-blue-950 hover:bg-slate-50"
+                    }`}
+                  >
                     <Bell size={20} />
                   </div>
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />
+
+                  {/* Notification Panel */}
+                  <AnimatePresence>
+                    {isNotificationsOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full right-0 mt-4 w-[380px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden z-50 flex flex-col"
+                      >
+                        {/* Header */}
+                        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Centre de Notifications</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Mise à jour 12:19</p>
+                          </div>
+                          <button className="text-[10px] font-black text-[#234D96] uppercase tracking-widest hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all">
+                            Tout marquer lu
+                          </button>
+                        </div>
+
+                        {/* Content - Empty State */}
+                        <div className="p-16 flex flex-col items-center text-center space-y-6">
+                          <div className="w-20 h-20 bg-slate-50 rounded-[1.8rem] flex items-center justify-center rotate-3 border border-slate-50">
+                            <Bell size={32} className="text-slate-200" />
+                          </div>
+                          <p className="text-base font-black text-slate-400 tracking-tight">Aucune nouvelle notification</p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 border-t border-slate-50">
+                          <button className="w-full py-4 text-[11px] font-black text-[#234D96] uppercase tracking-[0.1em] hover:bg-slate-50 rounded-2xl flex items-center justify-center gap-2 group transition-all">
+                            Voir tout le journal
+                            <MessageCircle size={14} className="group-hover:translate-x-1 transition-transform" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 
                 <Dropdown

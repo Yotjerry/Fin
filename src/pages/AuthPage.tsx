@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
-  Zap
+  Zap,
+  Smartphone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
@@ -62,7 +63,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex relative overflow-hidden font-sans">
+    <div className="min-h-full bg-slate-50 flex relative overflow-hidden font-sans">
       {/* Background Image Section - Covers all on mobile, 75% on desktop */}
       <div className="absolute inset-0 lg:w-3/4 h-full relative overflow-hidden z-0">
         <img 
@@ -325,10 +326,28 @@ export default function AuthPage() {
             <button 
               type="button"
               onClick={() => navigate("/onboarding", { state: { firstName: "Jean", lastName: "Koffi", email: "demo@fintrack.com" } })}
-              className="w-full mt-6 py-5 bg-slate-50 border border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-fintrack-primary hover:text-white hover:border-fintrack-primary transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+              className="w-full mt-6 py-5 bg-slate-50 border border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-[#234D96] hover:text-white hover:border-[#234D96] transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
             >
               <Zap className="w-4 h-4 text-amber-500 group-hover:text-white transition-colors" />
               <span>Connexion Automatique (Démo)</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => navigate("/agent/auth")}
+              className="w-full mt-3 py-5 bg-blue-50/50 border border-blue-100 text-[#234D96] font-black rounded-2xl hover:bg-blue-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+            >
+              <Smartphone className="w-5 h-5" />
+              <span>Se connecter en tant qu'agent</span>
+            </button>
+
+            <button 
+              type="button"
+              onClick={() => navigate("/agent/dashboard")}
+              className="w-full mt-3 py-5 bg-amber-50/50 border border-amber-100 text-amber-700 font-black rounded-2xl hover:bg-amber-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+            >
+              <Zap className="w-4 h-4" />
+              <span>Accès Direct Agent (Déjà Activé)</span>
             </button>
           </form>
         </div>
