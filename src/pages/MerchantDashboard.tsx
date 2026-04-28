@@ -2925,6 +2925,80 @@ function DettesView() {
   );
 }
 
+function AjustementsView() {
+  const stats = [
+    { label: "EN ATTENTE", value: "0", sub: "Demandes a traiter", icon: <Clock className="text-orange-500" />, bg: "bg-orange-50", iconBg: "bg-orange-50/50" },
+    { label: "EXCEDENTS", value: "0", sub: "Ajustements positifs", icon: <TrendingUp className="text-emerald-500" />, bg: "bg-emerald-50", iconBg: "bg-emerald-50/50" },
+    { label: "MANQUANTS", value: "0", sub: "Ajustements negatifs", icon: <ArrowDownRight className="text-rose-500" />, bg: "bg-rose-50", iconBg: "bg-rose-50/50" },
+    { label: "EXPOSITION", value: "0 F", sub: "Montant cumule a arbitrer", icon: <AlertCircle className="text-blue-500" />, bg: "bg-blue-50", iconBg: "bg-blue-50/50" },
+  ];
+
+  return (
+    <div className="space-y-10 pb-12">
+      <div className="flex items-center gap-6">
+        <div className="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 shadow-sm shadow-orange-200/50">
+           <PenTool size={28} />
+        </div>
+        <div className="space-y-1">
+           <h2 className="text-2xl font-black text-slate-900 tracking-tight">Demandes d'ajustement</h2>
+           <p className="text-sm font-bold text-slate-400">Validez, filtrez et priorisez les demandes soumises par vos agents.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <div key={i} className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</span>
+              <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center`}>
+                {React.cloneElement(stat.icon as React.ReactElement<any>, { size: 20 })}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
+              <p className="text-[10px] font-bold text-slate-400 italic">{stat.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 flex flex-col gap-8 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+           <div className="flex-1 relative group">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-900 transition-colors" size={20} />
+              <input 
+                type="text" 
+                placeholder="Rechercher un agent, une agence, une reference..."
+                className="w-full pl-16 pr-8 py-5 bg-slate-50/50 border border-slate-100 rounded-2xl font-bold text-slate-900 outline-none focus:bg-white focus:border-blue-900 transition-all"
+              />
+           </div>
+           <div className="relative group min-w-[240px]">
+              <select className="w-full appearance-none px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-900 outline-none cursor-pointer">
+                 <option>Tous les ecarts</option>
+                 <option>Excedents</option>
+                 <option>Manquants</option>
+              </select>
+              <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" size={16} />
+           </div>
+           <div className="px-6 py-5 bg-slate-50 rounded-2xl flex items-center gap-2 border border-slate-100">
+              <span className="text-[10px] font-black text-slate-900 uppercase">0 resultat</span>
+           </div>
+        </div>
+
+        <div className="min-h-[400px] flex flex-col items-center justify-center text-center space-y-6">
+           <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/10">
+              <CheckCircle size={32} />
+           </div>
+           <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Tout est a jour !</h3>
+              <p className="text-sm font-bold text-slate-400 max-w-sm italic">Aucune demande d ajustement en attente pour le moment.</p>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Main App Wrapper ---
 
 export default function MerchantDashboard(props: Partial<MerchantDashboardProps>) {
@@ -2954,6 +3028,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       case "Stocks": return <StocksView />;
       case "Clôtures": return <CloturesView />;
       case "Dettes": return <DettesView />;
+      case "Ajustements": return <AjustementsView />;
       case "Rapports": return <RapportsView />;
       case "Paramètres": return <SettingsView user={data.user} />;
       default: return (
@@ -2975,8 +3050,8 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
     <div className="flex h-full bg-[#F8FAFC] overflow-hidden font-sans">
       {/* Sidebar - Fintrack2 Style */}
       <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-32 items-center">
-          <Logo className="h-24 w-auto drop-shadow-sm" />
+        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-40 items-center">
+          <Logo className="h-32 w-auto drop-shadow-sm" />
         </div>
         
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-8">
@@ -2988,6 +3063,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
           <SidebarItem icon={<Package size={20} />} label="Produits & Stocks" active={activeTab === "Stocks"} onClick={() => setActiveTab("Stocks")} />
           <SidebarItem icon={<Calendar size={20} />} label="Clôtures & Bilans" active={activeTab === "Clôtures"} onClick={() => setActiveTab("Clôtures")} />
           <SidebarItem icon={<ShieldAlert size={20} />} label="Dettes agents" active={activeTab === "Dettes"} onClick={() => setActiveTab("Dettes")} />
+          <SidebarItem icon={<PenTool size={20} />} label="Ajustements" active={activeTab === "Ajustements"} onClick={() => setActiveTab("Ajustements")} />
           <SidebarItem icon={<BarChart2 size={20} />} label="Rapports" active={activeTab === "Rapports"} onClick={() => setActiveTab("Rapports")} />
           <SidebarItem icon={<Settings size={20} />} label="Paramètres" active={activeTab === "Paramètres"} onClick={() => setActiveTab("Paramètres")} />
         </nav>

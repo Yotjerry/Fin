@@ -1107,7 +1107,6 @@ function LandingPage() {
         </section>
       </main>
 
-      <FooterSection />
     </div>
   );
 }

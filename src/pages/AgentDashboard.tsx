@@ -4,6 +4,7 @@ import {
   ArrowUpRight, 
   ArrowDownLeft,
   History, 
+  Calendar,
   User, 
   Bell, 
   Smartphone,
@@ -19,7 +20,11 @@ import {
   Landmark,
   CreditCard,
   ChevronRight,
+  Search,
   AlertCircle,
+  AlertTriangle,
+  Camera,
+  FileText,
   X,
   Zap,
   ArrowRight,
@@ -73,7 +78,7 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
   >
     <div className="flex items-center gap-4 min-w-0 pr-2 overflow-hidden">
       <span className={`shrink-0 transition-all duration-300 p-2 rounded-xl ${active ? "bg-white/20 text-white" : "bg-slate-50 text-slate-400 group-hover:bg-fintrack-primary/5 group-hover:text-fintrack-primary"}`}>
-        {React.cloneElement(icon as React.ReactElement, { size: 18 })}
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
       </span>
       <span className={`text-[13px] font-bold whitespace-nowrap truncate tracking-tight ${active ? "opacity-100" : "opacity-70 group-hover:opacity-100"}`}>
         {label}
@@ -102,14 +107,384 @@ export default function AgentDashboard() {
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
   const [beneficiaryName, setBeneficiaryName] = useState("");
+  const [depositorName, setDepositorName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [rib, setRib] = useState("");
+  const [subscriberId, setSubscriberId] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [selectedArticle, setSelectedArticle] = useState("");
   const [step, setStep] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const activities = [
-    { id: 1, amount: "1 469 727", bank: "BOA", type: "DÉPÔT", date: "12:10", status: "success", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Bank_of_Africa_logo.svg/512px-Bank_of_Africa_logo.svg.png" },
-    { id: 2, amount: "1 094 328", bank: "Ecobank", type: "DÉPÔT", date: "11:45", status: "success", logo: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ecobank_logo.svg" },
-    { id: 3, amount: "45 000", bank: "MTN", type: "VENTE", date: "11:20", status: "success", logo: "https://upload.wikimedia.org/wikipedia/commons/9/93/MTN_Logo.svg" },
-    { id: 4, amount: "250 000", bank: "Wave", type: "RETRAIT", date: "10:55", status: "success", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Wave_Logo.svg/1000px-Wave_Logo.svg.png" },
-  ];
+  const [activities, setActivities] = useState([
+    { 
+      id: "TXN-IMRH6NP3", 
+      clientRef: "0718957019",
+      amount: "10 000", 
+      commission: "100", 
+      operator: "Ecobank", 
+      type: "DEPOT", 
+      date: "28/04/2026", 
+      time: "14:25", 
+      status: "EN_ANNULATION", 
+      logo: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ecobank_logo.svg",
+      proofPhoto: true,
+      receiptPhoto: false,
+      extra: "Bénéficiaire: Koffi Jerry"
+    },
+    { 
+      id: "TXN-DSAGPFUJ", 
+      clientRef: "0749499122",
+      amount: "50 000", 
+      commission: "500", 
+      operator: "Wave", 
+      type: "PAIEMENT FACTURE", 
+      date: "28/04/2026", 
+      time: "13:42", 
+      status: "EN_ANNULATION", 
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Wave_Logo.svg/1000px-Wave_Logo.svg.png",
+      proofPhoto: true,
+      receiptPhoto: false,
+      extra: "SENELEC | Titulaire : Aya"
+    },
+    { 
+      id: "TXN-B110432B", 
+      clientRef: "0711338192",
+      amount: "2 500", 
+      commission: "25", 
+      operator: "Ecobank", 
+      type: "DEPOT", 
+      date: "25/04/2026", 
+      time: "18:42", 
+      status: "CONFIRME", 
+      logo: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ecobank_logo.svg",
+      proofPhoto: true,
+      receiptPhoto: true,
+    },
+    { 
+      id: "TXN-B10F0B3D", 
+      clientRef: "0755083250",
+      amount: "50 000", 
+      commission: "750", 
+      operator: "NSIA Banque", 
+      type: "DEPOT", 
+      date: "25/04/2026", 
+      time: "18:42", 
+      status: "CONFIRME", 
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8F6tXG5S1O5A4Y7_qg7Z5y5o9G0Z3w-Q&s",
+      proofPhoto: true,
+      receiptPhoto: true,
+    },
+  ]);
+
+  const [selectedTxForReceipt, setSelectedTxForReceipt] = useState<any>(null);
+  const [selectedTxForReport, setSelectedTxForReport] = useState<any>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const handleReportError = (id: string) => {
+    setActivities(prev => prev.map(a => a.id === id ? { ...a, status: "EN_ANNULATION" } : a));
+    setShowReportModal(false);
+  };
+
+  function CloturesView() {
+    const cloturesData = [
+      {
+        id: 1,
+        date: "2026-04-19",
+        status: "EN_ATTENTE",
+        bilanState: "NORMAL",
+        bilanAmount: 0,
+        physique: 971773,
+        theorique: 971773
+      },
+      {
+        id: 2,
+        date: "2026-04-19",
+        status: "EN_ATTENTE",
+        bilanState: "NORMAL",
+        bilanAmount: 0,
+        physique: 974196,
+        theorique: 974196
+      },
+      {
+        id: 3,
+        date: "2026-04-19",
+        status: "VERIFIE",
+        bilanState: "NORMAL",
+        bilanAmount: 0,
+        physique: 380624,
+        theorique: 380624
+      },
+      {
+        id: 4,
+        date: "2026-04-17",
+        status: "EN_ATTENTE",
+        bilanState: "EXCEDENT",
+        bilanAmount: 5000,
+        physique: 880100,
+        theorique: 875100,
+        justification: "Oubli d'enregistrement d'un frais d'envoi d'un client sur le système local."
+      },
+      {
+        id: 5,
+        date: "2026-04-17",
+        status: "VERIFIE",
+        bilanState: "EXCEDENT",
+        bilanAmount: 5000,
+        physique: 930723,
+        theorique: 925723,
+        justification: "Oubli d'enregistrement d'un frais d'envoi d'un client sur le système local."
+      },
+      {
+        id: 6,
+        date: "2026-04-17",
+        status: "VERIFIE",
+        bilanState: "EXCEDENT",
+        bilanAmount: 5000,
+        physique: 789852,
+        theorique: 784852,
+        justification: "Oubli d'enregistrement d'un frais d'envoi d'un client sur le système local."
+      },
+      {
+        id: 7,
+        date: "2026-04-15",
+        status: "VERIFIE",
+        bilanState: "DEFICIT",
+        bilanAmount: 25000,
+        physique: 475000,
+        theorique: 500000,
+        justification: "Perte de 25.000 during transport."
+      }
+    ];
+
+    return (
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
+          <div className="space-y-3">
+            <h2 className="text-6xl font-black text-[#0F172A] tracking-tighter">Clôtures & Bilans</h2>
+            <p className="text-slate-500 font-medium text-[17px] tracking-tight">Suivi des clôtures journalières et des états de bilan.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {cloturesData.map((cloture) => (
+            <div key={cloture.id} className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm flex flex-col gap-8 group hover:shadow-xl transition-all duration-500">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                  <span className="text-fintrack-primary"><Calendar size={16} /></span>
+                  <span className="text-[13px] font-black text-slate-900">{cloture.date}</span>
+                </div>
+                {cloture.status === "VERIFIE" ? (
+                  <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider border border-emerald-100">
+                    Vérifié par la direction
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 text-slate-500 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider border border-slate-100">
+                    En attente de contrôle
+                  </div>
+                )}
+              </div>
+
+              {/* State */}
+              <div className="flex items-center gap-6">
+                 <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center ${
+                   cloture.bilanState === "NORMAL" ? "bg-emerald-50 text-emerald-500" : 
+                   cloture.bilanState === "EXCEDENT" ? "bg-amber-50 text-amber-500" :
+                   "bg-red-50 text-red-500"
+                 }`}>
+                   {cloture.bilanState === "NORMAL" ? <CheckCircle size={32} /> : 
+                    cloture.bilanState === "EXCEDENT" ? <AlertTriangle size={32} /> : 
+                    <AlertCircle size={32} />}
+                 </div>
+                 <div className="flex flex-col">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">ÉTAT DU BILAN</p>
+                    <p className={`text-2xl font-black tracking-tight ${
+                      cloture.bilanState === "NORMAL" ? "text-emerald-500" : 
+                      cloture.bilanState === "EXCEDENT" ? "text-amber-500" :
+                      "text-red-500 shadow-red-500/10"
+                    }`}>
+                      {cloture.bilanState} ({cloture.bilanAmount.toLocaleString()} F)
+                    </p>
+                 </div>
+              </div>
+
+              {/* Grid Values */}
+              <div className="bg-slate-50/50 rounded-[2rem] p-6 border border-slate-100 grid grid-cols-2 gap-4">
+                 <div className="space-y-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">PHYSIQUE COMPTÉ</p>
+                    <p className="text-xl font-black text-slate-900 leading-none">{cloture.physique.toLocaleString()} F</p>
+                 </div>
+                 <div className="space-y-1 text-right">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">THÉORIQUE SYSTÈME</p>
+                    <p className="text-xl font-black text-slate-900 leading-none">{cloture.theorique.toLocaleString()} F</p>
+                 </div>
+              </div>
+
+              {/* Justification */}
+              {cloture.justification && (
+                <div className="pt-4 border-t border-slate-100">
+                   <div className="pl-4 border-l-2 border-slate-100">
+                      <p className="text-[14px] font-medium text-slate-500 leading-relaxed">
+                        <span className="font-black text-slate-900">Justification:</span> {cloture.justification}
+                      </p>
+                   </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function TransactionsView() {
+    const filteredActivities = activities.filter(txn => 
+      txn.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      txn.operator.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      txn.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (txn.clientRef && txn.clientRef.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    return (
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* Header Section */}
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
+          <div className="space-y-3">
+            <h2 className="text-6xl font-black text-[#0F172A] tracking-tighter">Mes Transactions</h2>
+            <p className="text-slate-500 font-medium text-[17px] tracking-tight">Historique et suivi en temps réel de votre activité.</p>
+          </div>
+          
+          <div className="flex items-center gap-3 w-full xl:w-auto">
+            <div className="relative flex-1 xl:w-[480px]">
+              <Search size={22} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Chercher une référence, un numéro..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-16 pr-6 py-5 bg-white border border-slate-200 rounded-[2rem] font-medium text-[#0F172A] placeholder:text-slate-300 outline-none focus:ring-4 focus:ring-fintrack-primary/5 focus:border-fintrack-primary/20 transition-all shadow-sm"
+              />
+            </div>
+            <button className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-xl shadow-[#3B4CB8]/20 hover:bg-[#2D3A8C] hover:scale-[1.02] transition-all active:scale-95">
+              Rechercher
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-2">
+          {[
+            { label: "VOLUME TOTAL", value: "7 302 363", icon: <Activity />, bg: "bg-blue-50/50", iconColor: "text-blue-600" },
+            { label: "OPÉRATIONS", value: "15", icon: <Repeat />, bg: "bg-violet-50/50", iconColor: "text-violet-600" },
+            { label: "COMMISSIONS", value: "18 837", icon: <TrendingUp />, bg: "bg-emerald-50/50", iconColor: "text-emerald-600" },
+          ].map((stat, i) => (
+            <div key={i} className="bg-white border border-slate-100 rounded-[2.5rem] p-8 flex items-center gap-8 shadow-sm hover:shadow-xl hover:border-transparent transition-all duration-500 group">
+              <div className={`w-20 h-20 rounded-3xl ${stat.bg} ${stat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                {React.cloneElement(stat.icon as React.ReactElement<any>, { size: 32, strokeWidth: 2.5 })}
+              </div>
+              <div className="flex flex-col gap-1">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-[#0F172A] tracking-tighter tabular-nums">{stat.value}</span>
+                  <span className="text-lg font-black text-[#0F172A]">F</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Table Container */}
+        <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 overflow-hidden">
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left border-separate border-spacing-0">
+              <thead>
+                <tr className="bg-[#F8FAFC]">
+                  <th className="py-8 px-10 text-[11px] font-black text-slate-500 uppercase tracking-[0.1em] border-b border-slate-50">Référence / Client</th>
+                  <th className="py-8 px-10 text-[11px] font-black text-slate-500 uppercase tracking-[0.1em] border-b border-slate-50">Opération & Réseau</th>
+                  <th className="py-8 px-10 text-[11px] font-black text-slate-500 uppercase tracking-[0.1em] border-b border-slate-50">Montant</th>
+                  <th className="py-8 px-10 text-center text-[11px] font-black text-slate-500 uppercase tracking-[0.1em] border-b border-slate-50">Statut</th>
+                  <th className="py-8 px-10 text-right text-[11px] font-black text-slate-500 uppercase tracking-[0.1em] border-b border-slate-50">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {filteredActivities.map((txn, i) => (
+                  <tr 
+                    key={i} 
+                    className={`group transition-all duration-500 ${
+                      txn.status === "EN_ANNULATION" 
+                        ? "bg-amber-50/40" 
+                        : "hover:bg-slate-50/50"
+                    }`}
+                  >
+                    <td className="py-8 px-10">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[17px] font-black text-[#0F172A] tracking-tight">{txn.id}</span>
+                        <div className="bg-slate-100/80 px-3 py-1 rounded-lg self-start">
+                          <span className="text-[13px] font-black text-slate-500">{txn.clientRef}</span>
+                        </div>
+
+                      </div>
+                    </td>
+                    <td className="py-8 px-10">
+                      <div className="flex items-center gap-5">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 bg-white shadow-sm`}>
+                          {txn.type.includes('DEPOT') ? 
+                            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                               <ArrowDownLeft size={20} strokeWidth={3} />
+                            </div> : 
+                            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                               <ArrowUpRight size={20} strokeWidth={3} />
+                            </div>
+                          }
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[15px] font-black text-[#0F172A] uppercase tracking-tight">{txn.type}</span>
+                          <span className="text-[14px] font-medium text-slate-500">{txn.operator}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-8 px-10">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[22px] font-black text-[#0F172A] tracking-tighter leading-none">{txn.amount}</span>
+                          <span className="text-[14px] font-black text-[#0F172A]">F</span>
+                        </div>
+                        <span className="text-[12px] font-black text-emerald-500 tracking-tight">Comm: +{txn.commission} F</span>
+                      </div>
+                    </td>
+                    <td className="py-8 px-10 text-center">
+                      {txn.status === "EN_ANNULATION" ? (
+                        <div className="inline-flex bg-amber-100/50 text-amber-600 px-4 py-1.5 rounded-full border border-amber-200/50">
+                           <span className="text-[11px] font-black uppercase tracking-wider">{txn.status}</span>
+                        </div>
+                      ) : (
+                        <div className="inline-flex bg-emerald-100/50 text-emerald-600 px-4 py-1.5 rounded-full border border-emerald-200/50">
+                           <span className="text-[11px] font-black uppercase tracking-wider">{txn.status}</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-8 px-10 text-right">
+                      <button 
+                        onClick={() => {
+                          setSelectedTxForReceipt(txn);
+                          setShowReceiptModal(true);
+                        }}
+                        className="px-6 py-2.5 bg-[#3B4CB8] text-white rounded-xl font-black text-[11px] hover:bg-[#2D3A8C] transition-all shadow-lg shadow-blue-900/10 active:scale-95 whitespace-nowrap"
+                      >
+                        Voir Reçu
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const operators = [
     { id: "mtn", name: "MTN Bénin", img: "https://upload.wikimedia.org/wikipedia/commons/9/93/MTN_Logo.svg" },
@@ -166,6 +541,12 @@ export default function AgentDashboard() {
     setAmount("");
     setPhone("");
     setBeneficiaryName("");
+    setDepositorName("");
+    setIdNumber("");
+    setRib("");
+    setSubscriberId("");
+    setQuantity("1");
+    setSelectedArticle("");
     setStep(1);
     setWorkflowStep("CATEGORY");
   };
@@ -174,13 +555,12 @@ export default function AgentDashboard() {
     <div className="fixed inset-0 flex bg-fintrack-light font-sans selection:bg-fintrack-primary/30 overflow-hidden">
       {/* Sidebar - HIDDEN ON MOBILE */}
       <aside className="hidden lg:flex w-72 bg-[#FCFDFF] border-r border-slate-200/60 flex-col shrink-0 relative z-50">
-        <div className="p-8 flex justify-center h-28 items-center border-b border-slate-100/50">
-          <Logo className="h-16 w-auto" />
+        <div className="p-10 flex justify-center h-56 items-center border-b border-slate-100/50">
+          <Logo className="h-44 w-auto" />
         </div>
         
         <div className="flex-1 px-5 py-6 overflow-y-auto no-scrollbar">
           <div className="mb-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-4">Menu Principal</h3>
             <nav className="space-y-1.5">
               <SidebarItem 
                 icon={<Home size={20} />} 
@@ -199,16 +579,14 @@ export default function AgentDashboard() {
               />
               <SidebarItem 
                 icon={<History size={20} />} 
-                label="Historique" 
+                label="Clôtures & Bilans" 
                 active={activeTab === "Historique"} 
                 onClick={() => setActiveTab("Historique")} 
-                badge="03"
               />
             </nav>
           </div>
 
           <div className="mb-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-4">Services & Support</h3>
             <nav className="space-y-1.5">
               <SidebarItem 
                 icon={<Settings2 size={20} />} 
@@ -216,46 +594,11 @@ export default function AgentDashboard() {
                 active={activeTab === "Settings"} 
                 onClick={() => setActiveTab("Settings")} 
               />
-              <SidebarItem 
-                icon={<ShieldCheck size={20} />} 
-                label="Sécurité" 
-                active={activeTab === "Security"} 
-                onClick={() => setActiveTab("Security")} 
-              />
-              <SidebarItem 
-                icon={<User size={20} />} 
-                label="Profil Agent" 
-                active={activeTab === "Account"} 
-                onClick={() => setActiveTab("Account")} 
-              />
             </nav>
           </div>
         </div>
 
         <div className="px-6 pb-10 flex flex-col gap-4">
-          <div className="bg-[#1C3374] rounded-[2.5rem] p-6 flex flex-col gap-5 text-white relative overflow-hidden group shadow-2xl shadow-blue-900/30">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-fintrack-secondary/20 transition-all duration-700 pointer-events-none" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center text-fintrack-secondary font-black text-lg shadow-inner ring-1 ring-white/20">
-                AG
-              </div>
-              <div className="flex flex-col">
-                <p className="text-[13px] font-black tracking-tight leading-none mb-1 text-white">Agent Cotonou #01</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                  <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Session Active</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between relative z-10 pt-2 border-t border-white/10">
-                <div className="flex flex-col">
-                   <p className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">ID Terminal</p>
-                   <p className="text-[10px] font-mono font-black text-fintrack-secondary">#001-CORE</p>
-                </div>
-                <div className="bg-white/10 px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest uppercase border border-white/5">Premium</div>
-            </div>
-          </div>
-
           <button 
             onClick={() => navigate("/")}
             className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] bg-rose-500/5 border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase active:scale-95 group/logout shadow-sm"
@@ -271,26 +614,10 @@ export default function AgentDashboard() {
         {/* Simplified & More Breathing Header */}
         <header className="h-24 bg-white border-b border-slate-100 flex items-center justify-between px-10 shrink-0 relative z-20">
           <div className="flex items-center gap-10">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-1">
-                <span>Terminal</span>
-                <ChevronRight size={10} className="opacity-30" />
-                <span className="text-slate-900 border-b-2 border-fintrack-primary pb-0.5">{activeTab}</span>
-              </div>
-              <h1 className="text-xl font-black text-slate-950 tracking-tight">Poste de Travail <span className="text-fintrack-primary">#001</span></h1>
-            </div>
-            
-            <div className="hidden xl:flex items-center gap-6">
-              <div className="h-10 w-px bg-slate-100" />
-              <div className="flex flex-col">
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Disponible</span>
-                 <span className="text-sm font-black text-slate-900 tracking-tight">524 500 F</span>
-              </div>
-              <div className="flex flex-col">
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Commissions</span>
-                 <span className="text-sm font-black text-amber-600 tracking-tight">+12 400 F</span>
-              </div>
-            </div>
+            <h1 className="text-xl font-black text-slate-950 tracking-tight">
+              {activeTab === "Caisse" ? "Poste de Travail" : activeTab === "Transactions" ? "Gestion Transactions" : activeTab} 
+              <span className="text-fintrack-primary ml-2 uppercase text-sm opacity-50 font-bold">#001</span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-6">
@@ -322,510 +649,635 @@ export default function AgentDashboard() {
         <AnimatePresence mode="wait">
           <motion.div 
             key={activeTab}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
-            className="flex-1 overflow-y-auto p-4 md:p-10 lg:p-12 no-scrollbar bg-fintrack-light pb-32 lg:pb-12"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 overflow-y-auto p-4 md:p-10 lg:p-12 no-scrollbar bg-fintrack-light"
           >
-            <div className="max-w-[1300px] mx-auto space-y-10">
-            
-              {/* Refined Stats - More White Space */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[
-                  { label: "Flux Entrant", value: "845 000", delta: "+12.5%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
-                  { label: "Flux Sortant", value: "320 500", delta: "+4.2%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
-                  { label: "Volume OPS", value: "24", delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
-                ].map((stat, i) => (
-                  <div key={i} className="bg-white rounded-[2rem] p-8 border border-slate-100/60 shadow-sm group hover:shadow-md transition-all duration-300">
-                    <div className="relative z-10 flex flex-col gap-6">
-                      <div className="flex items-center justify-between">
-                         <div className={`w-10 h-10 rounded-xl ${stat.bg}/10 flex items-center justify-center ${stat.color}`}>
-                            {React.cloneElement(stat.icon as React.ReactElement, { size: 20, strokeWidth: 2.5 })}
-                         </div>
-                         <div className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                           stat.trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 
-                           stat.trend === 'down' ? 'bg-rose-50 text-rose-600' : 
-                           'bg-slate-50 text-slate-400'
-                         }`}>
-                           {stat.delta}
-                         </div>
+            <div className="max-w-[1400px] mx-auto">
+              {activeTab === "Transactions" ? (
+                <TransactionsView />
+              ) : activeTab === "Historique" ? (
+                <CloturesView />
+              ) : activeTab === "Caisse" ? (
+                <div className="space-y-10">
+                  {/* Refined Stats - More White Space */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { label: "Flux Entrant", value: "845 000", delta: "+12.5%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
+                      { label: "Flux Sortant", value: "320 500", delta: "+4.2%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
+                      { label: "Volume OPS", value: "24", delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white rounded-[2rem] p-8 border border-slate-100/60 shadow-sm group hover:shadow-md transition-all duration-300">
+                        <div className="relative z-10 flex flex-col gap-6">
+                          <div className="flex items-center justify-between">
+                             <div className={`w-10 h-10 rounded-xl ${stat.bg}/10 flex items-center justify-center ${stat.color}`}>
+                                {React.cloneElement(stat.icon as React.ReactElement<any>, { size: 20, strokeWidth: 2.5 })}
+                             </div>
+                             <div className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                               stat.trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 
+                               stat.trend === 'down' ? 'bg-rose-50 text-rose-600' : 
+                               'bg-slate-50 text-slate-400'
+                             }`}>
+                               {stat.delta}
+                             </div>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                            <div className="flex items-baseline gap-2">
+                              <p className="text-2xl font-black text-slate-950 tracking-tight tabular-nums">{stat.value}</p>
+                              <span className="text-[10px] font-black text-slate-300">CFA</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
-                        <div className="flex items-baseline gap-2">
-                          <p className="text-2xl font-black text-slate-950 tracking-tight tabular-nums">{stat.value}</p>
-                          <span className="text-[10px] font-black text-slate-300">CFA</span>
+                    ))}
+                  </div>
+
+                  {/* Quick Actions - Lighter Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    {[
+                      { id: "ramassage", label: "Ramassage", icon: <ArrowUpRight />, color: "text-blue-600", bgColor: "bg-blue-600/5" },
+                      { id: "ajustement", label: "Ajustement", icon: <Settings2 />, color: "text-violet-600", bgColor: "bg-violet-600/5" },
+                      { id: "recharge", label: "Réappro.", icon: <RefreshCw />, color: "text-emerald-600", bgColor: "bg-emerald-600/5" },
+                      { id: "dette", label: "Dettes", icon: <HandCoins />, color: "text-slate-600", bgColor: "bg-slate-600/5" },
+                      { id: "cloture", label: "Clôture", icon: <Power />, color: "text-rose-600", bgColor: "bg-rose-600/5" },
+                    ].map((action) => (
+                      <button 
+                        key={action.id}
+                        onClick={() => setActiveModal(action.id as ModalType)}
+                        className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-[2.5rem] gap-4 shadow-sm hover:shadow-xl hover:border-transparent hover:-translate-y-1 transition-all duration-300 group"
+                      >
+                        <div className={`w-14 h-14 rounded-2xl ${action.bgColor} ${action.color} flex items-center justify-center group-hover:scale-110 group-hover:bg-white transition-all duration-300`}>
+                          {React.cloneElement(action.icon as React.ReactElement<any>, { size: 24, strokeWidth: 2.5 })}
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-950 transition-colors">{action.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* WORKFLOW NAVIGATION HEADER */}
+                  {workflowStep !== "CATEGORY" && (
+                    <div className="flex items-center justify-between mb-2">
+                      <button 
+                        onClick={handleBack}
+                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-black text-xs uppercase tracking-widest"
+                      >
+                        <ArrowLeft size={16} /> Retour
+                      </button>
+                      <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                        <span>{selectedCategory}</span>
+                        {selectedOperator && (
+                          <>
+                            <ChevronRight size={10} />
+                            <span>{selectedOperator}</span>
+                          </>
+                        )}
+                        {selectedService && (
+                          <>
+                            <ChevronRight size={10} />
+                            <span>{selectedService.title}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DYNAMIC WORKFLOW CONTENT */}
+                  <AnimatePresence mode="wait">
+                    {workflowStep === "CATEGORY" && (
+                      <motion.div 
+                        key="category"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="space-y-6"
+                      >
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight px-4">Terminal POS</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {categories.map((cat) => (
+                            <button
+                              key={cat.id}
+                              onClick={() => {
+                                setSelectedCategory(cat.id as ServiceCategory);
+                                setWorkflowStep("OPERATOR");
+                              }}
+                              className="bg-white border border-slate-100/60 rounded-[2.5rem] p-8 flex flex-col items-center gap-6 hover:shadow-xl hover:border-transparent transition-all duration-500 group relative overflow-hidden"
+                            >
+                              <div className={`w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center ${cat.iconColor} group-hover:scale-110 transition-all duration-500`}>
+                                {React.cloneElement(cat.icon as React.ReactElement<any>, { size: 32 })}
+                              </div>
+                              <div className="text-center space-y-1">
+                                <span className="block text-lg font-black text-slate-900 tracking-tight">{cat.title}</span>
+                                <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest">Choisir service</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {workflowStep === "OPERATOR" && (
+                      <motion.div 
+                        key="operator"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-6"
+                      >
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight px-4 underline decoration-fintrack-primary/10 underline-offset-8">Choisir l'opérateur</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {getOperators().map((op) => (
+                            <button
+                              key={op.id}
+                              onClick={() => {
+                                setSelectedOperator(op.name);
+                                setWorkflowStep("SERVICE");
+                              }}
+                              className={`bg-white border-2 ${op.color} rounded-[2.5rem] p-8 flex items-center gap-6 hover:shadow-lg transition-all group`}
+                            >
+                              <div className="w-16 h-16 bg-slate-50 rounded-2xl p-2 flex items-center justify-center overflow-hidden">
+                                 <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
+                              </div>
+                              <span className="text-xl font-black text-slate-900 tracking-tight group-hover:text-fintrack-primary transition-colors">{op.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {workflowStep === "SERVICE" && (
+                      <motion.div 
+                        key="service"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                      >
+                        {services.map((srv) => (
+                          <button
+                            key={srv.id}
+                            onClick={() => {
+                              setSelectedService(srv);
+                              setWorkflowStep("FORM");
+                            }}
+                            className={`${srv.color} rounded-[2rem] p-10 flex flex-col gap-6 relative overflow-hidden group hover:shadow-xl transition-all h-64 md:h-auto`}
+                          >
+                             <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center ${srv.iconColor} shadow-sm group-hover:scale-110 transition-transform`}>
+                                {srv.icon}
+                             </div>
+                             <div className="text-left space-y-1">
+                                <p className="text-2xl font-black text-slate-900 tracking-tight">{srv.title}</p>
+                                <p className="text-xs font-bold text-slate-500 opacity-80 uppercase tracking-widest">{srv.desc}</p>
+                             </div>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+
+                    {workflowStep === "FORM" && (
+                      <motion.div 
+                        key="form"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full max-w-2xl mx-auto space-y-12"
+                      >
+                        <div className="text-center space-y-6">
+                           <div className="inline-flex items-center gap-3 bg-fintrack-primary/5 px-4 py-2 rounded-full border border-fintrack-primary/10">
+                              <span className="text-[10px] font-black text-fintrack-primary uppercase tracking-[0.3em]">Configuration Opération</span>
+                           </div>
+                           <div className="flex items-center justify-center gap-4">
+                              <input 
+                                type="text" 
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                placeholder="0"
+                                className="text-7xl font-mono font-black text-slate-950 bg-transparent outline-none w-full max-w-[400px] text-right placeholder:text-slate-100 selection:bg-fintrack-primary/20"
+                              />
+                              <span className="text-4xl font-black text-slate-300">CFA</span>
+                           </div>
+                        </div>
+
+                        <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-8">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                             {/* FINTECH CATEGORY */}
+                             {selectedCategory === "FINTECH" && (
+                               <>
+                                 {["DEPOT", "RETRAIT", "CREDIT", "INTERNET", "APPEL"].includes(selectedService?.id || "") && (
+                                   <div className="space-y-3">
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Numéro de Téléphone</label>
+                                     <div className="relative">
+                                       <PhoneIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                       <input 
+                                         type="tel" 
+                                         value={phone}
+                                         onChange={(e) => setPhone(e.target.value)}
+                                         placeholder="Ex: 97 00 00 00" 
+                                         className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                       />
+                                     </div>
+                                   </div>
+                                 )}
+
+                                 {selectedService?.id === "DEPOT" && (
+                                   <div className="space-y-3">
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom COMPLET du Bénéficiaire</label>
+                                     <div className="relative">
+                                       <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                       <input 
+                                         type="text" 
+                                         value={beneficiaryName}
+                                         onChange={(e) => setBeneficiaryName(e.target.value)}
+                                         placeholder="Nom complet" 
+                                         className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                       />
+                                     </div>
+                                   </div>
+                                 )}
+
+                                 {["FACTURE", "ABONNEMENT"].includes(selectedService?.id || "") && (
+                                   <>
+                                     <div className="space-y-3">
+                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">
+                                         {selectedService?.id === "FACTURE" ? "N° Police / Identifiant Compteur" : "N° Carte / Abonné"}
+                                       </label>
+                                       <div className="relative">
+                                         <Cpu className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                         <input 
+                                           type="text" 
+                                           value={subscriberId}
+                                           onChange={(e) => setSubscriberId(e.target.value)}
+                                           placeholder="Référence..." 
+                                           className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                         />
+                                       </div>
+                                     </div>
+                                     <div className="space-y-3">
+                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom de l'Abonné / Titulaire</label>
+                                       <div className="relative">
+                                         <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                         <input 
+                                           type="text" 
+                                           value={beneficiaryName}
+                                           onChange={(e) => setBeneficiaryName(e.target.value)}
+                                           placeholder="Nom complet" 
+                                           className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                         />
+                                       </div>
+                                     </div>
+                                   </>
+                                 )}
+                               </>
+                             )}
+
+                             {/* BANK CATEGORY */}
+                             {selectedCategory === "BANK" && (
+                               <>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">N° de compte bancaire (RIB)</label>
+                                   <div className="relative">
+                                     <Landmark className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                     <input 
+                                       type="text" 
+                                       value={rib}
+                                       onChange={(e) => setRib(e.target.value)}
+                                       placeholder="RIB..." 
+                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                     />
+                                   </div>
+                                 </div>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom du Bénéficiaire / Client</label>
+                                   <div className="relative">
+                                     <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                     <input 
+                                       type="text" 
+                                       value={beneficiaryName}
+                                       onChange={(e) => setBeneficiaryName(e.target.value)}
+                                       placeholder="Nom complet" 
+                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                     />
+                                   </div>
+                                 </div>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom du Déposant / Retirant</label>
+                                   <div className="relative">
+                                     <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                     <input 
+                                       type="text" 
+                                       value={depositorName}
+                                       onChange={(e) => setDepositorName(e.target.value)}
+                                       placeholder="Nom complet" 
+                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                     />
+                                   </div>
+                                 </div>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">N° Pièce Identité (KYC)</label>
+                                   <div className="relative">
+                                     <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                     <input 
+                                       type="text" 
+                                       value={idNumber}
+                                       onChange={(e) => setIdNumber(e.target.value)}
+                                       placeholder="CIP / NPI / Passeport" 
+                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
+                                     />
+                                   </div>
+                                 </div>
+                               </>
+                             )}
+
+                             {/* SALES CATEGORY */}
+                             {selectedCategory === "SALES" && (
+                               <>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Article Sélectionné</label>
+                                   <div className="relative">
+                                     <ShoppingBag className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                     <select 
+                                       value={selectedArticle} 
+                                       onChange={(e) => setSelectedArticle(e.target.value)}
+                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all appearance-none"
+                                     >
+                                       <option value="">Choisir un article</option>
+                                       <option value="SIM MTN">SIM MTN</option>
+                                       <option value="SIM MOOV">SIM Moov</option>
+                                       <option value="SIM CELTIS">SIM Celtis</option>
+                                       <option value="RECHARGE">Carte recharge</option>
+                                     </select>
+                                   </div>
+                                 </div>
+                                 <div className="space-y-3">
+                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Quantité</label>
+                                   <div className="flex items-center gap-4">
+                                      <button onClick={() => setQuantity(Math.max(1, parseInt(quantity) - 1).toString())} className="w-16 h-16 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center font-black">-</button>
+                                      <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="flex-1 h-16 bg-slate-50 border-transparent text-center font-black text-xl rounded-2xl outline-none" />
+                                      <button onClick={() => setQuantity((parseInt(quantity) + 1).toString())} className="w-16 h-16 bg-fintrack-primary text-white rounded-2xl flex items-center justify-center font-black">+</button>
+                                   </div>
+                                 </div>
+                               </>
+                             )}
+                           </div>
+
+                           <div className="pt-4 border-t border-slate-50">
+                              <button 
+                                onClick={() => setWorkflowStep("RECAP")}
+                                disabled={!amount || (!phone && selectedService?.id !== "ABONNEMENT")}
+                                className="w-full py-6 bg-fintrack-primary text-white rounded-2xl font-black text-[12px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-blue-900/30 hover:bg-fintrack-dark disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
+                              >
+                                Suivant <ArrowRight size={18} />
+                              </button>
+                           </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {workflowStep === "RECAP" && (
+                       <motion.div 
+                         key="recap"
+                         initial={{ opacity: 0, y: 50 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         exit={{ opacity: 0, scale: 0.9 }}
+                         className="w-full max-xl mx-auto bg-white rounded-[3.5rem] border border-slate-100 shadow-2xl overflow-hidden"
+                       >
+                         <div className="bg-fintrack-primary p-12 text-center space-y-4">
+                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white mx-auto backdrop-blur-md mb-2">
+                               <ShieldCheck size={32} />
+                            </div>
+                            <h2 className="text-2xl font-black text-white tracking-tight italic">Confirmation Finale</h2>
+                            <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Vérifiez les informations</p>
+                         </div>
+
+                         <div className="p-10 space-y-8">
+                            <div className="space-y-6">
+                               <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</span>
+                                  <span className="text-[13px] font-black text-slate-900 uppercase">{selectedService?.title} ({selectedOperator || "Réseau Interne"})</span>
+                               </div>
+                               <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant</span>
+                                  <span className="text-xl font-black text-slate-900">{amount} F</span>
+                               </div>
+                               
+                               {phone && (
+                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">N° Client</span>
+                                   <span className="text-[13px] font-black text-slate-900">{phone}</span>
+                                 </div>
+                               )}
+                               
+                               {subscriberId && (
+                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID / Police</span>
+                                   <span className="text-[13px] font-black text-slate-900">{subscriberId}</span>
+                                 </div>
+                               )}
+
+                               {beneficiaryName && (
+                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bénéficiaire</span>
+                                   <span className="text-[13px] font-black text-slate-900 uppercase">{beneficiaryName}</span>
+                                 </div>
+                               )}
+
+                               {rib && (
+                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RIB</span>
+                                   <span className="text-[13px] font-black text-slate-900 uppercase">{rib}</span>
+                                 </div>
+                               )}
+
+                               {selectedArticle && (
+                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
+                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Article ({quantity})</span>
+                                   <span className="text-[13px] font-black text-slate-900 uppercase">{selectedArticle}</span>
+                                 </div>
+                               )}
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                               <button 
+                                 onClick={() => setWorkflowStep("SUCCESS")}
+                                 className="w-full py-6 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/30 hover:bg-emerald-600 transition-all active:scale-95"
+                               >
+                                 Confirmer & Exécuter
+                               </button>
+                               <button 
+                                 onClick={() => setWorkflowStep("FORM")}
+                                 className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
+                               >
+                                 Modifier les informations
+                               </button>
+                            </div>
+                         </div>
+                       </motion.div>
+                    )}
+
+                    {workflowStep === "SUCCESS" && (
+                      <motion.div 
+                        key="success"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-full max-w-xl mx-auto bg-white rounded-[4rem] p-12 border border-slate-100 shadow-2xl text-center space-y-10 focus:outline-none"
+                      >
+                         <div className="w-28 h-28 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30">
+                            <Check size={56} strokeWidth={4} />
+                         </div>
+
+                         <div className="space-y-3">
+                            <h2 className="text-4xl font-black text-slate-950 tracking-tighter leading-none">Opération Terminée</h2>
+                            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Transaction Authentifiée</p>
+                         </div>
+
+                         <div className="bg-[#FCFDFF] border border-slate-50 rounded-[2.5rem] p-8 space-y-4">
+                            <div className="flex justify-between items-center pb-4 border-b border-slate-100/50">
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Montant</span>
+                               <span className="text-xl font-mono font-black text-slate-950">{amount} F</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">ID Unique</span>
+                               <span className="text-xs font-mono font-black text-fintrack-primary uppercase">TX-{Math.floor(Math.random() * 1000000)}</span>
+                            </div>
+                         </div>
+
+                         <div className="flex flex-col gap-4">
+                            <button 
+                              onClick={closeModal}
+                              className="w-full py-6 bg-slate-950 text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-fintrack-primary transition-all duration-300"
+                            >
+                               Nouvelle Opération
+                            </button>
+                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* ACTIVITY FEED - ONLY ON CATEGORY STEP */}
+                  {workflowStep === "CATEGORY" && (
+                    <div className="space-y-8 animate-in fade-in duration-700">
+                      <div className="flex items-center justify-between px-6 bg-white/50 backdrop-blur-sm py-4 rounded-3xl border border-white/50">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Activités récentes</h3>
+                        </div>
+                        <div className="bg-fintrack-primary/10 px-4 py-1.5 rounded-full border border-fintrack-primary/10">
+                           <span className="text-[11px] font-black text-fintrack-primary tracking-tight">{activities.length} Flux</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white border border-slate-100/60 rounded-[3rem] shadow-sm">
+                        <div className="overflow-x-auto no-scrollbar">
+                          <table className="w-full text-left border-separate border-spacing-0">
+                            <thead>
+                              <tr className="bg-slate-50/50">
+                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Flux & Type</th>
+                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Opérateur</th>
+                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Montant</th>
+                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Commission</th>
+                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Date & Heure</th>
+                                <th className="py-6 px-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                              {activities.map((txn, i) => (
+                                <tr 
+                                  key={i} 
+                                  className={`group transition-all duration-500 ${
+                                    txn.status === "EN_ANNULATION" 
+                                      ? "bg-amber-50 animate-pulse border-y-2 border-dashed border-amber-400/50" 
+                                      : "hover:bg-slate-50/30"
+                                  }`}
+                                >
+                                  <td className="py-6 px-8">
+                                    <div className="flex items-center gap-4">
+                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-slate-50 ${
+                                        txn.type.includes('DEPOT') ? 'bg-emerald-50 text-emerald-500' : 'bg-fintrack-primary/5 text-fintrack-primary'
+                                      }`}>
+                                        {txn.type.includes('DEPOT') ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                                      </div>
+                                      <div className="flex flex-col">
+                                        <span className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{txn.type}</span>
+                                        <span className="text-[10px] font-bold text-slate-400">Ref: {txn.id}</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-6 px-8">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-6 h-6 bg-slate-50 p-1 rounded-md border border-slate-100 flex items-center justify-center">
+                                        <img src={txn.logo} className="w-full h-full object-contain" alt="" />
+                                      </div>
+                                      <span className="text-[13px] font-bold text-slate-700">{txn.operator}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-6 px-8">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-baseline gap-1">
+                                        <span className="text-[18px] font-black text-slate-900 tracking-tighter">{txn.amount}</span>
+                                        <span className="text-[10px] font-black text-slate-900">F</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-6 px-8">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                      <span className="text-[15px] font-black text-emerald-600 tracking-tight">+{txn.commission} F</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-6 px-8">
+                                    <div className="flex flex-col">
+                                      <span className="text-[13px] font-bold text-slate-600">{txn.date}</span>
+                                      <span className="text-[11px] font-bold text-slate-400">{txn.time}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-6 px-8 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button 
+                                        onClick={() => {
+                                          setSelectedTxForReceipt(txn);
+                                          setShowReceiptModal(true);
+                                        }}
+                                        className="px-4 py-2 bg-white border border-[#234D96] text-[#234D96] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-fintrack-primary hover:text-white transition-all shadow-sm active:scale-95"
+                                      >
+                                        Facture
+                                      </button>
+                                      {txn.status === "EN_ANNULATION" ? (
+                                        <div className="px-4 py-2 bg-amber-100 text-amber-600 rounded-xl font-black text-[9px] uppercase tracking-widest border border-amber-200">
+                                          EN_ANNULATION
+                                        </div>
+                                      ) : (
+                                        <button 
+                                          onClick={() => {
+                                            setSelectedTxForReport(txn);
+                                            setShowReportModal(true);
+                                          }}
+                                          className="px-4 py-2 bg-[#F84F4F] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E03E3E] transition-all shadow-sm active:scale-95"
+                                        >
+                                          Signaler
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Quick Actions - Lighter Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                {[
-                  { id: "ramassage", label: "Ramassage", icon: <ArrowUpRight />, color: "text-blue-600", bgColor: "bg-blue-600/5" },
-                  { id: "ajustement", label: "Ajustement", icon: <Settings2 />, color: "text-violet-600", bgColor: "bg-violet-600/5" },
-                  { id: "recharge", label: "Réappro.", icon: <RefreshCw />, color: "text-emerald-600", bgColor: "bg-emerald-600/5" },
-                  { id: "dette", label: "Dettes", icon: <HandCoins />, color: "text-slate-600", bgColor: "bg-slate-600/5" },
-                  { id: "cloture", label: "Clôture", icon: <Power />, color: "text-rose-600", bgColor: "bg-rose-600/5" },
-                ].map((action) => (
-                  <button 
-                    key={action.id}
-                    onClick={() => setActiveModal(action.id as ModalType)}
-                    className="flex flex-col items-center justify-center p-6 bg-white border border-slate-100 rounded-[2.5rem] gap-4 shadow-sm hover:shadow-xl hover:border-transparent hover:-translate-y-1 transition-all duration-300 group"
-                  >
-                    <div className={`w-14 h-14 rounded-2xl ${action.bgColor} ${action.color} flex items-center justify-center group-hover:scale-110 group-hover:bg-white transition-all duration-300`}>
-                      {React.cloneElement(action.icon as React.ReactElement, { size: 24, strokeWidth: 2.5 })}
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-[60vh]">
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                      <Settings2 size={32} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-950 transition-colors">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* WORKFLOW NAVIGATION HEADER */}
-              {workflowStep !== "CATEGORY" && (
-                <div className="flex items-center justify-between mb-2">
-                  <button 
-                    onClick={handleBack}
-                    className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-black text-xs uppercase tracking-widest"
-                  >
-                    <ArrowLeft size={16} /> Retour
-                  </button>
-                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                    <span>{selectedCategory}</span>
-                    {selectedOperator && (
-                      <>
-                        <ChevronRight size={10} />
-                        <span>{selectedOperator}</span>
-                      </>
-                    )}
-                    {selectedService && (
-                      <>
-                        <ChevronRight size={10} />
-                        <span>{selectedService.title}</span>
-                      </>
-                    )}
+                    <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Page en cours de développement</p>
                   </div>
                 </div>
               )}
-
-              {/* DYNAMIC WORKFLOW CONTENT */}
-              <AnimatePresence mode="wait">
-                {workflowStep === "CATEGORY" && (
-                  <motion.div 
-                    key="category"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
-                  >
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight px-4">Terminal POS</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {categories.map((cat) => (
-                        <button
-                          key={cat.id}
-                          onClick={() => {
-                            setSelectedCategory(cat.id as ServiceCategory);
-                            setWorkflowStep("OPERATOR");
-                          }}
-                          className="bg-white border border-slate-100/60 rounded-[2.5rem] p-8 flex flex-col items-center gap-6 hover:shadow-xl hover:border-transparent transition-all duration-500 group relative overflow-hidden"
-                        >
-                          <div className={`w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center ${cat.iconColor} group-hover:scale-110 transition-all duration-500`}>
-                            {React.cloneElement(cat.icon as React.ReactElement, { size: 32 })}
-                          </div>
-                          <div className="text-center space-y-1">
-                            <span className="block text-lg font-black text-slate-900 tracking-tight">{cat.title}</span>
-                            <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest">Choisir service</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {workflowStep === "OPERATOR" && (
-                  <motion.div 
-                    key="operator"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight px-4 underline decoration-fintrack-primary/10 underline-offset-8">Choisir l'opérateur</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {getOperators().map((op) => (
-                        <button
-                          key={op.id}
-                          onClick={() => {
-                            setSelectedOperator(op.name);
-                            setWorkflowStep("SERVICE");
-                          }}
-                          className={`bg-white border-2 ${op.color} rounded-[2.5rem] p-8 flex items-center gap-6 hover:shadow-lg transition-all group`}
-                        >
-                          <div className="w-16 h-16 bg-slate-50 rounded-2xl p-2 flex items-center justify-center overflow-hidden">
-                             <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
-                          </div>
-                          <span className="text-xl font-black text-slate-900 tracking-tight group-hover:text-fintrack-primary transition-colors">{op.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-
-                {workflowStep === "SERVICE" && (
-                  <motion.div 
-                    key="service"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                  >
-                    {services.map((srv) => (
-                      <button
-                        key={srv.id}
-                        onClick={() => {
-                          setSelectedService(srv);
-                          setWorkflowStep("FORM");
-                        }}
-                        className={`${srv.color} rounded-[2rem] p-10 flex flex-col gap-6 relative overflow-hidden group hover:shadow-xl transition-all h-64 md:h-auto`}
-                      >
-                         <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center ${srv.iconColor} shadow-sm group-hover:scale-110 transition-transform`}>
-                            {srv.icon}
-                         </div>
-                         <div className="text-left space-y-1">
-                            <p className="text-2xl font-black text-slate-900 tracking-tight">{srv.title}</p>
-                            <p className="text-xs font-bold text-slate-500 opacity-80 uppercase tracking-widest">{srv.desc}</p>
-                         </div>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-
-                {workflowStep === "FORM" && (
-                  <motion.div 
-                    key="form"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="w-full max-w-2xl mx-auto space-y-12"
-                  >
-                    <div className="text-center space-y-6">
-                       <div className="inline-flex items-center gap-3 bg-fintrack-primary/5 px-4 py-2 rounded-full border border-fintrack-primary/10">
-                          <span className="text-[10px] font-black text-fintrack-primary uppercase tracking-[0.3em]">Configuration Opération</span>
-                       </div>
-                       <div className="flex items-center justify-center gap-4">
-                          <input 
-                            type="text" 
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="0"
-                            className="text-7xl font-mono font-black text-slate-950 bg-transparent outline-none w-full max-w-[400px] text-right placeholder:text-slate-100 selection:bg-fintrack-primary/20"
-                          />
-                          <span className="text-4xl font-black text-slate-300">F</span>
-                       </div>
-                    </div>
-
-                    <div className="bg-white border border-slate-100 rounded-[3.5rem] p-12 space-y-12 shadow-2xl shadow-slate-200/50 relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-                       
-                       <div className="space-y-10 relative z-10">
-                          <div className="space-y-4">
-                             <div className="flex justify-between items-center px-1">
-                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Contact Client</label>
-                                <span className="text-[9px] font-bold text-slate-400">Requis *</span>
-                             </div>
-                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-6 flex items-center text-slate-300 group-hover:text-fintrack-primary transition-colors">
-                                   <PhoneIcon size={20} />
-                                </div>
-                                <input 
-                                  type="tel" 
-                                  placeholder="00 229 00 00 00 00"
-                                  value={phone}
-                                  onChange={(e) => setPhone(e.target.value)}
-                                  className="w-full h-22 bg-[#FCFDFF] border-2 border-slate-50 rounded-3xl pl-16 pr-8 text-2xl font-black text-slate-950 placeholder:text-slate-200 focus:bg-white focus:border-fintrack-primary/30 transition-all outline-none shadow-sm"
-                                />
-                             </div>
-                          </div>
-
-                          <div className="space-y-4">
-                             <div className="flex justify-between items-center px-1">
-                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Identité du Bénéficiaire</label>
-                                <span className="text-[9px] font-bold text-slate-400">Requis *</span>
-                             </div>
-                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-6 flex items-center text-slate-300 group-hover:text-fintrack-primary transition-colors">
-                                   <User size={20} />
-                                </div>
-                                <input 
-                                  type="text" 
-                                  placeholder="Nom & Prénoms"
-                                  value={beneficiaryName}
-                                  onChange={(e) => setBeneficiaryName(e.target.value)}
-                                  className="w-full h-22 bg-[#FCFDFF] border-2 border-slate-50 rounded-3xl pl-16 pr-8 text-2xl font-black text-slate-950 placeholder:text-slate-200 focus:bg-white focus:border-fintrack-primary/30 transition-all outline-none shadow-sm"
-                                />
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-8">
-                       <button 
-                         onClick={() => setWorkflowStep("RECAP")}
-                         className="w-full max-w-sm py-6 bg-slate-950 text-white rounded-[2.2rem] font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(30,41,59,0.3)] hover:scale-[1.02] active:scale-95 hover:bg-fintrack-primary transition-all duration-300 flex items-center justify-center gap-4 group"
-                       >
-                          Valider la saisie <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                       </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                {workflowStep === "RECAP" && (
-                  <motion.div 
-                    key="recap"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="w-full max-w-xl mx-auto bg-white rounded-[3rem] p-12 border border-slate-200 shadow-2xl space-y-10"
-                  >
-                     <div className="text-center space-y-2">
-                        <div className="w-20 h-20 bg-fintrack-secondary/10 rounded-full flex items-center justify-center text-fintrack-secondary mx-auto mb-4">
-                           <CheckCircle size={40} />
-                        </div>
-                        <h2 className="text-2xl font-black text-slate-950">Récapitulatif</h2>
-                        <p className="text-sm font-bold text-slate-400">Vérifiez les informations avant validation</p>
-                     </div>
-
-                     <div className="space-y-6 bg-slate-50 rounded-3xl p-8 border border-slate-100">
-                        <div className="flex justify-between items-center py-4 border-b border-slate-200/50">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Opération</span>
-                           <span className="text-sm font-black text-fintrack-primary uppercase tracking-tight">{selectedService?.title} ({selectedOperator})</span>
-                        </div>
-                        <div className="flex justify-between items-center py-4 border-b border-slate-200/50">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Client</span>
-                           <span className="text-sm font-black text-slate-900">{phone}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-4 border-b border-slate-200/50">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bénéficiaire</span>
-                           <span className="text-sm font-black text-slate-900">{beneficiaryName}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-4">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant Total</span>
-                           <span className="text-2xl font-mono font-black text-slate-950">{amount} CFA</span>
-                        </div>
-                     </div>
-
-                     <div className="flex gap-4">
-                        <button 
-                          onClick={handleBack}
-                          className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
-                        >
-                           Modifier
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setWorkflowStep("SUCCESS");
-                          }}
-                          className="flex-[2] py-5 bg-fintrack-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-fintrack-primary/20 hover:bg-fintrack-dark transition-all"
-                        >
-                           Confirmer le paiement
-                        </button>
-                     </div>
-                  </motion.div>
-                )}
-
-                {workflowStep === "SUCCESS" && (
-                  <motion.div 
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-xl mx-auto bg-white rounded-[4rem] p-12 lg:p-16 border border-slate-100 shadow-2xl text-center space-y-10 relative overflow-hidden"
-                  >
-                     <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-fintrack-primary via-fintrack-secondary to-blue-600" />
-                     
-                     <div className="relative">
-                       <div className="w-28 h-28 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30 relative z-10">
-                          <Check size={56} strokeWidth={4} />
-                       </div>
-                       <motion.div 
-                         initial={{ scale: 0, opacity: 0 }}
-                         animate={{ scale: 1.5, opacity: 0.1 }}
-                         className="absolute inset-0 bg-emerald-500 rounded-full blur-2xl"
-                       />
-                     </div>
-
-                     <div className="space-y-3">
-                        <h2 className="text-4xl font-black text-slate-950 tracking-tighter">Transaction Authentifiée</h2>
-                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] leading-none">Diffusion réseau en cours</p>
-                     </div>
-
-                     <div className="bg-[#FCFDFF] border border-slate-50 rounded-[2.5rem] p-8 space-y-4">
-                        <div className="flex justify-between items-center pb-4 border-b border-slate-100/50">
-                           <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Valeur Transactionnelle</span>
-                           <span className="text-xl font-mono font-black text-slate-950">{amount} CFA</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                           <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Identifiant Unique</span>
-                           <span className="text-xs font-mono font-black text-fintrack-primary bg-fintrack-primary/5 px-3 py-1 rounded-lg">TX-F-{Math.floor(Math.random() * 9999999)}</span>
-                        </div>
-                     </div>
-
-                     <div className="flex flex-col gap-4">
-                        <button 
-                          onClick={() => {
-                            setWorkflowStep("CATEGORY");
-                            setAmount("");
-                            setPhone("");
-                            setBeneficiaryName("");
-                          }}
-                          className="w-full py-6 bg-slate-950 text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/20 hover:bg-fintrack-primary transition-all duration-300"
-                        >
-                           Nouvelle Opération
-                        </button>
-                        <button className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
-                           <Receipt size={14} /> Imprimer le ticket
-                        </button>
-                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* ACTIVITY - ONLY ON MAIN STEP */}
-              {workflowStep === "CATEGORY" && (
-                <div className="space-y-8 mt-12">
-
-              {/* Final Performance Section - More Minimal */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 {/* Live Service Status */}
-                 <div className="bg-slate-900 rounded-[2rem] p-8 flex items-center gap-6 relative overflow-hidden">
-                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-emerald-400">
-                       <ShieldCheck size={24} />
-                    </div>
-                    <div className="space-y-1 relative z-10">
-                       <p className="text-sm font-black text-white uppercase tracking-widest">Système Opérationnel</p>
-                       <p className="text-[10px] font-bold text-white/40">Latence moyenne : <span className="text-emerald-400">1.2s</span> • Toutes les passerelles sont actives.</p>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                       <span className="text-[9px] font-black text-white uppercase tracking-widest">LIVE</span>
-                    </div>
-                 </div>
-
-                 {/* Minimal Net Metrics */}
-                 <div className="bg-white border border-slate-100 rounded-[2rem] p-8 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                       <div className="p-3 bg-fintrack-primary/5 rounded-xl text-fintrack-primary">
-                          <Activity size={20} />
-                       </div>
-                       <div>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Qualité Réseau</p>
-                          <p className="text-sm font-black text-slate-900">Excellent (98%)</p>
-                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                       {[3, 5, 4, 6, 5, 8, 4].map((h, i) => (
-                         <div key={i} className="w-1 bg-fintrack-primary/20 rounded-full flex items-end overflow-hidden h-6">
-                            <div className="w-full bg-fintrack-primary rounded-full transition-all duration-700" style={{ height: `${h * 10}%` }} />
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-              </div>
-
-              {/* RECENT FEED - BOTTOM HALF */}
-              <div className="bg-white border border-slate-100 rounded-[2.5rem] p-4 md:p-10 space-y-8 shadow-sm">
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
-                    <div className="p-2 bg-fintrack-primary/5 rounded-xl text-fintrack-primary">
-                       <Activity size={20} />
-                    </div>
-                    Activité Récente
-                  </h3>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all border border-slate-200/50">
-                    <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Filtrer</span>
-                    <Plus size={14} className="text-slate-400 rotate-45" />
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-separate border-spacing-y-3">
-                    <thead>
-                      <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                        <th className="pb-4 px-6">Nature</th>
-                        <th className="pb-4 px-6 text-center">Partenaire</th>
-                        <th className="pb-4 px-6">Identification</th>
-                        <th className="pb-4 px-6">Horodatage</th>
-                        <th className="pb-4 px-6 text-right">Volume (CFA)</th>
-                        <th className="pb-4 px-6 text-center">État</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {activities.map((item, idx) => (
-                        <tr key={idx} className="group hover:bg-white transition-all duration-300">
-                          <td className="py-5 px-6 border-b border-slate-50">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                item.type === 'DÉPÔT' ? 'bg-emerald-50 text-emerald-600' : 
-                                item.type === 'VENTE' ? 'bg-amber-50 text-amber-600' :
-                                'bg-rose-50 text-rose-600'
-                              }`}>
-                                 {item.type === 'DÉPÔT' ? <ArrowUpRight size={18} /> : 
-                                  item.type === 'VENTE' ? <ShoppingBag size={18} /> : 
-                                  <ArrowDownLeft size={18} />}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{item.type}</span>
-                                <span className="text-[13px] font-bold text-slate-900 tracking-tight">{item.type === 'VENTE' ? 'Service Externe' : 'Transfert Cash'}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-5 px-6 border-b border-slate-50">
-                            <div className="flex justify-center">
-                              <img src={item.logo} alt={item.bank} className="h-6 w-auto object-contain opacity-40 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          </td>
-                          <td className="py-5 px-6 border-b border-slate-50">
-                             <div className="flex flex-col">
-                               <span className="text-[11px] font-mono font-bold text-slate-600">#TX-{item.id}</span>
-                               <span className="text-[8px] font-black text-slate-300 uppercase">POS-001</span>
-                             </div>
-                          </td>
-                          <td className="py-5 px-6 border-b border-slate-50">
-                            <div className="flex flex-col">
-                               <span className="text-[13px] font-bold text-slate-900">{item.date}</span>
-                               <span className="text-[8px] font-black text-slate-300 uppercase">24 Avr.</span>
-                            </div>
-                          </td>
-                          <td className="py-5 px-6 text-right border-b border-slate-50">
-                            <div className="flex flex-col items-end">
-                               <div className="flex items-baseline gap-1">
-                                  <span className="text-sm font-mono font-black text-slate-950 tabular-nums">{item.amount}</span>
-                                  <span className="text-[9px] font-black text-slate-400">F</span>
-                               </div>
-                               <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">+150 Com</span>
-                            </div>
-                          </td>
-                          <td className="py-5 px-6 text-center border-b border-slate-50">
-                            <div className="inline-flex items-center gap-1.5 text-emerald-600">
-                               <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                               <span className="text-[9px] font-black uppercase tracking-widest">OK</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                <button className="w-full py-5 border-2 border-dashed border-slate-100 rounded-3xl text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] hover:bg-slate-50 hover:border-slate-200 transition-all hover:text-fintrack-primary">
-                  Voir tout l'historique
-                </button>
-              </div>
-            </div>
-          )}
             </div>
           </motion.div>
         </AnimatePresence>
@@ -863,7 +1315,7 @@ export default function AgentDashboard() {
               onClick={() => setActiveTab("Historique")}
             >
                <History size={22} />
-               <span className="text-[8px] font-black uppercase tracking-widest">Historique</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Bilans</span>
             </button>
             <button 
               className={`flex flex-col items-center gap-1 ${activeTab === "Account" ? "text-fintrack-primary" : "text-slate-400"}`}
@@ -874,22 +1326,23 @@ export default function AgentDashboard() {
             </button>
         </div>
 
-      {/* Sticky Footer Control */}
-        <footer className="bg-white border-t border-slate-200 px-10 pt-4 pb-0 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0 relative z-40">
-          <div className="flex items-center gap-4 text-slate-500">
-            <ShieldCheck size={18} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Sécurisé par Fintrack Global Compliance Systems</span>
-          </div>
-          <button 
-            onClick={() => setActiveModal("cloture")}
-            className="w-full md:w-auto px-10 py-4 bg-[#234D96] text-white rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#1C3374] transition-all shadow-xl shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-2"
-          >
-            <LogOut size={16} /> Effectuer la Clôture Automatique
-          </button>
-        </footer>
+        {/* Terminate main main content area */}
       </main>
 
       {/* --- REFINED MODALS --- */}
+      <ReceiptModal 
+        isOpen={showReceiptModal} 
+        onClose={() => setShowReceiptModal(false)} 
+        transaction={selectedTxForReceipt} 
+      />
+
+      <ReportModal 
+        isOpen={showReportModal} 
+        onClose={() => setShowReportModal(false)} 
+        transaction={selectedTxForReport}
+        onConfirm={handleReportError}
+      />
+
       <AnimatePresence>
         {activeModal !== "none" && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -1217,3 +1670,210 @@ export default function AgentDashboard() {
     </div>
   );
 }
+
+// Receipt Modal Component
+const ReceiptModal = ({ isOpen, onClose, transaction }: { isOpen: boolean; onClose: () => void; transaction: any }) => {
+  if (!isOpen || !transaction) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          onClick={onClose}
+        />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          className="relative w-full max-w-[480px] bg-[#F0F4F8] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-auto max-h-[90vh]"
+        >
+          <div className="p-8 pb-4 flex items-center justify-between bg-[#F0F4F8] shrink-0">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Aperçu du reçu</h3>
+            <button 
+              onClick={onClose}
+              className="w-10 h-10 bg-white/50 text-slate-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all shadow-sm"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-8 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {/* The actual ticket look */}
+            <div className="bg-white p-10 shadow-xl border border-slate-100 flex flex-col items-center gap-4 w-full mx-auto relative rounded-sm mb-4 font-mono text-slate-900">
+              {/* Status Stamp Overlay */}
+              {transaction.status === "EN_ANNULATION" && (
+                <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[25deg] border-[10px] border-amber-500/20 text-amber-500/30 text-4xl font-black px-10 py-6 rounded-[2rem] pointer-events-none z-[1] select-none uppercase tracking-[0.1em] text-center leading-tight">
+                  ATTENTE<br/>ANNULATION
+                </div>
+              )}
+
+              {/* Header */}
+              <div className="text-center space-y-2 w-full relative z-[2]">
+                <h2 className="text-2xl font-bold tracking-wider">FINTRACK KIOSQUE</h2>
+                <div className="space-y-1 text-[13px] font-medium text-slate-700">
+                  <p>POS terminal v1.0</p>
+                  <p>{transaction.date} {transaction.time}:34</p>
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="w-full text-center text-slate-900 tracking-tighter overflow-hidden whitespace-nowrap">
+                ------------------------------------------
+              </div>
+
+              {/* Title */}
+              <div className="text-center py-2">
+                <h3 className="text-xl font-bold tracking-widest uppercase">REÇU CLIENT</h3>
+              </div>
+
+              {/* Separator */}
+              <div className="w-full text-center text-slate-900 tracking-tighter overflow-hidden whitespace-nowrap">
+                ------------------------------------------
+              </div>
+
+              {/* Main Content */}
+              <div className="w-full space-y-3 text-[14px]">
+                <div className="flex justify-between items-center">
+                   <span className="font-medium whitespace-nowrap">Opération:</span>
+                   <span className="font-bold uppercase text-right">{transaction.type}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                   <span className="font-medium whitespace-nowrap">Opérateur:</span>
+                   <span className="font-bold text-right">{transaction.operator}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                   <span className="font-medium whitespace-nowrap">Réf / N°:</span>
+                   <span className="font-bold text-right">{transaction.clientRef || transaction.id}</span>
+                </div>
+              </div>
+
+              {/* Additional Info Section */}
+              {transaction.extra && (
+                <div className="w-full pt-4 space-y-1 text-[13px] relative z-[2]">
+                   <p className="font-medium text-slate-400">Infos additionnelles :</p>
+                   <p className="font-bold leading-relaxed">{transaction.extra}</p>
+                </div>
+              )}
+
+              {/* Separator */}
+              <div className="w-full text-center text-slate-900 tracking-tighter overflow-hidden whitespace-nowrap pt-2">
+                ------------------------------------------
+              </div>
+
+              {/* Total Amount */}
+              <div className="w-full flex justify-between items-center py-4 px-2">
+                 <span className="text-xl font-bold tracking-widest">MONTANT:</span>
+                 <span className="text-2xl font-bold tabular-nums">{transaction.amount} F</span>
+              </div>
+
+              {/* Separator */}
+              <div className="w-full text-center text-slate-900 tracking-tighter overflow-hidden whitespace-nowrap">
+                ------------------------------------------
+              </div>
+
+              {/* Footer Part */}
+              <div className="w-full space-y-8 pt-4 text-center">
+                 <div className="flex flex-col gap-1 items-start">
+                    <p className="text-[12px] font-bold">ID TXN: {transaction.id}</p>
+                 </div>
+                 
+                 <div className="space-y-1 text-[14px] font-bold">
+                    <p>Merci de votre confiance !</p>
+                    <p>À très bientôt.</p>
+                 </div>
+
+                 <div className="pt-10 flex justify-center gap-2 opacity-20">
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                    <span className="w-1.5 h-1.5 bg-black rounded-full" />
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8 bg-white border-t border-slate-100 flex gap-4 shrink-0 px-10">
+             <button 
+               onClick={onClose}
+               className="flex-1 py-5 border border-slate-200 rounded-3xl font-black text-[15px] text-slate-900 hover:bg-slate-50 transition-all"
+             >
+               Fermer
+             </button>
+             <button className="flex-1 py-5 bg-[#0F172A] text-white rounded-3xl font-black text-[15px] flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20">
+               <Receipt size={20} /> Imprimer
+             </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
+
+// Report Error Modal
+const ReportModal = ({ isOpen, onClose, transaction, onConfirm }: { isOpen: boolean; onClose: () => void; transaction: any; onConfirm: (id: string) => void }) => {
+  if (!isOpen || !transaction) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          onClick={onClose}
+        />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          className="relative w-full max-w-[440px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-10 flex flex-col items-center text-center gap-8"
+        >
+          <button 
+            onClick={onClose}
+            className="absolute top-6 right-6 w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-100 transition-all"
+          >
+            <X size={20} />
+          </button>
+
+          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mt-4">
+            <AlertTriangle size={40} />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-3xl font-black text-[#0F172A] tracking-tight">Signaler une erreur</h3>
+            <p className="text-[15px] font-medium text-slate-500 leading-relaxed max-w-[300px] mx-auto">
+              Voulez-vous vraiment signaler cette transaction ? Elle sera soumise à l'annulation auprès du marchand.
+            </p>
+          </div>
+
+          <div className="w-full flex flex-col gap-3">
+             <button 
+               onClick={() => {
+                 onConfirm(transaction.id);
+               }}
+               className="w-full py-5 bg-[#F84F4F] text-white rounded-3xl font-black text-[15px] hover:bg-[#E03E3E] transition-all shadow-xl shadow-red-500/20 active:scale-95"
+             >
+               Signaler l'erreur
+             </button>
+             <button 
+               onClick={onClose}
+               className="w-full py-5 bg-slate-50 text-slate-500 rounded-3xl font-black text-[15px] hover:bg-slate-100 transition-all active:scale-95"
+             >
+               Annuler
+             </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
