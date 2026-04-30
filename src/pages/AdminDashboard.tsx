@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     >
       <div className="flex items-center gap-4">
         <span className={`${active ? 'text-white' : 'text-slate-400 group-hover:text-[#234D96]'} transition-colors mt-0.5`}>{icon}</span>
-        <span className="text-[13px] font-black uppercase tracking-widest">{label}</span>
+        <span className="text-[13px] font-black tracking-widest">{label}</span>
       </div>
       {badge && (
         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
@@ -135,7 +135,6 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("Merchants")} 
             icon={<CheckCircle2 size={20} />} 
             label="Gestion des Marchands" 
-            badge="4"
           />
 
           <NavItem 
@@ -177,7 +176,7 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-8">
-           <button className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:text-rose-500 transition-colors">
+           <button className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] tracking-widest hover:text-rose-500 transition-colors">
               <LogOut size={18} />
               Déconnexion
            </button>
@@ -281,12 +280,13 @@ function OverviewView() {
                <div className="w-40 h-16 bg-slate-200 rounded-2xl animate-pulse" />
             </div>
          </div>
-         <div className="grid grid-cols-4 gap-6">
-            {[1,2,3,4].map(i => <div key={i} className="h-64 bg-white border border-slate-100 rounded-[2.5rem] animate-pulse" />)}
+         <div className="grid grid-cols-5 gap-6">
+            {[1,2,3,4,5].map(i => <div key={i} className="h-40 bg-white border border-slate-100 rounded-[2.5rem] animate-pulse" />)}
          </div>
-         <div className="grid grid-cols-12 gap-8">
-            <div className="col-span-8 h-96 bg-white border border-slate-100 rounded-[3rem] animate-pulse" />
-            <div className="col-span-4 h-96 bg-slate-900 rounded-[3rem] animate-pulse" />
+         <div className="grid grid-cols-3 gap-8">
+            <div className="h-96 bg-white border border-slate-100 rounded-[3rem] animate-pulse" />
+            <div className="h-96 bg-white border border-slate-100 rounded-[3rem] animate-pulse" />
+            <div className="h-96 bg-white border border-slate-100 rounded-[3rem] animate-pulse" />
          </div>
       </div>
     );
@@ -297,12 +297,12 @@ function OverviewView() {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="space-y-12 pb-20"
+      className="space-y-8 pb-20"
     >
       <div className="flex items-end justify-between">
         <div className="space-y-4">
-          <p className="text-[10px] font-black text-[#234D96] uppercase tracking-[0.3em] font-sans">Analyse en temps réel</p>
-          <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Tableau de <span className="text-[#234D96]">Bord</span></h2>
+          <p className="text-[10px] font-black text-[#234D96] tracking-[0.3em] font-sans">Système Centralisé</p>
+          <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Vision</span></h2>
         </div>
         <div className="flex gap-4">
            <button 
@@ -311,353 +311,248 @@ function OverviewView() {
            >
               <Activity size={24} />
            </button>
-           <button className="px-10 py-5 bg-[#234D96] text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-900/40 hover:scale-[1.03] active:scale-95 transition-all border-4 border-white">
-              Exporter le Rapport Global
+           <button className="px-10 py-5 bg-[#234D96] text-white rounded-[2rem] font-bold text-xs shadow-2xl shadow-indigo-900/40 hover:scale-[1.03] active:scale-95 transition-all border-4 border-white">
+              Générer Rapport PDF
            </button>
         </div>
       </div>
 
-      {/* KPI BAR WITH SPARKLINES */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* TOP KPI ROW - IMAGE STYLE */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <KpiCard 
-          label="Entreprises" 
-          value="842" 
-          unit="Marchands"
-          growth="+12.4%"
+          label="Points de Vente" 
+          value="1,248" 
+          growth="+15%"
           color="#3A4DB7"
-          chartData={[20, 50, 45, 90, 75, 100]}
         />
         <KpiCard 
-          label="Agents Totaux" 
-          value="1,452" 
-          unit="Points"
-          growth="+18.2%"
+          label="Marchands" 
+          value="352" 
+          growth="+12%"
           color="#4ECBA8"
-          chartData={[40, 60, 55, 80, 85, 110]}
         />
         <KpiCard 
-          label="Revenus Plans" 
-          value="45.8M" 
-          unit="FCFA"
-          growth="+24.5%"
+          label="Agents Hub" 
+          value="2,840" 
+          growth="+24%"
           color="#6366F1"
-          chartData={[30, 45, 60, 55, 90, 120]}
         />
         <KpiCard 
-          label="Connexions Live" 
-          value="952" 
-          unit="Agents"
+          label="Utilisateurs" 
+          value="15.4K" 
           growth="+5.4%"
           color="#F59E0B"
-          chartData={[85, 90, 95, 88, 92, 98]}
+        />
+        <KpiCard 
+          label="Revenus Générés" 
+          value="45.8M" 
+          growth="+18%"
+          color="#EF4444"
+          isCurrency
         />
       </div>
 
-      {/* ANALYTICS SECTION */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Main Activity Chart */}
-        <div className="col-span-12 lg:col-span-8 bg-white rounded-[3rem] p-10 border border-slate-200/60 shadow-sm overflow-hidden flex flex-col relative group">
-           <div className="flex items-center justify-between mb-10 relative z-10">
-              <div>
-                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">Activité du Réseau</h3>
-                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Comparaison Sessions vs Inscriptions</p>
-              </div>
-              <div className="flex gap-2">
-                 <button className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[#3A4DB7] text-white shadow-lg shadow-indigo-900/20 transition-all">6 derniers mois</button>
-                 <button className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all">Audit Annuel</button>
+      {/* MIDDLE SECTION - IMAGE STYLE (3 columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Working Format -> Transactions Format */}
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col justify-between">
+           <div className="flex items-center justify-between">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Format des Flux</h3>
+              <select className="bg-slate-50 text-[10px] font-black p-2 rounded-lg border-none outline-none cursor-pointer uppercase tracking-widest">
+                 <option>Cette Semaine</option>
+              </select>
+           </div>
+           
+           <div className="h-64 relative flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                 <PieChart>
+                    <Pie
+                       data={[
+                         { name: 'Mobile Money', value: 450, color: '#234D96' },
+                         { name: 'Virement', value: 300, color: '#4ECBA8' },
+                         { name: 'Espèces', value: 250, color: '#F1F5F9' }
+                       ]}
+                       innerRadius={70}
+                       outerRadius={95}
+                       paddingAngle={10}
+                       cornerRadius={10}
+                       dataKey="value"
+                    >
+                       <Cell fill="#234D96" />
+                       <Cell fill="#4ECBA8" />
+                       <Cell fill="#F1F5F9" />
+                    </Pie>
+                 </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-[10px] font-black text-slate-400 tracking-widest">Total</span>
+                 <span className="text-3xl font-black text-slate-950">1,000</span>
               </div>
            </div>
 
-           <div className="h-80 w-full relative z-10">
-              <ResponsiveContainer width="100%" height="100%">
-                 <AreaChart data={ACTIVITY_DATA}>
-                    <defs>
-                       <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3A4DB7" stopOpacity={0.15}/>
-                          <stop offset="95%" stopColor="#3A4DB7" stopOpacity={0}/>
-                       </linearGradient>
-                       <linearGradient id="colorAgents" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4ECBA8" stopOpacity={0.1}/>
-                          <stop offset="95%" stopColor="#4ECBA8" stopOpacity={0}/>
-                       </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis 
-                       dataKey="month" 
-                       axisLine={false} 
-                       tickLine={false} 
-                       tick={{fontSize: 10, fontWeight: 800, fill: '#94A3B8'}} 
-                       dy={10}
-                    />
-                    <YAxis 
-                       axisLine={false} 
-                       tickLine={false} 
-                       tick={{fontSize: 10, fontWeight: 800, fill: '#94A3B8'}}
-                    />
-                    <Tooltip 
-                       contentStyle={{ border: 'none', borderRadius: '20px', boxShadow: '0 20px 40px rgba(58, 77, 183, 0.1)', fontWeight: 800, fontSize: '12px' }}
-                    />
-                    <Area 
-                       type="monotone" 
-                       dataKey="sessions" 
-                       stroke="#3A4DB7" 
-                       strokeWidth={4} 
-                       fillOpacity={1} 
-                       fill="url(#colorSessions)" 
-                    />
-                    <Area 
-                       type="monotone" 
-                       dataKey="agents" 
-                       stroke="#4ECBA8" 
-                       strokeWidth={2} 
-                       strokeDasharray="5 5" 
-                       fillOpacity={1} 
-                       fill="url(#colorAgents)" 
-                    />
-                 </AreaChart>
-              </ResponsiveContainer>
+           <div className="flex justify-center gap-6">
+              <div className="flex items-center gap-2">
+                 <div className="w-2.5 h-2.5 rounded-full bg-[#234D96]" />
+                 <span className="text-[10px] font-bold text-slate-400 tracking-widest">Digital</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2.5 h-2.5 rounded-full bg-[#4ECBA8]" />
+                 <span className="text-[10px] font-bold text-slate-400 tracking-widest">Cash</span>
+              </div>
            </div>
         </div>
 
-        {/* Plan Revenue Donut */}
-        <div className="col-span-12 lg:col-span-4 bg-[#1A1C1E] rounded-[3rem] p-10 text-white relative overflow-hidden group">
-           <div className="relative z-10">
-              <h3 className="text-2xl font-black mb-1">Revenus par Plan</h3>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-10">Total : 45.8M FCFA</p>
-              
-              <div className="h-64 relative">
-                 <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                       <Pie
-                          data={PLAN_REVENUE_DATA}
-                          innerRadius={60}
-                          outerRadius={90}
-                          paddingAngle={8}
-                          dataKey="value"
-                       >
-                          {PLAN_REVENUE_DATA.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                       </Pie>
-                       <Tooltip />
-                    </PieChart>
-                 </ResponsiveContainer>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-3xl font-black leading-none">82%</span>
-                    <span className="text-[9px] font-black uppercase text-slate-500">Marge Pro</span>
-                 </div>
+        {/* Project Employment -> Business Metrics */}
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm">
+           <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Performances Hubs</h3>
+              <select className="bg-slate-50 text-[10px] font-black p-2 rounded-lg border-none outline-none cursor-pointer uppercase tracking-widest">
+                 <option>Last week</option>
+              </select>
+           </div>
+           
+           <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={[
+                   { name: 'Lun', proj: 180, bench: 120 },
+                   { name: 'Mar', proj: 230, bench: 150 },
+                   { name: 'Mer', proj: 160, bench: 90 },
+                   { name: 'Jeu', proj: 210, bench: 180 },
+                   { name: 'Ven', proj: 280, bench: 130 },
+                   { name: 'Sam', proj: 140, bench: 160 },
+                   { name: 'Dim', proj: 190, bench: 110 },
+                 ]} barGap={8}>
+                    <Bar dataKey="proj" fill="#FF8A65" radius={[6, 6, 0, 0]} barSize={12} />
+                    <Bar dataKey="bench" fill="#FFCCBC" radius={[6, 6, 0, 0]} barSize={12} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: '#94A3B8'}} />
+                 </BarChart>
+              </ResponsiveContainer>
+           </div>
+           <div className="flex justify-center gap-6 mt-4">
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-[#FF8A65]" />
+                 <span className="text-[10px] font-bold text-slate-400 tracking-widest">Activité</span>
               </div>
-
-              <div className="space-y-4 mt-8">
-                 {PLAN_REVENUE_DATA.map((entry, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
-                       <div className="flex items-center gap-3">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                          <span className="text-xs font-bold text-slate-400">{entry.name}</span>
-                       </div>
-                       <span className="text-xs font-black">{entry.value}M</span>
-                    </div>
-                 ))}
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full bg-[#FFCCBC]" />
+                 <span className="text-[10px] font-bold text-slate-400 tracking-widest">Support</span>
               </div>
            </div>
-           <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#3A4DB7] rounded-full blur-[140px] opacity-10 pointer-events-none" />
+        </div>
+
+        {/* Requests -> Flux Retours (Simplified from image) */}
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col">
+           <h3 className="text-xl font-black text-slate-900 tracking-tight mb-8">Demandes & Actions</h3>
+           <div className="space-y-6 flex-1">
+              {[
+                { label: "Vérification KYC", count: 9, icon: <UserCircle size={18} />, bg: "bg-indigo-50", text: "text-[#234D96]" },
+                { label: "Demandes de Retrait", count: 2, icon: <CreditCard size={18} />, bg: "bg-rose-50", text: "text-rose-500" },
+                { label: "Nouveaux Marchands", count: 16, icon: <Building2 size={18} />, bg: "bg-emerald-50", text: "text-emerald-500" },
+                { label: "Bugs Signalés", count: 5, icon: <AlertCircle size={18} />, bg: "bg-amber-50", text: "text-amber-500" }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between group cursor-pointer hover:translate-x-2 transition-transform">
+                   <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 ${item.bg} ${item.text} rounded-2xl flex items-center justify-center shadow-sm`}>
+                         {item.icon}
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-600 group-hover:text-slate-950 transition-colors">{item.label}</span>
+                   </div>
+                   <span className="text-lg font-black text-slate-950">{item.count}</span>
+                </div>
+              ))}
+           </div>
         </div>
       </div>
 
-      {/* OPERATIONAL GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-         {/* Live Feed Feedbacks */}
-         <div className="bg-white rounded-[3rem] p-10 border border-slate-200/60 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-               <div>
-                  <h3 className="text-xl font-black text-slate-950">Flux Retours</h3>
-                  <p className="text-[9px] font-black text-[#4ECBA8] uppercase tracking-widest mt-1">Live Updates</p>
-               </div>
-               <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-[#3A4DB7]">
-                  <MessageSquare size={18} />
-               </div>
-            </div>
-
-            <div className="space-y-6">
-               {FEEDBACKS.map((fb) => (
-                  <div key={fb.id} className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-[#3A4DB7]/30 transition-all group cursor-default">
-                     <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center text-[10px] font-black">{fb.user.charAt(0)}</div>
-                           <div>
-                              <p className="text-xs font-black text-slate-950 leading-none">{fb.user}</p>
-                              <div className="flex items-center gap-1 mt-1 text-amber-500">
-                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={8} fill={i < fb.rating ? "currentColor" : "none"} />
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-                        <span className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[8px] font-black text-slate-400 uppercase">{fb.tag}</span>
-                     </div>
-                     <p className="text-xs text-slate-600 font-medium leading-relaxed italic">"{fb.comment}"</p>
-                     <div className="flex items-center justify-end mt-3">
-                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{fb.time}</span>
-                     </div>
-                  </div>
-               ))}
-            </div>
-
-            <button className="w-full mt-8 py-5 text-[10px] font-black uppercase tracking-widest text-[#234D96] bg-indigo-50/50 rounded-[1.5rem] hover:bg-[#234D96] hover:text-white transition-all">
-               Voir tous les avis (42)
-            </button>
-         </div>
-
-         {/* Smart Alerts & KYC */}
-         <div className="bg-[#1A1C1E] rounded-[3rem] p-10 text-white flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-               <div>
-                  <h3 className="text-xl font-black">Alertes Smart</h3>
-                  <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mt-1">Actions Urgentes</p>
-               </div>
-               <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-rose-500 border border-white/10 animate-pulse">
-                  <AlertCircle size={18} />
-               </div>
-            </div>
-
-            <div className="space-y-4 flex-1">
-               <AlertRow 
-                  title="Upload KYC: Fashion House" 
-                  desc="Nouveaux documents d'identité à vérifier." 
-                  time="2m" 
-                  active 
-               />
-               <AlertRow 
-                  title="Retrait Massif Détecté" 
-                  desc="Volume anormal sur Node-AG102 (Moov)." 
-                  time="15m" 
-                  isUrgent 
-               />
-               <AlertRow 
-                  title="Campagne Expire" 
-                  desc="Promo 'RESEAU-TOP' se termine ce soir." 
-                  time="1h" 
-               />
-            </div>
-
-            <div className="mt-8 p-6 bg-[#3A4DB7] rounded-[2.5rem] relative overflow-hidden group shadow-xl">
-               <div className="relative z-10 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
-                     <ShieldCheck size={24} />
-                  </div>
-                  <div>
-                     <p className="text-xs font-black">Health Score</p>
-                     <p className="text-2xl font-black tracking-tighter">98.4</p>
-                  </div>
-               </div>
-               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-xl translate-x-4 -translate-y-4" />
-            </div>
-         </div>
-
-         {/* Health Data (Bar Chart) */}
-         <div className="bg-white rounded-[3rem] p-10 border border-slate-200/60 shadow-sm flex flex-col">
+      {/* BOTTOM SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+         {/* Staff Turnover -> Réseau Activity (Big Chart) */}
+         <div className="lg:col-span-8 bg-white rounded-[3rem] p-10 border border-slate-200/60 shadow-sm">
             <div className="flex items-center justify-between mb-10">
                <div>
-                  <h3 className="text-xl font-black text-slate-950">Santé du Parc</h3>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Statut des Marchands</p>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Taux de Rétention Réseau</h3>
+                  <p className="text-[10px] font-bold text-slate-400 tracking-widest mt-1">Mars - Nov 2024</p>
                </div>
+               <select className="bg-slate-50 text-[10px] font-bold p-2 rounded-lg border-none outline-none cursor-pointer tracking-widest">
+                  <option>Détails Mensuels</option>
+               </select>
             </div>
-
-            <div className="h-64 mb-8">
+            <div className="h-80 w-full">
                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={HUB_HEALTH}>
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 800, fill: '#94A3B8'}} />
-                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 800, fill: '#94A3B8'}} />
-                     <Tooltip 
-                        contentStyle={{ border: 'none', borderRadius: '15px' }}
-                        cursor={{ fill: 'rgba(241, 245, 249, 1)' }}
-                     />
-                     <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={40} />
+                  <BarChart data={[
+                    { name: 'Mar', val: 8 },
+                    { name: 'Avr', val: 12 },
+                    { name: 'Mai', val: 15 },
+                    { name: 'Juin', val: 10 },
+                    { name: 'Juil', val: 7 },
+                    { name: 'Aout', val: 4 },
+                    { name: 'Sep', val: 9 },
+                    { name: 'Oct', val: 11 },
+                    { name: 'Nov', val: 14 },
+                  ]}>
+                     <Bar dataKey="val" fill="#6200EA" radius={[10, 10, 0, 0]} barSize={25} />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 700, fill: '#94A3B8'}} />
                   </BarChart>
                </ResponsiveContainer>
             </div>
+         </div>
 
-            <div className="space-y-3 mt-auto">
-               {HUB_HEALTH.map((h, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-[#3A4DB7]/20 transition-all">
-                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: h.fill }} />
-                        <span className="text-xs font-bold text-slate-700">{h.name}</span>
-                     </div>
-                     <span className="text-xs font-black text-slate-950">{h.value}</span>
-                  </div>
+         {/* Recruitment Progress -> Collaborateurs Live */}
+         <div className="lg:col-span-4 bg-white rounded-[3rem] p-10 border border-slate-200/60 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Mouvements Récents</h3>
+               <button className="text-[10px] font-bold text-[#234D96] tracking-[0.1em] flex items-center gap-2 hover:gap-3 transition-all">
+                  Voir Tout <ArrowRight size={14} />
+               </button>
+            </div>
+            
+            <div className="space-y-8 flex-1">
+               {[
+                 { name: "Leo Myers", role: "Devops", status: "Tech interview", color: "bg-amber-500" },
+                 { name: "Ann Fields", role: "UX/UI Designer", status: "Resume review", color: "bg-[#6200EA]" },
+                 { name: "Eric Olson", role: ".Net developer", status: "Final interview", color: "bg-emerald-500" },
+                  { name: "Koffi Mark", role: "Agent Support", status: "Onboarding", color: "bg-[#234D96]" }
+               ].map((person, i) => (
+                 <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-black text-sm">
+                          {person.name.charAt(0)}
+                       </div>
+                       <div>
+                          <p className="text-sm font-black text-slate-950 leading-none">{person.name}</p>
+                          <p className="text-xs font-bold text-slate-400 mt-1">{person.role}</p>
+                       </div>
+                    </div>
+                       <div className="flex items-center gap-2 min-w-[120px] justify-end">
+                       <div className={`w-2 h-2 rounded-full ${person.color}`} />
+                       <span className="text-[10px] font-bold text-slate-500 tracking-widest">{person.status}</span>
+                    </div>
+                 </div>
                ))}
             </div>
          </div>
       </div>
-
-      {/* MARKETING & TICKETS SECTION */}
-      <motion.div 
-         initial={{ opacity: 0, y: 20 }}
-         whileInView={{ opacity: 1, y: 0 }}
-         className="bg-[#234D96] rounded-[4rem] p-16 text-white relative overflow-hidden group shadow-2xl shadow-indigo-900/40"
-      >
-         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="space-y-6 max-w-xl text-center md:text-left">
-               <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-xl mb-4 group-hover:scale-110 transition-transform">
-                  <Ticket size={32} />
-               </div>
-               <h3 className="text-4xl font-black tracking-tighter">Marketing & Coupons</h3>
-               <p className="text-indigo-100/70 font-medium text-lg leading-relaxed">Générez des codes promotionnels massifs pour injecter de la liquidité et attirer de nouveaux agents sur votre réseau.</p>
-            </div>
-            <button className="px-12 py-7 bg-white text-slate-950 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.3em] border-b-4 border-slate-200 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10">
-               Générer une Campagne
-            </button>
-         </div>
-         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-      </motion.div>
     </motion.div>
   );
 }
 
-function KpiCard({ label, value, unit, growth, color, chartData }: { label: string, value: string, unit: string, growth: string, color: string, chartData: number[] }) {
+function KpiCard({ label, value, growth, color, isCurrency }: { label: string, value: string, growth: string, color: string, isCurrency?: boolean }) {
   const isPositive = growth.startsWith('+');
-  const miniData = chartData.map((v, i) => ({ val: v }));
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200/60 shadow-sm hover:shadow-2xl hover:shadow-slate-200/30 transition-all duration-500 group relative flex flex-col justify-between overflow-hidden">
-       <div>
-          <div className="flex items-center justify-between mb-8">
-             <div className="p-3 rounded-2xl bg-slate-50 text-slate-400 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-[#3A4DB7]" style={{ color: color }}>
-                {label === "Revenus Globaux" && <Database size={20} />}
-                {label === "Marchands Actifs" && <Users size={20} />}
-                {label === "Volume Transactions" && <Zap size={20} />}
-                {label === "Taux Conversion" && <TrendingUp size={20} />}
+    <div className="bg-white rounded-[2rem] p-8 border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 group">
+       <div className="space-y-4">
+          <h4 className="text-[10px] font-black text-slate-400 tracking-widest">{label}</h4>
+          <div className="flex items-baseline justify-between">
+             <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-slate-950 tracking-tighter leading-none">{value}</span>
+                {isCurrency && <span className="text-[10px] font-black text-slate-400">FCFA</span>}
              </div>
-             <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest font-sans ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+             <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                {isPositive ? <TrendingUp size={10} strokeWidth={3} /> : <TrendingDown size={10} strokeWidth={3} />}
                 {growth}
              </div>
           </div>
-
-          <div>
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">{label}</h4>
-             <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-slate-950 tracking-tighter leading-none font-display">{value}</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-sans">{unit}</span>
-             </div>
-          </div>
-       </div>
-
-       {/* MINI SPARKLINE */}
-       <div className="h-16 w-full mt-6 opacity-30 group-hover:opacity-100 transition-opacity">
-          <ResponsiveContainer width="100%" height="100%">
-             <AreaChart data={miniData}>
-                <Area 
-                   type="monotone" 
-                   dataKey="val" 
-                   stroke={color} 
-                   strokeWidth={3} 
-                   fill={color} 
-                   fillOpacity={0.1} 
-                />
-             </AreaChart>
-          </ResponsiveContainer>
        </div>
     </div>
   );
@@ -673,12 +568,12 @@ function AlertRow({ title, desc, time, active, isUrgent }: { title: string, desc
              {active && <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />}
              <h4 className={`text-xs font-black tracking-tight ${isUrgent ? 'text-rose-400' : 'text-white'}`}>{title}</h4>
           </div>
-          <span className="text-[9px] font-black text-slate-500 uppercase">{time}</span>
+          <span className="text-[9px] font-black text-slate-500">{time}</span>
        </div>
        <p className="text-[10px] font-medium text-slate-400 line-clamp-1">{desc}</p>
        <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-          <button className="flex-1 py-3 bg-white text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#234D96] hover:text-white transition-all shadow-xl">Consulter</button>
-          {!isUrgent && <button className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20">Ignorer</button>}
+          <button className="flex-1 py-3 bg-white text-slate-950 rounded-xl text-[10px] font-black tracking-widest hover:bg-[#234D96] hover:text-white transition-all shadow-xl">Consulter</button>
+          {!isUrgent && <button className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-white/20">Ignorer</button>}
        </div>
     </div>
   );
@@ -693,14 +588,14 @@ function GatewayRow({ name, load, status, trend }: { name: string, load: number,
             </div>
             <div>
                <p className="text-sm font-black text-slate-900 tracking-tight">{name}</p>
-               <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{status}</p>
+               <p className="text-[9px] font-black text-slate-400 tracking-[0.2em]">{status}</p>
             </div>
          </div>
          
          <div className="flex items-center gap-12">
             <div className="w-48 text-right pr-6">
                <div className="flex justify-between mb-2">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Charge Système</span>
+                  <span className="text-[9px] font-black text-slate-400 tracking-widest">Charge Système</span>
                   <span className="text-[10px] font-black text-slate-900">{load}%</span>
                </div>
                <div className="h-2 bg-slate-100 rounded-full overflow-hidden w-full relative">
@@ -728,7 +623,7 @@ function SecurityEvent({ user, action, time, type }: { user: string, action: str
          <div className="flex-1">
             <div className="flex items-center justify-between w-full">
                <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-none group-hover/event:text-[#234D96] transition-colors">{user}</span>
-               <span className="text-[10px] font-bold text-slate-300 uppercase">{time}</span>
+               <span className="text-[10px] font-bold text-slate-300">{time}</span>
             </div>
             <p className="text-xs font-medium text-slate-500 mt-1">{action}</p>
          </div>
@@ -961,7 +856,7 @@ function MerchantsView() {
            { label: "AGENTS", val: "2,410", sub: "Points de vente", color: "slate" }
          ].map((stat, i) => (
            <div key={i} className="bg-white border border-slate-200/60 p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow group">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-[#3A4DB7] transition-colors">{stat.label}</p>
+              <p className="text-[10px] font-black text-slate-400 tracking-widest mb-2 group-hover:text-[#3A4DB7] transition-colors">{stat.label}</p>
               <div className="flex items-baseline gap-2">
                  <span className="text-3xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
               </div>
@@ -993,13 +888,13 @@ function MerchantsView() {
             <table className="w-full">
                <thead>
                   <tr className="bg-white border-b border-slate-100">
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Marchand</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Entreprise</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut KYC</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Abonnement</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Réseau</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Accès</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Marchand</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Entreprise</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Statut KYC</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Abonnement</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Réseau</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Accès</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-right">Actions</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-50">
@@ -1012,7 +907,7 @@ function MerchantsView() {
                               </div>
                               <div className="flex flex-col">
                                  <span className="font-black text-slate-950 leading-none">{merchant.name}</span>
-                                 <span className="text-[10px] font-bold text-[#3A4DB7] mt-1.5 uppercase tracking-widest">{merchant.id}</span>
+                                 <span className="text-[10px] font-bold text-[#3A4DB7] mt-1.5 tracking-widest">{merchant.id}</span>
                                  <span className="text-[10px] font-bold text-slate-400 mt-0.5">{merchant.email}</span>
                               </div>
                            </div>
@@ -1020,13 +915,13 @@ function MerchantsView() {
                         <td className="px-10 py-8">
                            <div className="flex flex-col">
                               <span className="font-bold text-slate-800">{merchant.manager}</span>
-                              <span className="text-[10px] font-black text-[#3A4DB7] uppercase mt-1">IFU: {merchant.id.replace('M-', 'IFU-2024-')}</span>
+                              <span className="text-[10px] font-black text-[#3A4DB7] mt-1">IFU: {merchant.id.replace('M-', 'IFU-2024-')}</span>
                               <span className="text-[9px] font-bold text-slate-400 italic font-mono uppercase tracking-tighter">Depuis le {merchant.joinedAt}</span>
                            </div>
                         </td>
                         <td className="px-10 py-8 text-center">
                            <div className="flex flex-col items-center gap-2">
-                              <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                              <span className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest border ${
                                  merchant.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                                  merchant.kycStatus === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
                                  'bg-rose-50 text-rose-600 border-rose-100'
@@ -1039,7 +934,7 @@ function MerchantsView() {
                                     setShowDetailsModal(merchant);
                                     setActiveDetailTab('kyc');
                                   }}
-                                  className="text-[9px] font-black text-[#3A4DB7] hover:underline uppercase tracking-tighter animate-pulse"
+                                  className="text-[9px] font-black text-[#3A4DB7] hover:underline tracking-tighter animate-pulse"
                                 >
                                    Vérifier Dossier →
                                 </button>
@@ -1100,7 +995,7 @@ function MerchantsView() {
                                   e.stopPropagation();
                                   setShowPlanModal(merchant);
                                 }}
-                                className="px-5 py-2.5 bg-[#3A4DB7] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#234D96] transition-all shadow-lg shadow-indigo-500/20"
+                                className="px-5 py-2.5 bg-[#3A4DB7] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-[#234D96] transition-all shadow-lg shadow-indigo-500/20"
                               >
                                 Gérer Abonnement
                               </button>
@@ -1109,7 +1004,7 @@ function MerchantsView() {
                                   e.stopPropagation();
                                   setShowDetailsModal(merchant);
                                 }}
-                                className="px-5 py-2.5 bg-white border border-indigo-100 text-[#3A4DB7] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all"
+                                className="px-5 py-2.5 bg-white border border-indigo-100 text-[#3A4DB7] rounded-xl text-[10px] font-black tracking-widest hover:bg-indigo-50 transition-all"
                               >
                                 Détails
                               </button>
@@ -1123,7 +1018,7 @@ function MerchantsView() {
 
          {/* PAGINATION */}
          <div className="p-8 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Affichage 1 - {filteredMerchants.length} sur {merchants.length} marchands</p>
+            <p className="text-[10px] font-black text-slate-400 tracking-widest">Affichage 1 - {filteredMerchants.length} sur {merchants.length} marchands</p>
             <div className="flex gap-2">
                <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all">Précédent</button>
                <button className="px-4 py-2 bg-slate-950 text-white rounded-xl text-[10px] font-black uppercase transition-all">1</button>
@@ -1311,13 +1206,13 @@ function MerchantsView() {
                                     <TrendingUp size={28} />
                                  </div>
                                  <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Activité Réseau (30J)</p>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-1">Activité Réseau (30j)</p>
                                     <h5 className="text-5xl font-black text-slate-950 tracking-tighter">{showDetailsModal.monthlyVolume} F</h5>
                                  </div>
                               </div>
                               
                               <div className="space-y-4">
-                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                 <div className="flex items-center justify-between text-[10px] font-black tracking-widest text-slate-400">
                                     <span>Taux de conversion</span>
                                     <span>94.2%</span>
                                  </div>
@@ -1348,7 +1243,7 @@ function MerchantsView() {
                         {/* BALANCE PILL */}
                         <div className="col-span-4 p-10 bg-slate-950 rounded-[3.5rem] shadow-2xl flex flex-col justify-between text-white relative overflow-hidden">
                            <div className="relative z-10">
-                              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] mb-4">Solde de Service</p>
+                              <p className="text-[10px] font-black text-indigo-300 tracking-[0.2em] mb-4">Solde de Service</p>
                               <h5 className="text-4xl font-black tracking-tighter mb-2">428 500 F</h5>
                               <p className="text-[10px] font-bold text-slate-400 italic">Dernière mise à jour: 14:02</p>
                            </div>
@@ -1394,7 +1289,7 @@ function MerchantsView() {
                               <div className="w-3 h-8 bg-[#3A4DB7] rounded-full" />
                               <h4 className="text-3xl font-black text-slate-950 tracking-tight">Registre d'identité</h4>
                            </div>
-                           <button className="flex items-center gap-3 px-8 py-4 bg-[#3A4DB7] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:shadow-2xl hover:bg-slate-900 transition-all">
+                           <button className="flex items-center gap-3 px-8 py-4 bg-[#3A4DB7] text-white rounded-2xl text-[10px] font-black tracking-[0.1em] hover:shadow-2xl hover:bg-slate-900 transition-all">
                               <Edit3 size={16} /> Édition Administrative
                            </button>
                         </div>
@@ -1436,7 +1331,7 @@ function MerchantsView() {
                               }`}>
                                 {s.status === 'done' ? <CheckCircle2 size={20} /> : <div className="text-[10px] font-black">{i + 1}</div>}
                               </div>
-                              <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{s.step}</p>
+                              <p className="text-[10px] font-black text-slate-900 tracking-widest">{s.step}</p>
                               <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic">{s.desc}</p>
                             </div>
                             {i < arr.length - 1 && (
@@ -1489,7 +1384,7 @@ function MerchantsView() {
                                  </div>
                                  
                                  <div className="mt-8 relative z-10">
-                                    <span className="text-[9px] font-black text-[#3A4DB7] uppercase tracking-[0.2em] mb-2 block">{doc.type}</span>
+                                    <span className="text-[9px] font-black text-[#3A4DB7] tracking-[0.2em] mb-2 block">{doc.type}</span>
                                     <p className="font-black text-xl text-slate-950 tracking-tight group-hover:text-[#3A4DB7] transition-colors">{doc.name}</p>
                                  </div>
 
@@ -1531,7 +1426,7 @@ function MerchantsView() {
                               </button>
                               <button 
                                 onClick={() => handleKycAction(showDetailsModal.id, 'approve')}
-                                className="px-12 py-5 bg-[#3A4DB7] text-white rounded-3xl font-black text-[11px] uppercase tracking-widest hover:bg-white hover:text-[#3A4DB7] transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3"
+                                className="px-12 py-5 bg-[#3A4DB7] text-white rounded-3xl font-black text-[11px] tracking-widest hover:bg-white hover:text-[#3A4DB7] transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3"
                               >
                                  <CheckCircle2 size={18} /> Approuver l'inscription
                               </button>
@@ -2038,7 +1933,7 @@ function PlansView() {
                   <div className="p-12 space-y-8">
                      <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Code du Plan</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Code du Plan</label>
                            <input 
                               type="text" placeholder="ex: STARTER_PLUS" 
                               value={planForm.code} onChange={e => setPlanForm({...planForm, code: e.target.value})}
@@ -2046,7 +1941,7 @@ function PlansView() {
                            />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Libellé Affiché</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Libellé Affiché</label>
                            <input 
                               type="text" placeholder="ex: Pack Starter Plus" 
                               value={planForm.label} onChange={e => setPlanForm({...planForm, label: e.target.value})}
@@ -2057,7 +1952,7 @@ function PlansView() {
 
                      <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Prix Mensuel (FCFA)</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Prix Mensuel (FCFA)</label>
                            <input 
                               type="number" placeholder="9900" 
                               value={planForm.price} onChange={e => setPlanForm({...planForm, price: e.target.value})}
@@ -2065,7 +1960,7 @@ function PlansView() {
                            />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Limite Agences</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Limite Agences</label>
                            <input 
                               type="number" placeholder="1" 
                               value={planForm.agencyLimit} onChange={e => setPlanForm({...planForm, agencyLimit: e.target.value})}
@@ -2075,7 +1970,7 @@ function PlansView() {
                      </div>
 
                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Description Commerciale</label>
+                        <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Description Commerciale</label>
                         <textarea 
                            placeholder="Quels sont les avantages de ce plan ?" 
                            value={planForm.description} onChange={e => setPlanForm({...planForm, description: e.target.value})}
@@ -2099,9 +1994,9 @@ function PlansView() {
                      <div className="pt-4 flex gap-4">
                         <button 
                            onClick={handleSavePlan}
-                           className="flex-1 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-[1.02] active:scale-95 transition-all"
+                           className="flex-1 py-5 bg-[#234D96] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-[1.02] active:scale-95 transition-all border-4 border-white"
                         >
-                           {editingPlan ? "Enregistrer les modifications" : "Confirmer la création"}
+                           {editingPlan ? "Actualiser le Plan" : "Lancer l'Offre"}
                         </button>
                         <button 
                            onClick={() => setIsModalOpen(false)}
@@ -2119,7 +2014,7 @@ function PlansView() {
       {/* SUMMARY STATS */}
       <div className="grid grid-cols-4 gap-6">
          {[
-           { label: "PLANS", val: plans.length, sub: "Catalogue total", icon: <Layers className="text-[#3A4DB7]" size={20} />, bg: "bg-indigo-50" },
+           { label: "PLANS", val: plans.length, sub: "Catalogue total", icon: <Layers className="text-[#234D96]" size={20} />, bg: "bg-indigo-50" },
            { label: "ACTIFS", val: plans.filter(p => p.isActive).length, sub: "Commercialisables", icon: <CheckCircle2 className="text-emerald-500" size={20} />, bg: "bg-emerald-50" },
            { label: "INACTIFS", val: plans.filter(p => !p.isActive).length, sub: "Masqués ou suspendus", icon: <XCircle className="text-rose-500" size={20} />, bg: "bg-rose-50" },
            { label: "LIMITE MOYENNE", val: Math.round(plans.reduce((acc, curr) => acc + curr.agencyLimit, 0) / (plans.length || 1)), sub: "Agences autorisées", icon: <CreditCard className="text-amber-500" size={20} />, bg: "bg-amber-50" }
@@ -2160,13 +2055,13 @@ function PlansView() {
             <table className="w-full text-left">
                <thead className="bg-slate-50/50">
                   <tr className="border-b border-slate-100">
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">IDENTIFIANT</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">NOM DU PLAN</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">TARIF (FCFA)</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">MAX AGENCES</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">RÉSUMÉ COMMERCIAL</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">VISIBILITÉ</th>
-                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Identifiant</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Nom du Plan</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Tarif (FCFA)</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Max Agences</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-left">Résumé Commercial</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-center">Visibilité</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 tracking-widest text-right">Actions</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-50">
@@ -2192,11 +2087,11 @@ function PlansView() {
                         </td>
                         <td className="px-10 py-8">
                            <div className="flex justify-center">
-                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border inline-flex items-center gap-2 ${
+                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black tracking-widest border inline-flex items-center gap-2 ${
                                  plan.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                               }`}>
                                  <div className={`w-1 h-1 rounded-full ${plan.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                 {plan.isActive ? 'ACTIF' : 'INACTIF'}
+                                 {plan.isActive ? 'Actif' : 'Inactif'}
                               </span>
                            </div>
                         </td>
@@ -2215,7 +2110,7 @@ function PlansView() {
                               </button>
                               <button 
                                 onClick={() => openEditModal(plan)}
-                                className="p-3 bg-white border border-slate-200 text-[#3A4DB7] rounded-xl hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm"
+                                className="p-3 bg-white border border-slate-200 text-[#234D96] rounded-xl hover:bg-[#234D96] hover:text-white transition-all shadow-sm"
                                 title="Modifier le plan"
                               >
                                  <Settings size={18} />
@@ -2281,10 +2176,10 @@ function SupportView() {
                         </div>
                         <div className="space-y-1">
                            <h4 className="text-xl font-black text-slate-900 tracking-tight">Problème d'impression sur terminal Sunmi V2</h4>
-                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Posté par : <span className="text-[#3A4DB7]">Pharmacie du Pont</span> • Il y a 2h</p>
+                           <p className="text-xs font-bold text-slate-400 tracking-widest text-[#234D96]">Pharmacie du Pont <span className="text-slate-300 mx-2">•</span> Il y a 2h</p>
                         </div>
                      </div>
-                     <span className="px-5 py-2 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black tracking-widest border border-rose-100 uppercase">Haute Priorité</span>
+                     <span className="px-5 py-2 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black tracking-widest border border-rose-100">Haute Priorité</span>
                   </div>
                   <p className="text-sm font-medium text-slate-500 leading-relaxed font-sans px-2">
                      Le ticket de clôture journalière ne s'imprime pas correctement. Le texte est coupé à droite. J'ai essayé de redémarrer l'application mais le problème persiste...
@@ -2292,9 +2187,9 @@ function SupportView() {
                   <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between">
                      <div className="flex -space-x-3">
                         <div className="w-10 h-10 bg-slate-950 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white">JY</div>
-                        <div className="w-10 h-10 bg-[#3A4DB7] rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white font-sans">+1</div>
+                        <div className="w-10 h-10 bg-[#234D96] rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white font-sans">+1</div>
                      </div>
-                     <button className="flex items-center gap-3 text-[10px] font-black text-slate-900 uppercase tracking-widest hover:text-[#234D96] transition-colors">
+                     <button className="flex items-center gap-3 text-[10px] font-black text-slate-900 tracking-widest hover:text-[#234D96] transition-colors">
                         Voir la conversation <ArrowRight size={14} />
                      </button>
                   </div>
@@ -2423,14 +2318,14 @@ function SettingsView() {
                    
                    <div className="grid grid-cols-2 gap-8">
                       <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom de l'application</label>
+                         <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Nom de l'application</label>
                          <input 
                            type="text" defaultValue="FinTrack Hub" 
                            className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
                          />
                       </div>
                       <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Slogan principal</label>
+                         <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Slogan principal</label>
                          <input 
                            type="text" defaultValue="Le moteur de facturation IA" 
                            className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
@@ -2441,7 +2336,7 @@ function SettingsView() {
                    <div className="flex items-center gap-8 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
                       <div className="w-24 h-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 gap-2 cursor-pointer hover:border-[#3A4DB7] hover:text-[#3A4DB7] transition-all">
                          <Plus size={24} />
-                         <span className="text-[8px] font-black uppercase">Logo</span>
+                         <span className="text-[8px] font-black">Logo</span>
                       </div>
                       <div className="flex-1 space-y-2">
                          <h4 className="text-sm font-black text-slate-900">Logo de la Plateforme</h4>
@@ -2484,7 +2379,7 @@ function SettingsView() {
                          <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
                          <h3 className="text-xl font-black text-slate-900">Passerelles Mobile Money</h3>
                       </div>
-                      <span className="px-4 py-2 bg-emerald-50 text-emerald-500 rounded-xl text-[10px] font-black tracking-widest border border-emerald-100 uppercase">3 Actives</span>
+                      <span className="px-4 py-2 bg-emerald-50 text-emerald-500 rounded-xl text-[10px] font-black tracking-widest border border-emerald-100">3 Actives</span>
                    </div>
 
                    <div className="space-y-4">
@@ -2500,7 +2395,7 @@ function SettingsView() {
                               </div>
                               <div>
                                  <h4 className="font-black text-slate-900">{gateway.name}</h4>
-                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connecteur API v3.2</p>
+                                 <p className="text-[10px] font-bold text-slate-400 tracking-widest">Connecteur API v3.2</p>
                               </div>
                            </div>
                            <div className="flex items-center gap-4">
@@ -2514,7 +2409,7 @@ function SettingsView() {
                    </div>
 
                    <div className="pt-4">
-                      <button className="w-full py-5 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center gap-3 text-slate-400 hover:text-[#3A4DB7] hover:border-[#3A4DB7] transition-all font-black text-xs uppercase tracking-widest group">
+                      <button className="w-full py-5 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center gap-3 text-slate-400 hover:text-[#3A4DB7] hover:border-[#3A4DB7] transition-all font-black text-xs tracking-widest group">
                          <Plus size={18} className="group-hover:scale-125 transition-transform" /> Ajouter une nouvelle passerelle
                       </button>
                    </div>
@@ -2566,7 +2461,7 @@ function SettingsView() {
                          <h3 className="text-xl font-black tracking-tight">Réinitialisation des Données</h3>
                       </div>
                       <p className="text-slate-400 text-xs font-medium leading-relaxed font-sans italic opacity-60">Cette opération supprimera définitivement tous les logs de transactions de plus de 2 ans pour libérer de l'espace sur les serveurs FinTrack.</p>
-                      <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-rose-900/40">Exécuter le Nettoyage</button>
+                      <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-[10px] tracking-widest transition-all shadow-xl shadow-rose-900/40">Exécuter le Nettoyage</button>
                    </div>
                    <div className="absolute top-0 right-0 w-64 h-64 bg-rose-600 rounded-full blur-[100px] opacity-10 -mr-20 -mt-20 group-hover:opacity-20 transition-opacity" />
                 </div>
@@ -2576,15 +2471,15 @@ function SettingsView() {
             {activeSubTab === 'team' && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
-                   <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                          <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
-                          <h3 className="text-xl font-black text-slate-900">Équipe Administrative</h3>
+                       <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                             <div className="w-1.5 h-10 bg-[#234D96] rounded-full" />
+                             <h3 className="text-xl font-black text-slate-900">Équipe Administrative</h3>
+                          </div>
+                          <button className="flex items-center gap-2 px-5 py-3 bg-[#234D96]/10 text-[#234D96] rounded-xl font-black text-[10px] tracking-widest hover:bg-[#234D96] hover:text-white transition-all">
+                             <Plus size={16} /> Ajouter Collaborateur
+                          </button>
                        </div>
-                       <button className="flex items-center gap-2 px-5 py-3 bg-[#3A4DB7]/10 text-[#3A4DB7] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A4DB7] hover:text-white transition-all">
-                          <Plus size={16} /> Inviter
-                       </button>
-                   </div>
 
                    <div className="space-y-4">
                       {[
@@ -2604,7 +2499,7 @@ function SettingsView() {
                            <div className="flex items-center gap-8 text-right">
                               <div>
                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Permissions</p>
-                                 <span className="text-[10px] font-black text-indigo-100 bg-[#3A4DB7] px-3 py-1 rounded-lg uppercase">{member.role}</span>
+                                 <span className="text-[10px] font-black text-indigo-100 bg-[#3A4DB7] px-3 py-1 rounded-lg">{member.role}</span>
                               </div>
                               <button className="p-3 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
                            </div>
@@ -2625,7 +2520,7 @@ function SettingsView() {
                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base de Données</span>
-                           <span className="text-[10px] font-black text-emerald-500 uppercase">99.9% Up</span>
+                           <span className="text-[10px] font-black text-emerald-500">99.9% Up</span>
                         </div>
                         <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
                            <motion.div initial={{ width: 0 }} animate={{ width: '99%' }} className="h-full bg-emerald-500 rounded-full" />
@@ -2634,7 +2529,7 @@ function SettingsView() {
                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stockage (S3)</span>
-                           <span className="text-[10px] font-black text-emerald-500 uppercase">42% Utilisé</span>
+                           <span className="text-[10px] font-black text-emerald-500">42% Utilisé</span>
                         </div>
                         <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
                            <motion.div initial={{ width: 0 }} animate={{ width: '42%' }} className="h-full bg-[#3A4DB7] rounded-full" />
@@ -2738,9 +2633,9 @@ function CatalogueView() {
          </div>
          <button 
            onClick={() => setShowAddModal(true)}
-           className="px-10 py-5 bg-[#3A4DB7] text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-indigo-900/30 flex items-center gap-3 border-4 border-white"
+           className="px-10 py-5 bg-[#234D96] text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-indigo-900/30 flex items-center gap-3 border-4 border-white"
          >
-            <Plus size={20} strokeWidth={3} /> Nouvelle Entrée
+            <Plus size={20} strokeWidth={3} /> Créer une Nouvelle Entrée
          </button>
       </div>
 
@@ -2799,14 +2694,14 @@ function CatalogueView() {
                   <div className="space-y-8">
                      <div className="grid grid-cols-2 gap-8">
                         <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Type de l'Entrée</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Type de l'Entrée</label>
                            <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
                               <option>BANQUE</option>
                               <option>RESEAU</option>
                            </select>
                         </div>
                         <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Statut Initial</label>
+                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Statut Initial</label>
                            <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
                               <option>Actif</option>
                               <option>Inactif</option>
@@ -2815,7 +2710,7 @@ function CatalogueView() {
                      </div>
 
                      <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom de la Banque ou du Réseau</label>
+                        <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Nom de la Banque ou du Réseau</label>
                         <input 
                           type="text" placeholder="ex: Banque Atlantique..." 
                           className="w-full px-10 py-6 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] text-lg font-black focus:border-[#3A4DB7] outline-none transition-all placeholder:text-slate-300"
@@ -2835,9 +2730,9 @@ function CatalogueView() {
 
                   <button 
                     onClick={() => setShowAddModal(false)}
-                    className="w-full py-7 bg-[#3A4DB7] text-white rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_30px_60px_-12px_rgba(58,77,183,0.4)]"
+                    className="w-full py-7 bg-[#234D96] text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_30px_60px_-12px_rgba(35,77,150,0.4)]"
                   >
-                     Publier l'entrée au catalogue
+                     Confirmer et Publier l'Entrée
                   </button>
                </div>
             </motion.div>
