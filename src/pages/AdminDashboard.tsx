@@ -14,11 +14,15 @@ import {
   Search, 
   MoreHorizontal,
   ChevronRight,
+  ChevronLeft,
+  X,
+  Calendar,
   TrendingUp,
   AlertCircle,
   Globe,
   Database,
   Lock,
+  Unlock,
   LogOut,
   Plus,
   Filter,
@@ -33,7 +37,22 @@ import {
   Settings,
   Mail,
   Building2,
-  FileText
+  FileText,
+  Trash2,
+  Save,
+  Layers,
+  CreditCard,
+  EyeOff,
+  UserCircle,
+  FileCheck,
+  Fingerprint,
+  User,
+  Edit3,
+  DownloadCloud,
+  BookOpen,
+  Pause,
+  Play,
+  RotateCcw
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -51,7 +70,7 @@ import {
   Legend
 } from 'recharts';
 
-type AdminTab = "Overview" | "Agents" | "Merchants" | "Network" | "Config" | "Plans" | "Support";
+type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "Settings";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("Overview");
@@ -112,35 +131,25 @@ export default function AdminDashboard() {
             label="Vue d'Ensemble" 
           />
           <NavItem 
-            active={activeTab === "Agents"} 
-            onClick={() => setActiveTab("Agents")} 
-            icon={<Users size={20} />} 
-            label="Gestion des Agents" 
-          />
-          <NavItem 
             active={activeTab === "Merchants"} 
             onClick={() => setActiveTab("Merchants")} 
             icon={<CheckCircle2 size={20} />} 
-            label="Validation Marchands" 
+            label="Gestion des Marchands" 
             badge="4"
           />
+
           <NavItem 
-            active={activeTab === "Network"} 
-            onClick={() => setActiveTab("Network")} 
-            icon={<Globe size={20} />} 
-            label="État du Réseau" 
+            active={activeTab === "Catalogue"} 
+            onClick={() => setActiveTab("Catalogue")} 
+            icon={<BookOpen size={20} />} 
+            label="Catalogue Réseaux" 
           />
+
           <NavItem 
             active={activeTab === "Plans"} 
             onClick={() => setActiveTab("Plans")} 
             icon={<Plus size={20} />} 
             label="Plans & Offres" 
-          />
-          <NavItem 
-            active={activeTab === "Config"} 
-            onClick={() => setActiveTab("Config")} 
-            icon={<Settings2 size={20} />} 
-            label="Configuration Frais" 
           />
           <NavItem 
             active={activeTab === "Support"} 
@@ -150,11 +159,10 @@ export default function AdminDashboard() {
           />
           
           <div className="pt-8 pb-4 px-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Système & Support</p>
             <div className="space-y-1">
               <NavItem 
-                active={false} 
-                onClick={() => {}} 
+                active={activeTab === "Settings"} 
+                onClick={() => setActiveTab("Settings")} 
                 icon={<Settings2 size={18} />} 
                 label="Paramètres" 
               />
@@ -169,17 +177,6 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-8">
-           <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] text-white relative overflow-hidden group mb-6">
-              <div className="relative z-10">
-                 <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Node v4.2 Stable</span>
-                 </div>
-                 <p className="text-xs font-medium text-slate-300 leading-relaxed">Infrastructure cloud opérationnelle à 100%.</p>
-              </div>
-              <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
-           </div>
-
            <button className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:text-rose-500 transition-colors">
               <LogOut size={18} />
               Déconnexion
@@ -215,11 +212,12 @@ export default function AdminDashboard() {
         <div className="flex-1 overflow-y-auto no-scrollbar p-12 relative">
           <AnimatePresence mode="wait">
             {activeTab === "Overview" && <OverviewView key="overview" />}
-            {activeTab === "Agents" && <AgentsView key="agents" />}
             {activeTab === "Merchants" && <MerchantsView key="merchants" />}
-            {activeTab === "Network" && <NetworkView key="network" />}
+            {activeTab === "Catalogue" && <CatalogueView key="catalogue" />}
+
             {activeTab === "Plans" && <PlansView key="plans" />}
-            {activeTab === "Config" && <ConfigView key="config" />}
+            {activeTab === "Support" && <SupportView key="support" />}
+            {activeTab === "Settings" && <SettingsView key="settings" />}
           </AnimatePresence>
         </div>
       </main>
@@ -301,10 +299,20 @@ function OverviewView() {
       exit={{ opacity: 0, scale: 0.98 }}
       className="space-y-12 pb-20"
     >
-      <div className="flex items-end justify-end">
+      <div className="flex items-end justify-between">
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-[#234D96] uppercase tracking-[0.3em] font-sans">Analyse en temps réel</p>
+          <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Tableau de <span className="text-[#234D96]">Bord</span></h2>
+        </div>
         <div className="flex gap-4">
-           <button className="px-8 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-900/40 hover:scale-[1.03] active:scale-95 transition-all font-sans">
-              Exporter Rapport
+           <button 
+             onClick={handleRefresh}
+             className={`w-16 h-16 bg-white border border-slate-200/60 rounded-2xl flex items-center justify-center text-slate-400 hover:text-[#234D96] hover:border-[#234D96]/30 transition-all ${isRefreshing ? 'animate-spin' : ''}`}
+           >
+              <Activity size={24} />
+           </button>
+           <button className="px-10 py-5 bg-[#234D96] text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-900/40 hover:scale-[1.03] active:scale-95 transition-all border-4 border-white">
+              Exporter le Rapport Global
            </button>
         </div>
       </div>
@@ -495,7 +503,7 @@ function OverviewView() {
                ))}
             </div>
 
-            <button className="w-full mt-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#3A4DB7] transition-colors">
+            <button className="w-full mt-8 py-5 text-[10px] font-black uppercase tracking-widest text-[#234D96] bg-indigo-50/50 rounded-[1.5rem] hover:bg-[#234D96] hover:text-white transition-all">
                Voir tous les avis (42)
             </button>
          </div>
@@ -583,6 +591,27 @@ function OverviewView() {
             </div>
          </div>
       </div>
+
+      {/* MARKETING & TICKETS SECTION */}
+      <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         whileInView={{ opacity: 1, y: 0 }}
+         className="bg-[#234D96] rounded-[4rem] p-16 text-white relative overflow-hidden group shadow-2xl shadow-indigo-900/40"
+      >
+         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+            <div className="space-y-6 max-w-xl text-center md:text-left">
+               <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-xl mb-4 group-hover:scale-110 transition-transform">
+                  <Ticket size={32} />
+               </div>
+               <h3 className="text-4xl font-black tracking-tighter">Marketing & Coupons</h3>
+               <p className="text-indigo-100/70 font-medium text-lg leading-relaxed">Générez des codes promotionnels massifs pour injecter de la liquidité et attirer de nouveaux agents sur votre réseau.</p>
+            </div>
+            <button className="px-12 py-7 bg-white text-slate-950 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.3em] border-b-4 border-slate-200 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10">
+               Générer une Campagne
+            </button>
+         </div>
+         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+      </motion.div>
     </motion.div>
   );
 }
@@ -647,9 +676,9 @@ function AlertRow({ title, desc, time, active, isUrgent }: { title: string, desc
           <span className="text-[9px] font-black text-slate-500 uppercase">{time}</span>
        </div>
        <p className="text-[10px] font-medium text-slate-400 line-clamp-1">{desc}</p>
-       <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button className="flex-1 py-2 bg-white text-slate-950 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-[#4ECBA8] hover:text-white transition-all">Consulter</button>
-          {!isUrgent && <button className="px-4 py-2 bg-white/10 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-white/20">Ignorer</button>}
+       <div className="flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+          <button className="flex-1 py-3 bg-white text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#234D96] hover:text-white transition-all shadow-xl">Consulter</button>
+          {!isUrgent && <button className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20">Ignorer</button>}
        </div>
     </div>
   );
@@ -708,450 +737,10 @@ function SecurityEvent({ user, action, time, type }: { user: string, action: str
 }
 
 /* ------------------- VIEW: AGENTS ------------------- */
-function AgentsView() {
-  const agents = [
-    { id: "AG-1024", name: "Koffi Mensah", location: "Cotonou, Dantokpa", status: "Actif", sales: "2.4M", type: "Agent", avatar: "KM" },
-    { id: "AG-1025", name: "Sika Shop", location: "Abidjan, Riviera", status: "Inactif", sales: "0 F", type: "Super-Agent", avatar: "SS" },
-    { id: "AG-1026", name: "Global Cash", location: "Lomé, Port", status: "Actif", sales: "1.8M", type: "Agent", avatar: "GC" },
-    { id: "AG-1027", name: "Awa Services", location: "Dakar, Plateau", status: "Vérification", sales: "0 F", type: "Agent", avatar: "AS" },
-  ];
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-10"
-    >
-      <div className="flex items-center justify-between">
-         <div className="animate-in slide-in-from-left duration-700">
-            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Réseau d'<span className="text-[#234D96]">Agents</span></h2>
-            <p className="text-slate-400 font-medium text-sm mt-3">Gérez et supervisez l'ensemble des points de vente actifs.</p>
-         </div>
-         <div className="flex gap-4">
-            <div className="flex bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/60 shadow-inner">
-               <button className="px-6 py-2.5 bg-[#234D96] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/20">Tous</button>
-               <button className="px-6 py-2.5 text-slate-400 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors">Actifs</button>
-               <button className="px-6 py-2.5 text-slate-400 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors">Flagués</button>
-            </div>
-            <button className="flex items-center gap-3 px-8 py-4 bg-slate-950 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-900/20 hover:scale-105 transition-all outline-none">
-               <Plus size={18} />
-               Déployer Agent
-            </button>
-         </div>
-      </div>
-
-      <div className="bg-white/60 backdrop-blur-xl rounded-[3.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 overflow-hidden">
-         <table className="w-full text-left">
-            <thead>
-               <tr className="bg-slate-50/30 border-b border-slate-100/50">
-                  <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Identité & ID</th>
-                  <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Localisation</th>
-                  <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Tier</th>
-                  <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Volume 30j</th>
-                  <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
-                  <th className="px-10 py-8 text-right text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
-               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100/50">
-               {agents.map((agent) => (
-                  <tr key={agent.id} className="hover:bg-white transition-colors group px-4">
-                     <td className="px-10 py-8">
-                        <div className="flex items-center gap-4">
-                           <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-xs shadow-lg group-hover:rotate-6 transition-transform">
-                              {agent.avatar}
-                           </div>
-                           <div className="flex flex-col">
-                              <span className="font-black text-slate-950 text-base tracking-tight">{agent.name}</span>
-                              <span className="text-[10px] font-black text-[#234D96] uppercase tracking-widest mt-0.5">{agent.id}</span>
-                           </div>
-                        </div>
-                     </td>
-                     <td className="px-10 py-8 text-sm font-bold text-slate-500">{agent.location}</td>
-                     <td className="px-10 py-8">
-                        <span className="px-4 py-1.5 bg-indigo-50 text-[#234D96] rounded-xl text-[10px] font-black uppercase tracking-widest border border-indigo-100/50">{agent.type}</span>
-                     </td>
-                     <td className="px-10 py-8">
-                        <div className="flex flex-col">
-                           <span className="font-black text-slate-950 text-xl">{agent.sales} <span className="text-[10px] text-slate-400 font-bold ml-1 uppercase">FCFA</span></span>
-                           <div className="w-24 h-1 bg-slate-100 rounded-full mt-2 overflow-hidden">
-                              <div className={`h-full bg-emerald-400 ${agent.sales === '0 F' ? 'w-0' : 'w-2/3'}`} />
-                           </div>
-                        </div>
-                     </td>
-                     <td className="px-10 py-8">
-                        <div className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest w-fit border ${
-                           agent.status === "Actif" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
-                           agent.status === "Inactif" ? "bg-rose-50 text-rose-600 border-rose-100" : 
-                           "bg-amber-50 text-amber-600 border-amber-100"
-                        }`}>
-                           <div className={`w-2 h-2 rounded-full ${agent.status === 'Actif' ? 'bg-emerald-500' : agent.status === 'Inactif' ? 'bg-rose-500' : 'bg-amber-500'} ${agent.status === 'Actif' ? 'animate-pulse' : ''}`} />
-                           {agent.status}
-                        </div>
-                     </td>
-                     <td className="px-10 py-8 text-right">
-                        <button className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-[#234D96] hover:text-white transition-all shadow-sm">
-                           <MoreHorizontal size={20} />
-                        </button>
-                     </td>
-                  </tr>
-               ))}
-            </tbody>
-         </table>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ------------------- VIEW: NETWORK ------------------- */
-function NetworkView() {
-   return (
-      <motion.div 
-         initial={{ opacity: 0, y: 30 }}
-         animate={{ opacity: 1, y: 0 }}
-         exit={{ opacity: 0, scale: 0.98 }}
-         className="space-y-12 pb-20"
-      >
-         <div className="flex items-center justify-between">
-            <div>
-               <div className="flex items-center gap-3 mb-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <p className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.4em]">Live Infrastructure Feed</p>
-               </div>
-               <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Diagnostic <span className="text-[#234D96]">Pulsar</span></h2>
-               <p className="text-slate-400 font-medium text-sm mt-3">Surveillance temps réel des nœuds et passerelles de paiement.</p>
-            </div>
-            <div className="flex gap-4">
-               <div className="px-8 py-5 bg-white/60 backdrop-blur-md rounded-[2rem] border border-white/60 shadow-xl shadow-slate-200/20 flex items-center gap-6">
-                  <div className="flex flex-col">
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Dernier Ping</span>
-                     <span className="text-sm font-black text-slate-950 uppercase tracking-tight">42ms <span className="text-emerald-500 font-black ml-1 text-[10px]">Optimal</span></span>
-                  </div>
-                  <div className="w-[1px] h-8 bg-slate-100" />
-                  <div className="flex flex-col">
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status</span>
-                     <span className="text-sm font-black text-emerald-500 uppercase tracking-tight">Opérationnel</span>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div className="grid grid-cols-12 gap-8">
-            {/* LARGE MONITOR BOARD */}
-            <div className="col-span-8 bg-[#1A1C1E] rounded-[4rem] p-12 text-white relative overflow-hidden group border border-white/5">
-               <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-12">
-                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#234D96] rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-900/40">
-                           <Activity size={24} />
-                        </div>
-                        <h3 className="text-2xl font-black tracking-tight">Flux de Trafic Global</h3>
-                     </div>
-                     <div className="flex flex-col items-end">
-                        <span className="text-4xl font-black text-white leading-none tracking-tighter">1,284 <span className="text-slate-500 text-lg uppercase tracking-widest font-black ml-1">TX/s</span></span>
-                        <div className="flex items-center gap-2 mt-2 text-emerald-400">
-                           <TrendingUp size={14} />
-                           <span className="text-[10px] font-black uppercase tracking-widest">+4.2%</span>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* HIGH FIDELITY CHART PLACEHOLDER */}
-                  <div className="h-64 flex items-end gap-1 px-4 relative">
-                     <div className="absolute inset-x-0 top-1/2 h-[1px] bg-white/5 border-dashed border-t border-white/10" />
-                     {[65, 45, 80, 55, 90, 70, 85, 40, 60, 75, 45, 80, 55, 95, 65, 45, 80, 55, 90, 70, 85, 40, 60, 75, 45, 80, 55, 95].map((h, i) => (
-                        <motion.div 
-                           key={i}
-                           initial={{ height: 0 }}
-                           animate={{ height: `${h}%` }}
-                           transition={{ delay: i * 0.03, duration: 1.5, ease: "circOut" }}
-                           className={`flex-1 rounded-t-lg transition-all duration-300 ${i === 13 ? 'bg-[#234D96]' : 'bg-white group-hover:bg-[#234D96] opacity-10 group-hover:opacity-40'}`}
-                        />
-                     ))}
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-8 mt-12 pt-12 border-t border-white/5">
-                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Load Balancer</span>
-                        <span className="text-xl font-black text-white">42.4%</span>
-                     </div>
-                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Nodes Actifs</span>
-                        <span className="text-xl font-black text-white">12/12</span>
-                     </div>
-                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Error Rate</span>
-                        <span className="text-xl font-black text-emerald-500">0.02%</span>
-                     </div>
-                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Queue Sync</span>
-                        <span className="text-xl font-black text-white">0.4ms</span>
-                     </div>
-                  </div>
-               </div>
-               <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#234D96] rounded-full blur-[120px] opacity-10 pointer-events-none transition-transform duration-1000 group-hover:scale-150" />
-            </div>
-
-            {/* SIDE MONITORING */}
-            <div className="col-span-4 space-y-8">
-               <div className="bg-white/60 backdrop-blur-xl p-10 rounded-[3.5rem] border border-white/60 shadow-2xl shadow-slate-200/40 relative overflow-hidden group">
-                  <div className="relative z-10">
-                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8">Stock de Ressources</h4>
-                     <div className="space-y-8">
-                        <ResourceBar label="Database Cluster" used={45} />
-                        <ResourceBar label="API Engine" used={28} />
-                        <ResourceBar label="Edge Nodes" used={72} color="rose" />
-                     </div>
-                  </div>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-[40px] opacity-40 group-hover:bg-[#234D96]/10 transition-colors" />
-               </div>
-
-               <div className="bg-gradient-to-br from-[#234D96] to-[#1A1C1E] p-10 rounded-[3.5rem] text-white shadow-2xl shadow-indigo-900/40 relative overflow-hidden group">
-                  <div className="relative z-10">
-                     <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 mb-8 shadow-xl">
-                        <Cpu size={28} className="group-hover:rotate-12 transition-transform duration-500" />
-                     </div>
-                     <h4 className="text-xl font-black mb-2 uppercase tracking-tight">Diagnostic <span className="text-indigo-400">AI Engine</span></h4>
-                     <p className="text-slate-400 text-xs font-medium leading-relaxed mb-10 opacity-70">Analyse prédictive de la charge pour les prochaines 24h. Pic attendu à 18h00.</p>
-                     
-                     <div className="flex items-center gap-4">
-                        <div className="flex flex-col">
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Prévision Pic</span>
-                           <span className="text-lg font-black text-white">+14.2%</span>
-                        </div>
-                        <div className="w-[1px] h-8 bg-white/10" />
-                        <button className="flex-1 py-4 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-400 hover:text-white transition-all">Lancer Scan Deep</button>
-                     </div>
-                  </div>
-                  <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/5 rounded-full blur-3xl opacity-20 pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
-               </div>
-            </div>
-
-            {/* SECOND ROW MONITORING */}
-            <div className="col-span-12 grid grid-cols-4 gap-8">
-               <div className="col-span-3 bg-white/60 backdrop-blur-xl p-10 rounded-[3.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-                  <div className="flex items-center justify-between mb-10">
-                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Logs de Sécurité</h4>
-                     <button className="text-[10px] font-black text-[#234D96] uppercase tracking-widest hover:underline">Voir l'audit total</button>
-                  </div>
-                  <div className="space-y-6">
-                     <SecurityLog msg="Tentative de brute-force root bloquée (IP: 192.168.1.1)" time="1h" type="alert" />
-                     <SecurityLog msg="Nouveau certificat SSL Wildcard installé sur Node-Primary" time="4h" type="info" />
-                     <SecurityLog msg="Scan de vulnérabilités hebdomadaire complété sans erreur" time="1j" type="info" />
-                     <SecurityLog msg="Détection de latence anormale sur Moov-Money Gateway" time="1j" type="alert" />
-                  </div>
-               </div>
-
-               <div className="bg-white/60 backdrop-blur-xl p-10 rounded-[3.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-10 text-center">Part de Marché Traffic</h4>
-                  <div className="space-y-6">
-                     <OperatorTraffic name="MTN MoMo" percentage={42} />
-                     <OperatorTraffic name="Moov Money" percentage={28} />
-                     <OperatorTraffic name="Wave Finance" percentage={22} />
-                     <OperatorTraffic name="Autres" percentage={8} />
-                  </div>
-               </div>
-            </div>
-         </div>
-      </motion.div>
-   );
-}
-
-function ResourceBar({ label, used, color = "indigo" }: { label: string, used: number, color?: string }) {
-   return (
-      <div className="space-y-2">
-         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-            <span className="text-slate-500">{label}</span>
-            <span className={color === 'indigo' ? 'text-[#234D96]' : 'text-rose-500'}>{used}%</span>
-         </div>
-         <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-            <motion.div 
-               initial={{ width: 0 }}
-               animate={{ width: `${used}%` }}
-               transition={{ duration: 1.5, ease: "easeOut" }}
-               className={`h-full rounded-full ${color === 'indigo' ? 'bg-[#234D96]' : 'bg-rose-500'}`} 
-            />
-         </div>
-      </div>
-   );
-}
-
-function SecurityLog({ msg, time, type }: { msg: string, time: string, type: "info" | "alert" }) {
-   return (
-      <div className="flex items-center gap-3">
-         <div className={`w-2 h-2 rounded-full shrink-0 ${type === 'alert' ? 'bg-rose-500' : 'bg-[#234D96]'}`} />
-         <p className="text-[11px] font-bold text-slate-600 flex-1">{msg}</p>
-         <span className="text-[10px] font-black text-slate-300 uppercase">{time}</span>
-      </div>
-   );
-}
-
-function OperatorTraffic({ name, percentage }: { name: string, percentage: number }) {
-   return (
-      <div className="space-y-2">
-         <div className="flex justify-between text-xs font-bold text-slate-800">
-            <span>{name}</span>
-            <span>{percentage}%</span>
-         </div>
-         <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
-            <div className="h-full bg-slate-900 rounded-full" style={{ width: `${percentage}%` }} />
-         </div>
-      </div>
-   );
-}
-
-/* ------------------- VIEW: CONFIG ------------------- */function ConfigView() {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className="space-y-12 pb-20"
-    >
-      <div className="flex items-center justify-between">
-         <div className="animate-in slide-in-from-left duration-700">
-            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Config</span></h2>
-            <p className="text-slate-400 font-medium text-sm mt-3">Ajustez les paramètres économiques et de sécurité du système.</p>
-         </div>
-         <button className="px-10 py-5 bg-slate-950 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-b-4 border-slate-800">
-            <Database size={18} /> Snapshot Configuration
-         </button>
-      </div>
-
-      <div className="grid grid-cols-12 gap-10">
-         <div className="col-span-12 lg:col-span-7 space-y-10">
-            <div className="bg-white/60 backdrop-blur-xl p-12 rounded-[4rem] border border-white/60 shadow-2xl shadow-slate-200/40 space-y-10 relative overflow-hidden group">
-               <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                     <h3 className="text-2xl font-black flex items-center gap-4 text-slate-950">
-                        <Settings className="text-[#234D96]" />
-                        Economie du Système
-                     </h3>
-                     <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        Live Sync
-                     </span>
-                  </div>
-                  <p className="text-slate-400 text-sm font-medium mb-10">Contrôlez les marges et les incitations du réseau.</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="p-8 bg-slate-950 rounded-[2.5rem] border border-slate-900 flex flex-col justify-between group/card hover:bg-[#234D96] transition-all duration-500 text-white shadow-2xl shadow-slate-900/20">
-                        <div className="flex items-center justify-between mb-8">
-                           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
-                              <Zap size={20} className="text-white" />
-                           </div>
-                           <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
-                              <ChevronRight size={16} />
-                           </button>
-                        </div>
-                        <div>
-                           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-3">Frais de Service (Platform)</p>
-                           <span className="text-4xl font-black tracking-tighter">1.5%<span className="text-lg text-slate-500 ml-1">/ TX</span></span>
-                        </div>
-                     </div>
-
-                     <div className="p-8 bg-white rounded-[2.5rem] border border-slate-100 flex flex-col justify-between group/card hover:border-[#234D96] transition-all duration-500 text-slate-950 shadow-xl shadow-slate-200/20">
-                        <div className="flex items-center justify-between mb-8">
-                           <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100">
-                              <Plus size={20} className="text-[#234D96]" />
-                           </div>
-                           <button className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
-                              <Plus size={16} className="text-[#234D96]" />
-                           </button>
-                        </div>
-                        <div>
-                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-3">Bonus Volume (&gt;1M)</p>
-                           <span className="text-4xl font-black tracking-tighter text-emerald-600">-0.2%<span className="text-lg text-slate-400 ml-1">Cashback</span></span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-[80px] opacity-40 group-hover:bg-[#234D96]/10 transition-colors pointer-events-none" />
-            </div>
-
-            <div className="bg-white/60 backdrop-blur-xl p-12 rounded-[4rem] border border-white/60 shadow-2xl shadow-slate-200/40 space-y-10">
-               <h3 className="text-2xl font-black text-slate-950 uppercase tracking-tight">Setup <span className="text-[#234D96]">Opérateurs</span></h3>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <OpConfigRow name="MTN MoMo" current="1.2%" />
-                  <OpConfigRow name="Moov Money" current="1.5%" />
-                  <OpConfigRow name="Wave Finance" current="1.0%" />
-                  <OpConfigRow name="Orange Money" current="Non-Config" />
-               </div>
-            </div>
-         </div>
-
-         <div className="col-span-12 lg:col-span-5 space-y-10">
-            <div className="bg-slate-950 p-12 rounded-[4rem] text-white space-y-10 shadow-2xl shadow-slate-950/40 border border-white/5 relative overflow-hidden group">
-               <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-10">
-                     <h3 className="text-2xl font-black flex items-center gap-4">
-                        <ShieldCheck className="text-emerald-500" />
-                        Hardened Security
-                     </h3>
-                     <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:rotate-12 transition-transform">
-                        <Lock size={20} />
-                     </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                     {[
-                        { label: "Alerte Retrait Massif", value: "2.5M F", toggle: true, desc: "Alerte auto sur Telegram" },
-                        { label: "Suspension Auto-Agent", value: "5 essais", toggle: true, desc: "Blocage temporaire 1h" },
-                        { label: "KYC Refresh Mandatory", value: "12 mois", toggle: false, desc: "Email de rappel auto" },
-                        { label: "Force MFA Admin", value: "Toujours", toggle: true, desc: "Yubikey ou Google Auth" },
-                     ].map((cfg, i) => (
-                        <div key={i} className="flex flex-col gap-1 p-6 bg-white/5 border border-white/5 rounded-[2rem] hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer group/item">
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm font-black tracking-tight">{cfg.label}</p>
-                                 <p className="text-[10px] font-bold text-slate-500 mt-0.5">{cfg.desc}</p>
-                              </div>
-                              <div className={`w-14 h-7 rounded-full p-1 cursor-pointer transition-all duration-300 ${cfg.toggle ? 'bg-[#234D96]' : 'bg-slate-800'}`}>
-                                 <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-xl ${cfg.toggle ? 'translate-x-7' : ''}`} />
-                              </div>
-                           </div>
-                        </div>
-                     ))}
-                  </div>
-               </div>
-               <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-[#234D96] rounded-full blur-[120px] opacity-10 pointer-events-none transition-transform duration-1000 group-hover:scale-150" />
-            </div>
-
-            <div className="bg-[#234D96] p-10 rounded-[4rem] text-white shadow-2xl shadow-indigo-900/40 group relative overflow-hidden">
-               <div className="relative z-10">
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 mb-6 shadow-xl">
-                     <Activity size={24} />
-                  </div>
-                  <h4 className="text-xl font-black mb-2 uppercase tracking-tight">Optimization Engine</h4>
-                  <p className="text-indigo-100/70 text-xs font-medium leading-relaxed mb-8">L'IA suggère d'ajuster les frais MTN à 1.1% pour capturer 12% de volume supplémentaire.</p>
-                  <button className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all shadow-xl">Appliquer Tuning Auto</button>
-               </div>
-               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[40px] -mr-16 -mt-16 pointer-events-none" />
-            </div>
-         </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function OpConfigRow({ name, current }: { name: string, current: string }) {
-   return (
-      <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-         <span className="font-black text-slate-900">{name}</span>
-         <div className="flex items-center gap-6">
-            <div className="flex flex-col items-end">
-               <span className="text-[8px] font-black text-slate-400 uppercase">Actuel</span>
-               <span className="text-sm font-black text-[#234D96]">{current}</span>
-            </div>
-            <button className="px-6 py-2 bg-white text-[10px] font-black text-slate-900 border border-slate-200 rounded-xl uppercase tracking-widest hover:border-slate-400 transition-all">Modifier</button>
-         </div>
-      </div>
-   );
-}
-
 /* ------------------- VIEW: MERCHANTS ------------------- */
-type MerchantPlan = "Starter" | "Pro" | "Business";
+type MerchantPlan = "Starter" | "Pro" | "Business" | "Enterprise";
 type KYCStatus = "Verified" | "Incomplete" | "Rejected" | "Pending";
+type PaymentStatus = "Paid" | "Pending" | "Overdue";
 
 interface Merchant {
   id: string;
@@ -1162,6 +751,7 @@ interface Merchant {
   joinedAt: string;
   expiresAt: string;
   plan: MerchantPlan;
+  paymentStatus: PaymentStatus;
   kycStatus: KYCStatus;
   isActive: boolean;
   agencies: number;
@@ -1180,6 +770,7 @@ const MERCHANTS_DATA: Merchant[] = [
     joinedAt: "12/04/2026",
     expiresAt: "12/04/2027",
     plan: "Pro",
+    paymentStatus: "Paid",
     kycStatus: "Verified",
     isActive: true,
     agencies: 12,
@@ -1200,6 +791,7 @@ const MERCHANTS_DATA: Merchant[] = [
     joinedAt: "15/04/2026",
     expiresAt: "15/10/2026",
     plan: "Business",
+    paymentStatus: "Pending",
     kycStatus: "Pending",
     isActive: true,
     agencies: 5,
@@ -1219,6 +811,7 @@ const MERCHANTS_DATA: Merchant[] = [
     joinedAt: "20/04/2026",
     expiresAt: "20/04/2027",
     plan: "Starter",
+    paymentStatus: "Overdue",
     kycStatus: "Incomplete",
     isActive: false,
     agencies: 2,
@@ -1237,6 +830,7 @@ const MERCHANTS_DATA: Merchant[] = [
     joinedAt: "22/04/2026",
     expiresAt: "22/10/2026",
     plan: "Pro",
+    paymentStatus: "Paid",
     kycStatus: "Verified",
     isActive: true,
     agencies: 8,
@@ -1255,6 +849,10 @@ function MerchantsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [merchants, setMerchants] = useState(MERCHANTS_DATA);
   const [showToast, setShowToast] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [activeKycDoc, setActiveKycDoc] = useState<string | null>(null);
+  const [showPlanModal, setShowPlanModal] = useState<Merchant | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState<Merchant | null>(null);
+  const [activeDetailTab, setActiveDetailTab] = useState<'stats' | 'kyc' | 'billing'>('stats');
 
   const filteredMerchants = merchants.filter(m => 
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1262,12 +860,13 @@ function MerchantsView() {
     m.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setMerchants(prev => prev.map(m => {
       if (m.id === id) {
         const newStatus = !m.isActive;
         setShowToast({ 
-          message: `${newStatus ? 'Accès activé' : 'Accès suspendu'} pour ${m.name}`, 
+          message: `${newStatus ? 'Compte Activé' : 'Accès Suspendu'} : ${m.name}`, 
           type: newStatus ? 'success' : 'error' 
         });
         setTimeout(() => setShowToast(null), 3000);
@@ -1277,22 +876,67 @@ function MerchantsView() {
     }));
   };
 
+  const handleKycAction = (id: string, action: 'approve' | 'reject') => {
+    setMerchants(prev => prev.map(m => m.id === id ? { ...m, kycStatus: action === 'approve' ? 'Verified' : 'Rejected' as const } : m));
+    setShowToast({
+      message: action === 'approve' ? "Compte marchand validé" : "KYC rejeté",
+      type: action === 'approve' ? 'success' : 'error'
+    });
+    setTimeout(() => setShowToast(null), 3000);
+    if (showDetailsModal?.id === id) {
+      setShowDetailsModal(prev => prev ? { ...prev, kycStatus: action === 'approve' ? 'Verified' : 'Rejected' as const } : null);
+    }
+  };
+
+  const navigateMerchant = (direction: 'prev' | 'next') => {
+    if (!showDetailsModal) return;
+    const currentIndex = filteredMerchants.findIndex(m => m.id === showDetailsModal.id);
+    let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    
+    if (nextIndex >= 0 && nextIndex < filteredMerchants.length) {
+      setShowDetailsModal(filteredMerchants[nextIndex]);
+      setActiveDetailTab('stats');
+    }
+  };
+
+  const handlePlanChange = (id: string, newPlan: MerchantPlan) => {
+    setMerchants(prev => prev.map(m => {
+      if (m.id === id) {
+        // Simulation: Activation immédiate pour 1 an
+        const date = new Date();
+        date.setFullYear(date.getFullYear() + 1);
+        const expiresAt = date.toLocaleDateString('fr-FR');
+        
+        return { 
+          ...m, 
+          plan: newPlan, 
+          paymentStatus: 'Paid' as const, 
+          isActive: true,
+          expiresAt
+        };
+      }
+      return m;
+    }));
+    setShowToast({ message: `Plan ${newPlan} activé jusqu'au prochain renouvellement`, type: 'success' });
+    setTimeout(() => setShowToast(null), 3000);
+    setShowPlanModal(null);
+  };
+
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className="space-y-10 relative"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-10 relative pb-20"
     >
       {/* TOAST SYSTEM */}
       <AnimatePresence>
         {showToast && (
           <motion.div 
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 50, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className={`fixed top-0 left-1/2 z-[100] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 border ${
-              showToast.type === 'success' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-rose-500 text-white border-rose-400'
+            initial={{ opacity: 0, y: -40, x: '-50%' }}
+            animate={{ opacity: 1, y: 40, x: '-50%' }}
+            exit={{ opacity: 0, y: -40, x: '-50%' }}
+            className={`fixed top-0 left-1/2 z-[200] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-4 border backdrop-blur-md ${
+              showToast.type === 'success' ? 'bg-emerald-500/90 text-white border-emerald-400' : 'bg-rose-500/90 text-white border-rose-400'
             }`}
           >
             {showToast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
@@ -1301,98 +945,147 @@ function MerchantsView() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between">
-         <div className="animate-in slide-in-from-left duration-700">
-            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Hub <span className="text-[#3A4DB7]">Marchands</span></h2>
-            <p className="text-slate-400 font-medium text-sm mt-3">Gestion centralisée du portefeuille d'entreprises partenaires.</p>
-         </div>
-         <div className="flex gap-4">
-            <div className="relative group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3A4DB7] transition-colors" size={18} />
-              <input 
-                type="text" 
-                placeholder="Rechercher un marchand..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-16 pr-8 py-5 bg-white border border-slate-200 rounded-[1.5rem] text-sm font-bold text-slate-900 focus:outline-none focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 transition-all w-80 shadow-sm"
-              />
-            </div>
-            <button className="flex items-center gap-3 px-8 py-5 bg-slate-950 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-900/20 hover:scale-105 active:scale-95 transition-all">
-               <Plus size={18} /> Invitation Marchand
-            </button>
-         </div>
+      {/* HEADER SECTION */}
+      <div className="flex flex-col gap-2">
+         <h2 className="text-4xl font-black tracking-tighter text-slate-950">Gestion des marchands</h2>
+         <p className="text-slate-400 font-medium">Activez les comptes marchands et renouvelez leurs abonnements depuis un seul écran.</p>
       </div>
 
-      <div className="bg-white rounded-[3.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/40 overflow-hidden">
-         <div className="overflow-x-auto no-scrollbar">
-            <table className="w-full text-left">
+      {/* SUMMARY STATS BAR */}
+      <div className="grid grid-cols-5 gap-6">
+         {[
+           { label: "MARCHANDS", val: "842", sub: "Base totale suivie", color: "indigo" },
+           { label: "ACTIFS", val: "798", sub: "Comptes opérationnels", color: "emerald" },
+           { label: "EN ATTENTE", val: "12", sub: "A vérifier ou activer", color: "amber" },
+           { label: "SUSPENDUS", val: "32", sub: "Accès temporaires bloqués", color: "rose" },
+           { label: "AGENTS", val: "2,410", sub: "Points de vente", color: "slate" }
+         ].map((stat, i) => (
+           <div key={i} className="bg-white border border-slate-200/60 p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow group">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-[#3A4DB7] transition-colors">{stat.label}</p>
+              <div className="flex items-baseline gap-2">
+                 <span className="text-3xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
+              </div>
+              <p className="text-[11px] font-medium text-slate-400 mt-1">{stat.sub}</p>
+           </div>
+         ))}
+      </div>
+
+      {/* MAIN TABLE SECTION */}
+      <div className="bg-white rounded-[2rem] border border-slate-200/60 shadow-xl overflow-hidden">
+         <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div>
+               <h3 className="text-xl font-black text-slate-950 tracking-tight">Vue structure marchands</h3>
+               <p className="text-xs font-bold text-slate-400 mt-1">{filteredMerchants.length} marchand(s) visible(s)</p>
+            </div>
+            <div className="relative">
+               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+               <input 
+                 type="text" 
+                 placeholder="Rechercher un marchand, email, IFU..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 w-80 transition-all shadow-inner"
+               />
+            </div>
+         </div>
+
+         <div className="overflow-x-auto">
+            <table className="w-full">
                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                     <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-widest">Entreprise</th>
-                     <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-widest">Contact Client</th>
-                     <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Plan Actuel</th>
-                     <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Statut KYC</th>
-                     <th className="px-10 py-8 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Accès</th>
-                     <th className="px-10 py-8 text-right text-[11px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                  <tr className="bg-white border-b border-slate-100">
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Marchand</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Entreprise</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Statut KYC</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Abonnement</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Réseau</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Accès</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-50">
-                  {filteredMerchants.length > 0 ? filteredMerchants.map((merchant) => (
-                     <tr key={merchant.id} className="hover:bg-slate-50 transition-colors group">
+                  {filteredMerchants.map((merchant) => (
+                     <tr key={merchant.id} className="hover:bg-indigo-50/10 transition-all group">
                         <td className="px-10 py-8">
-                           <div className="flex items-center gap-5 cursor-pointer" onClick={() => setSelectedMerchant(merchant)}>
-                              <div className="w-16 h-16 bg-slate-950 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg border border-slate-800 shrink-0 group-hover:rotate-6 transition-transform">
+                           <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-slate-950 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg group-hover:scale-105 group-hover:rotate-3 transition-all duration-500">
                                  {merchant.name.charAt(0)}
                               </div>
                               <div className="flex flex-col">
-                                 <span className="font-black text-slate-950 text-lg tracking-tight group-hover:text-[#3A4DB7] transition-colors">{merchant.name}</span>
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Depuis {merchant.joinedAt}</span>
-                                 <span className="text-[9px] font-bold text-[#3A4DB7] mt-1">ID: {merchant.id}</span>
+                                 <span className="font-black text-slate-950 leading-none">{merchant.name}</span>
+                                 <span className="text-[10px] font-bold text-[#3A4DB7] mt-1.5 uppercase tracking-widest">{merchant.id}</span>
+                                 <span className="text-[10px] font-bold text-slate-400 mt-0.5">{merchant.email}</span>
                               </div>
                            </div>
                         </td>
                         <td className="px-10 py-8">
-                           <div className="flex flex-col gap-3">
-                              <span className="text-sm font-bold text-slate-700">{merchant.manager}</span>
-                              <div className="flex items-center gap-2">
-                                 <button className="w-8 h-8 bg-indigo-50 text-[#3A4DB7] rounded-lg flex items-center justify-center hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm">
-                                    <Mail size={14} />
-                                 </button>
-                                 <button className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm">
-                                    <MessageSquare size={14} />
-                                 </button>
-                              </div>
+                           <div className="flex flex-col">
+                              <span className="font-bold text-slate-800">{merchant.manager}</span>
+                              <span className="text-[10px] font-black text-[#3A4DB7] uppercase mt-1">IFU: {merchant.id.replace('M-', 'IFU-2024-')}</span>
+                              <span className="text-[9px] font-bold text-slate-400 italic font-mono uppercase tracking-tighter">Depuis le {merchant.joinedAt}</span>
                            </div>
                         </td>
                         <td className="px-10 py-8 text-center">
                            <div className="flex flex-col items-center gap-2">
-                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                                 merchant.plan === 'Starter' ? 'bg-slate-50 text-slate-500 border-slate-100' :
-                                 merchant.plan === 'Pro' ? 'bg-indigo-50 text-[#3A4DB7] border-indigo-100' :
-                                 'bg-purple-50 text-purple-600 border-purple-100'
+                              <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                                 merchant.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                 merchant.kycStatus === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                                 'bg-rose-50 text-rose-600 border-rose-100'
                               }`}>
-                                 {merchant.plan}
+                                 {merchant.kycStatus}
                               </span>
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Expire: {merchant.expiresAt}</span>
+                              {merchant.kycStatus === 'Pending' && (
+                                <button 
+                                  onClick={() => {
+                                    setShowDetailsModal(merchant);
+                                    setActiveDetailTab('kyc');
+                                  }}
+                                  className="text-[9px] font-black text-[#3A4DB7] hover:underline uppercase tracking-tighter animate-pulse"
+                                >
+                                   Vérifier Dossier →
+                                </button>
+                              )}
                            </div>
                         </td>
                         <td className="px-10 py-8 text-center">
-                           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
-                              merchant.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                              merchant.kycStatus === 'Incomplete' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                              merchant.kycStatus === 'Rejected' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                              'bg-indigo-50 text-[#3A4DB7] border-indigo-100'
-                           }`}>
-                              {merchant.kycStatus === 'Verified' ? <CheckCircle2 size={12} /> : 
-                               merchant.kycStatus === 'Rejected' ? <XCircle size={12} /> : <AlertCircle size={12} />}
-                              {merchant.kycStatus}
+                           <div className="flex flex-col items-center gap-1">
+                              <span className={`px-3 py-1 rounded-lg text-[9px] font-black tracking-tight ${
+                                merchant.plan === 'Starter' ? 'bg-slate-100 text-slate-500' : 
+                                merchant.plan === 'Pro' ? 'bg-indigo-50 text-[#3A4DB7]' : 
+                                merchant.plan === 'Business' ? 'bg-emerald-50 text-emerald-600' : 
+                                'bg-purple-50 text-purple-600'
+                              }`}>
+                                {merchant.plan.toUpperCase()}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400">
+                                Expire le {merchant.expiresAt}
+                              </span>
+                           </div>
+                        </td>
+                        <td className="px-10 py-8 text-center">
+                           <div className="flex flex-col items-center gap-1">
+                              <span className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest ${
+                                merchant.paymentStatus === 'Paid' ? 'bg-emerald-50 text-emerald-500' : 
+                                merchant.paymentStatus === 'Pending' ? 'bg-amber-50 text-amber-500' : 
+                                'bg-rose-50 text-rose-500'
+                              }`}>
+                                {merchant.paymentStatus === 'Paid' ? 'PAYÉ' : merchant.paymentStatus === 'Pending' ? 'ATTENTE' : 'IMPAYÉ'}
+                              </span>
+                              <span className="text-[10px] font-black text-slate-900">
+                                {merchant.plan === 'Starter' ? '9 900 F' : merchant.plan === 'Pro' ? '29 900 F' : merchant.plan === 'Business' ? '99 000 F' : 'Sur devis'}
+                              </span>
+                           </div>
+                        </td>
+                        <td className="px-10 py-8 text-center">
+                           <div className="flex flex-col">
+                              <span className="text-sm font-black text-slate-900">{merchant.agents}</span>
+                              <span className="text-[10px] font-bold text-slate-400">agent(s)</span>
                            </div>
                         </td>
                         <td className="px-10 py-8 text-center">
                            <div 
-                              onClick={() => toggleStatus(merchant.id)}
+                              onClick={(e) => toggleStatus(merchant.id, e)}
                               className={`w-14 h-7 rounded-full p-1 cursor-pointer transition-all duration-500 mx-auto ${
-                                 merchant.isActive ? 'bg-[#3A4DB7]' : 'bg-slate-200'
+                                 merchant.isActive ? 'bg-emerald-500' : 'bg-slate-200'
                               }`}
                            >
                               <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-500 shadow-lg ${
@@ -1401,310 +1094,1888 @@ function MerchantsView() {
                            </div>
                         </td>
                         <td className="px-10 py-8 text-right">
-                           <button className="w-12 h-12 bg-white border border-slate-100 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm">
-                              <MoreHorizontal size={20} />
-                           </button>
-                        </td>
-                     </tr>
-                  )) : (
-                     <tr>
-                        <td colSpan={6} className="py-24">
-                           <div className="flex flex-col items-center justify-center opacity-40">
-                              <Search size={64} className="text-slate-300 mb-6" />
-                              <h4 className="text-xl font-black text-slate-900 tracking-tight">Aucun marchand trouvé</h4>
-                              <p className="text-sm font-bold text-slate-400 mt-2">Réessayez avec d'autres mots-clés ou filtres.</p>
+                           <div className="flex items-center justify-end gap-3">
                               <button 
-                                onClick={() => setSearchQuery("")}
-                                className="mt-8 px-8 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowPlanModal(merchant);
+                                }}
+                                className="px-5 py-2.5 bg-[#3A4DB7] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#234D96] transition-all shadow-lg shadow-indigo-500/20"
                               >
-                                Réinitialiser
+                                Gérer Abonnement
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDetailsModal(merchant);
+                                }}
+                                className="px-5 py-2.5 bg-white border border-indigo-100 text-[#3A4DB7] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all"
+                              >
+                                Détails
                               </button>
                            </div>
                         </td>
                      </tr>
-                  )}
+                  ))}
                </tbody>
             </table>
          </div>
-         <div className="bg-slate-50/50 p-6 flex items-center justify-between border-t border-slate-100">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Affichage de 1-4 sur 4 marchands</span>
+
+         {/* PAGINATION */}
+         <div className="p-8 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Affichage 1 - {filteredMerchants.length} sur {merchants.length} marchands</p>
             <div className="flex gap-2">
-               {[10, 25, 50].map(n => (
-                  <button key={n} className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${n === 10 ? 'bg-slate-950 text-white' : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-400'}`}>
-                     {n}
-                  </button>
-               ))}
+               <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all">Précédent</button>
+               <button className="px-4 py-2 bg-slate-950 text-white rounded-xl text-[10px] font-black uppercase transition-all">1</button>
+               <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all">Suivant</button>
             </div>
          </div>
       </div>
 
-      {/* MERCHANT DETAILS SLIDE-OVER */}
       <AnimatePresence>
-        {selectedMerchant && (
-          <>
+        {showDetailsModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[400] bg-slate-950/40 backdrop-blur-md flex items-center justify-end"
+            onClick={() => setShowDetailsModal(null)}
+          >
             <motion.div 
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               onClick={() => setSelectedMerchant(null)}
-               className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[110]"
-            />
-            <motion.aside 
-               initial={{ x: '100%' }}
-               animate={{ x: 0 }}
-               exit={{ x: '100%' }}
-               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-               className="fixed top-0 right-0 h-full w-[35rem] bg-white z-[120] shadow-[-20px_0_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+              initial={{ x: '100%', opacity: 0.5 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0.5 }}
+              transition={{ type: 'spring', damping: 35, stiffness: 250 }}
+              className="bg-white w-full max-w-4xl h-full shadow-[-40px_0_100px_rgba(0,0,0,0.1)] flex flex-col relative overflow-hidden"
+              onClick={e => e.stopPropagation()}
             >
-               <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-950 text-white relative h-48 shrink-0 overflow-hidden">
-                  <div className="relative z-10">
-                     <div className="flex items-center gap-6">
-                        <div className="w-24 h-24 bg-white text-slate-950 rounded-[2.5rem] flex items-center justify-center font-black text-4xl shadow-2xl border-4 border-slate-800">
-                           {selectedMerchant.name.charAt(0)}
-                        </div>
-                        <div>
-                           <h3 className="text-3xl font-black tracking-tighter leading-none">{selectedMerchant.name}</h3>
-                           <p className="text-indigo-300 font-bold text-sm mt-3 flex items-center gap-2">
-                              <Globe size={14} /> Gérant: {selectedMerchant.manager}
-                           </p>
-                           <div className="mt-4 flex items-center gap-3">
-                              <span className="px-3 py-1 bg-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/10">ID: {selectedMerchant.id}</span>
-                              <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                                 selectedMerchant.isActive ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/20 text-rose-400 border-rose-500/20'
-                              }`}>
-                                 {selectedMerchant.isActive ? 'Opérationnel' : 'Suspendu'}
-                              </span>
-                           </div>
-                        </div>
-                     </div>
+              {/* Header Context Bar */}
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-[#3A4DB7] to-transparent opacity-20" />
+
+              {/* Dynamic Header */}
+              <div className="p-12 pb-0 shrink-0 relative overflow-hidden">
+                {/* Navigation & Actions */}
+                <div className="flex items-center justify-between mb-12 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => navigateMerchant('prev')}
+                      className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#3A4DB7] hover:text-white transition-all disabled:opacity-20 shadow-sm"
+                      disabled={filteredMerchants.findIndex(m => m.id === showDetailsModal.id) === 0}
+                    >
+                      <ChevronLeft size={22} />
+                    </button>
+                    <button 
+                      onClick={() => navigateMerchant('next')}
+                      className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#3A4DB7] hover:text-white transition-all disabled:opacity-20 shadow-sm"
+                      disabled={filteredMerchants.findIndex(m => m.id === showDetailsModal.id) === filteredMerchants.length - 1}
+                    >
+                      <ChevronRight size={22} />
+                    </button>
+                    <div className="h-8 w-px bg-slate-100 mx-2" />
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+                      Marchand {filteredMerchants.findIndex(m => m.id === showDetailsModal.id) + 1} / {filteredMerchants.length}
+                    </span>
                   </div>
-                  <XCircle 
-                    size={32} 
-                    className="absolute top-8 right-8 text-white/40 hover:text-white cursor-pointer transition-colors z-20" 
-                    onClick={() => setSelectedMerchant(null)}
-                  />
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#3A4DB7] rounded-full blur-[80px] opacity-40 translate-x-20 -translate-y-20 pointer-events-none" />
-               </div>
+                  
+                  <button 
+                    onClick={() => setShowDetailsModal(null)} 
+                    className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500 border border-slate-100 hover:border-rose-500 shadow-sm transition-all"
+                  >
+                    <X size={22} />
+                  </button>
+                </div>
 
-               <div className="flex-1 overflow-y-auto no-scrollbar p-10 space-y-12">
-                  {/* STATISTICS */}
-                  <section>
-                     <div className="flex items-center gap-3 mb-8">
-                        <Activity className="text-[#3A4DB7]" size={20} />
-                        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Statistiques Temps Réel</h4>
-                     </div>
-                     <div className="grid grid-cols-3 gap-4">
-                        {[
-                           { label: "Agences", val: selectedMerchant.agencies, icon: <Building2 size={16} /> },
-                           { label: "Agents", val: selectedMerchant.agents, icon: <Users size={16} /> },
-                           { label: "Vol. Mensuel", val: selectedMerchant.monthlyVolume, icon: <TrendingUp size={16} /> },
-                        ].map((stat, i) => (
-                           <div key={i} className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] flex flex-col items-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                              <div className="w-10 h-10 bg-white border border-slate-100 text-[#3A4DB7] rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                                 {stat.icon}
-                              </div>
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                              <span className="text-xl font-black text-slate-950">{stat.val}</span>
-                           </div>
-                        ))}
-                     </div>
-                  </section>
-
-                  {/* KYC DOCUMENTS */}
-                  <section>
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                           <ShieldCheck className="text-emerald-500" size={20} />
-                           <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Dossier Légal (KYC)</h4>
-                        </div>
-                        <span className={`text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-widest ${
-                          selectedMerchant.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                        }`}>
-                           {selectedMerchant.kycStatus}
+                {/* Profile Identity */}
+                <div className="flex items-start gap-10 relative z-10">
+                   <motion.div 
+                     initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                     transition={{ type: 'spring', damping: 20 }}
+                     className="w-40 h-40 bg-slate-950 text-white rounded-[3.5rem] flex items-center justify-center font-black text-6xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border-8 border-white group relative"
+                   >
+                    {showDetailsModal.name.charAt(0)}
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg">
+                      <CheckCircle2 size={16} className="text-white" />
+                    </div>
+                   </motion.div>
+                   
+                   <div className="flex-1 pt-4">
+                    <motion.div 
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="flex flex-wrap items-center gap-3 mb-6"
+                    >
+                      <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-2.5">
+                        <div className={`w-2.5 h-2.5 rounded-full ${showDetailsModal.isActive ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-rose-500'} animate-pulse`} />
+                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">
+                          {showDetailsModal.isActive ? 'En Ligne' : 'Hors Ligne'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedMerchant.kycDocs.map((doc, idx) => (
-                          <div key={idx} className="group relative overflow-hidden rounded-[2.5rem] border border-slate-100 bg-slate-50 active:scale-95 transition-all">
-                            <div className="aspect-[4/5] flex items-center justify-center p-8">
-                               <FileText size={48} className="text-slate-300 group-hover:text-[#3A4DB7] transition-colors" />
-                            </div>
-                            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-6 text-center">
-                               <Eye size={24} className="mb-4 text-white p-1 rounded-full bg-[#3A4DB7]" />
-                               <p className="text-[10px] font-black uppercase tracking-widest mb-1">{doc.type}</p>
-                               <span className="text-xs font-medium text-slate-400 leading-tight line-clamp-1">{doc.name}</span>
-                            </div>
+                      <div className={`px-4 py-2 rounded-2xl flex items-center gap-2.5 ${
+                        showDetailsModal.kycStatus === 'Verified' 
+                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                          : 'bg-amber-50 text-amber-600 border border-amber-100'
+                      }`}>
+                        <ShieldCheck size={14} />
+                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{showDetailsModal.kycStatus === 'Verified' ? 'Identité Validée' : 'Vérification en cours'}</span>
+                      </div>
+                      <div className="px-4 py-2 bg-indigo-50 text-[#3A4DB7] border border-indigo-100 rounded-2xl">
+                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">Réseau {showDetailsModal.plan}</span>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.h3 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="text-7xl font-black text-slate-950 tracking-tighter leading-[0.85] mb-6"
+                    >
+                      {showDetailsModal.name}
+                    </motion.h3>
+                    
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="flex items-center gap-8"
+                    >
+                       <div className="flex items-center gap-3 text-slate-400">
+                          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[#3A4DB7]">
+                            <User size={16} />
                           </div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 mt-6">
-                        <button className="py-5 bg-emerald-500 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-500/10 hover:bg-emerald-600 transition-all flex items-center justify-center gap-3 border-b-4 border-emerald-700">
-                           <CheckCircle2 size={16} /> Approuver le dossier
-                        </button>
-                        <button className="py-5 bg-white border border-slate-200 text-slate-400 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center justify-center gap-3">
-                           <AlertCircle size={16} /> Demander Correction
-                        </button>
-                      </div>
-                  </section>
+                          <span className="text-sm font-bold text-slate-900">{showDetailsModal.manager}</span>
+                       </div>
+                       <div className="flex items-center gap-3 text-slate-400">
+                          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[#3A4DB7]">
+                            <Globe size={16} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-900">Abidjan, CIV</span>
+                       </div>
+                    </motion.div>
+                   </div>
+                </div>
 
-                  {/* HISTORY LOG */}
-                  <section>
-                      <div className="flex items-center gap-3 mb-8">
-                        <Database className="text-slate-400" size={20} />
-                        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Journal des modifications</h4>
-                      </div>
-                      <div className="space-y-4">
-                        {[
-                           { action: "Plan passé de Starter à Pro", user: "Admin (Jerry)", date: "12/04 - 14:20" },
-                           { action: "Accès suspendu (Dette point ID 104)", user: "System", date: "10/04 - 09:12" },
-                           { action: "Upload documents IFU terminés", user: "Merchant", date: "08/04 - 18:45" },
-                        ].map((log, i) => (
-                           <div key={i} className="flex items-start gap-4 p-5 bg-white border border-slate-100 rounded-2xl group hover:border-indigo-100 transition-all">
-                              <div className="w-2 h-2 bg-slate-300 rounded-full mt-1.5 shrink-0 group-hover:bg-[#3A4DB7] transition-colors" />
-                              <div>
-                                 <p className="text-xs font-black text-slate-900 group-hover:text-[#3A4DB7] transition-colors">{log.action}</p>
-                                 <div className="flex items-center gap-3 mt-1.5 opacity-60">
-                                    <span className="text-[9px] font-black uppercase text-slate-400">{log.user}</span>
-                                    <span className="text-slate-200">•</span>
-                                    <span className="text-[9px] font-black uppercase text-slate-400">{log.date}</span>
+                {/* Tabs Bar */}
+                <div className="flex gap-12 mt-16 border-b border-slate-100 px-2 lg:px-4">
+                  {[
+                    { id: 'stats', label: 'Profil & Stats', icon: <UserCircle size={20} /> },
+                    { id: 'kyc', label: 'Documents', icon: <FileCheck size={20} />, badge: showDetailsModal.kycStatus === 'Verified' ? null : '!' },
+                    { id: 'billing', label: 'Finances', icon: <CreditCard size={20} /> }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveDetailTab(tab.id as any)}
+                      className={`flex items-center gap-3 py-6 text-[11px] font-black uppercase tracking-[0.25em] transition-all relative group ${
+                        activeDetailTab === tab.id ? 'text-[#3A4DB7]' : 'text-slate-400 hover:text-slate-950'
+                      }`}
+                    >
+                      <span className={`transition-transform duration-300 ${activeDetailTab === tab.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                        {tab.icon}
+                      </span>
+                      {tab.label}
+                      {tab.badge && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-lg shadow-rose-500/30">
+                          {tab.badge}
+                        </span>
+                      )}
+                      {activeDetailTab === tab.id && (
+                        <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 inset-x-0 h-[3px] bg-[#3A4DB7] rounded-full shadow-[0_-2px_10px_rgba(58,77,183,0.3)]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Ambient Background Decoration */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-50 rounded-full blur-[100px] opacity-50 -z-10" />
+              </div>
+
+              {/* Scrollable Viewport */}
+              <div className="flex-1 overflow-y-auto p-12 no-scrollbar bg-[#F8FAFC]">
+                <AnimatePresence mode="wait">
+                  {activeDetailTab === 'stats' && (
+                    <motion.div
+                      key="stats"
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      className="space-y-10"
+                    >
+                      {/* STATS HERO GRID */}
+                      <div className="grid grid-cols-12 gap-6">
+                        {/* MAIN VOLUME CARD */}
+                        <div className="col-span-8 p-10 bg-white rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                           <div className="relative z-10">
+                              <div className="flex items-center gap-4 mb-10">
+                                 <div className="w-14 h-14 bg-indigo-50 text-[#3A4DB7] rounded-2xl flex items-center justify-center">
+                                    <TrendingUp size={28} />
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Activité Réseau (30J)</p>
+                                    <h5 className="text-5xl font-black text-slate-950 tracking-tighter">{showDetailsModal.monthlyVolume} F</h5>
+                                 </div>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <span>Taux de conversion</span>
+                                    <span>94.2%</span>
+                                 </div>
+                                 <div className="h-2.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+                                    <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: '94.2%' }}
+                                      transition={{ duration: 1.5, ease: "circOut" }}
+                                      className="h-full bg-gradient-to-r from-[#3A4DB7] to-indigo-400 rounded-full" 
+                                    />
+                                 </div>
+                              </div>
+
+                              <div className="mt-10 flex gap-8">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                    <span className="text-[11px] font-bold text-slate-600">Succès: 2.1k</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                                    <span className="text-[11px] font-bold text-slate-600">Échecs: 12</span>
                                  </div>
                               </div>
                            </div>
+                           <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-indigo-50/50 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-700" />
+                        </div>
+
+                        {/* BALANCE PILL */}
+                        <div className="col-span-4 p-10 bg-slate-950 rounded-[3.5rem] shadow-2xl flex flex-col justify-between text-white relative overflow-hidden">
+                           <div className="relative z-10">
+                              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] mb-4">Solde de Service</p>
+                              <h5 className="text-4xl font-black tracking-tighter mb-2">428 500 F</h5>
+                              <p className="text-[10px] font-bold text-slate-400 italic">Dernière mise à jour: 14:02</p>
+                           </div>
+                           <div className="relative z-10 mt-12">
+                              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-4">
+                                 <div className="h-full w-2/3 bg-white rounded-full" />
+                              </div>
+                              <p className="text-[10px] font-black uppercase text-white/40 italic">75% du plafond utilisé</p>
+                           </div>
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full blur-[60px] opacity-20 -mr-16 -mt-16" />
+                        </div>
+                      </div>
+
+                      {/* NETWORK DISTRIBUTION */}
+                      <div className="grid grid-cols-12 gap-6">
+                        <div className="col-span-12 p-8 bg-white rounded-[3.5rem] border border-slate-100 shadow-sm flex items-center justify-between">
+                           <div className="flex items-center gap-12 pl-4">
+                              <div className="flex flex-col">
+                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Points de Vente</span>
+                                 <span className="text-3xl font-black text-slate-950 tracking-tighter">{showDetailsModal.agencies}</span>
+                              </div>
+                              <div className="w-px h-10 bg-slate-100" />
+                              <div className="flex flex-col">
+                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Agents Terrain Actifs</span>
+                                 <span className="text-3xl font-black text-[#3A4DB7] tracking-tighter">{showDetailsModal.agents}</span>
+                              </div>
+                              <div className="w-px h-10 bg-slate-100" />
+                              <div className="flex flex-col">
+                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Capacité Transactionnelle</span>
+                                 <span className="text-3xl font-black text-emerald-500 tracking-tighter uppercase">Illimité</span>
+                              </div>
+                           </div>
+                           <button className="px-8 py-4 bg-slate-50 text-slate-900 border border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all shadow-sm group flex items-center gap-3">
+                              Fiche Réseau <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                           </button>
+                        </div>
+                      </div>
+
+                      {/* ADMINISTRATIVE RECORD */}
+                      <div className="bg-white rounded-[4rem] border border-slate-100 shadow-sm p-14 relative group">
+                        <div className="flex items-center justify-between mb-12">
+                           <div className="flex items-center gap-4">
+                              <div className="w-3 h-8 bg-[#3A4DB7] rounded-full" />
+                              <h4 className="text-3xl font-black text-slate-950 tracking-tight">Registre d'identité</h4>
+                           </div>
+                           <button className="flex items-center gap-3 px-8 py-4 bg-[#3A4DB7] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:shadow-2xl hover:bg-slate-900 transition-all">
+                              <Edit3 size={16} /> Édition Administrative
+                           </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-x-20 gap-y-12">
+                           <DetailItem label="Directeur de Structure" value={showDetailsModal.manager} />
+                           <DetailItem label="Canal de communication" value={showDetailsModal.email} />
+                           <DetailItem label="Ligne Téléphonique" value={showDetailsModal.phone} />
+                           <DetailItem label="Immatriculation (RCCM)" value={showDetailsModal.id.replace('M-', 'RCCM-CIV-ABJ-')} />
+                           <DetailItem label="Localisation Siège" value="Cocody, Cité des Arts, Abidjan" />
+                           <DetailItem label="Dernière Maintenance" value="Aujourd'hui à 09:44" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeDetailTab === 'kyc' && (
+                    <motion.div
+                      key="kyc"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-10"
+                    >
+                      {/* AUDIT TIMELINE */}
+                      <div className="bg-white rounded-[3.5rem] border border-slate-100 p-10 flex items-center justify-between shadow-sm">
+                        {[
+                          { step: 'Dépôt', desc: 'Dossier Reçu', status: 'done' },
+                          { step: 'Analyse', desc: 'Vérification IA', status: 'done' },
+                          { step: 'Conformité', desc: 'Validation Humaine', status: showDetailsModal.kycStatus === 'Verified' ? 'done' : 'active' },
+                          { step: 'Activation', desc: 'Accès Réseau', status: showDetailsModal.kycStatus === 'Verified' ? 'done' : 'pending' }
+                        ].map((s, i, arr) => (
+                          <React.Fragment key={i}>
+                            <div className="flex flex-col items-center text-center px-4 relative z-10">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all ${
+                                s.status === 'done' ? 'bg-[#3A4DB7] text-white shadow-lg shadow-indigo-500/20' : 
+                                s.status === 'active' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 scale-110' : 
+                                'bg-slate-100 text-slate-400'
+                              }`}>
+                                {s.status === 'done' ? <CheckCircle2 size={20} /> : <div className="text-[10px] font-black">{i + 1}</div>}
+                              </div>
+                              <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{s.step}</p>
+                              <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic">{s.desc}</p>
+                            </div>
+                            {i < arr.length - 1 && (
+                              <div className="flex-1 h-px bg-slate-100 relative top-[-10px]">
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: s.status === 'done' ? '100%' : '0%' }}
+                                  className="h-full bg-[#3A4DB7]" 
+                                />
+                              </div>
+                            )}
+                          </React.Fragment>
                         ))}
                       </div>
-                  </section>
-               </div>
-            </motion.aside>
-          </>
+
+                      {/* DOCUMENT INTERFACE */}
+                      <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-12">
+                           <div>
+                              <h4 className="text-2xl font-black text-slate-950 tracking-tight">Audit Documentaire</h4>
+                              <p className="text-sm font-bold text-slate-400 mt-1">Cliquez sur un document pour l'inspecter en plein écran</p>
+                           </div>
+                           <div className="flex items-center gap-2 px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                              <FileText size={16} className="text-[#3A4DB7]" />
+                              <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                                 {showDetailsModal.kycDocs.length} Pièces à conviction
+                              </span>
+                           </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-8">
+                           {showDetailsModal.kycDocs.map((doc, i) => (
+                              <motion.div 
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                onClick={() => setActiveKycDoc(doc.name)}
+                                className="group relative p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100 hover:border-[#3A4DB7] hover:bg-white transition-all cursor-pointer overflow-hidden"
+                              >
+                                 <div className="flex items-start justify-between relative z-10">
+                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-[#3A4DB7] group-hover:scale-110 transition-all border border-slate-50 shadow-sm">
+                                       <FileText size={28} />
+                                    </div>
+                                    <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${
+                                      showDetailsModal.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                                    }`}>
+                                       {showDetailsModal.kycStatus === 'Verified' ? 'Validé' : 'En attente'}
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="mt-8 relative z-10">
+                                    <span className="text-[9px] font-black text-[#3A4DB7] uppercase tracking-[0.2em] mb-2 block">{doc.type}</span>
+                                    <p className="font-black text-xl text-slate-950 tracking-tight group-hover:text-[#3A4DB7] transition-colors">{doc.name}</p>
+                                 </div>
+
+                                 <div className="mt-6 flex items-center gap-3 relative z-10 pt-6 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                       <Eye size={14} /> Aperçu rapide
+                                    </span>
+                                 </div>
+                                 
+                                 {/* Hover visual */}
+                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-[40px] opacity-0 group-hover:opacity-50 -mr-16 -mt-16 transition-opacity" />
+                              </motion.div>
+                           ))}
+                        </div>
+                      </div>
+
+                      {/* FLOATING ACTION GATEWAY (Only if not verified) */}
+                      {showDetailsModal.kycStatus !== 'Verified' && (
+                        <motion.div 
+                          initial={{ y: 100, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          className="bg-slate-950 rounded-[3rem] p-10 flex items-center justify-between shadow-[0_40px_80px_-15px_rgba(0,0,0,0.5)] border border-white/10 sticky bottom-4 z-[50]"
+                        >
+                           <div className="flex items-center gap-6">
+                              <div className="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center animate-pulse">
+                                 <ShieldCheck size={28} />
+                              </div>
+                              <div>
+                                 <h5 className="text-xl font-black text-white tracking-tight">Décision Administrative</h5>
+                                 <p className="text-sm font-bold text-slate-400 mt-0.5 tracking-tight">Le compte sera activé instantanément après l'approbation.</p>
+                              </div>
+                           </div>
+                           <div className="flex gap-4">
+                              <button 
+                                onClick={() => handleKycAction(showDetailsModal.id, 'reject')}
+                                className="px-10 py-5 bg-white/5 border border-white/10 text-slate-400 rounded-3xl font-black text-[11px] uppercase tracking-widest hover:bg-rose-500/10 hover:border-rose-500 hover:text-rose-500 transition-all"
+                              >
+                                 Notifications Rejet
+                              </button>
+                              <button 
+                                onClick={() => handleKycAction(showDetailsModal.id, 'approve')}
+                                className="px-12 py-5 bg-[#3A4DB7] text-white rounded-3xl font-black text-[11px] uppercase tracking-widest hover:bg-white hover:text-[#3A4DB7] transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3"
+                              >
+                                 <CheckCircle2 size={18} /> Approuver l'inscription
+                              </button>
+                           </div>
+                         </motion.div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {activeDetailTab === 'billing' && (
+                    <motion.div
+                      key="billing"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      className="space-y-12"
+                    >
+                      {/* SUBSCRIPTION CENTER */}
+                      <div className="p-14 bg-slate-950 rounded-[4.5rem] text-white relative overflow-hidden shadow-[0_48px_96px_-24px_rgba(0,0,0,0.3)] border border-white/5 group">
+                         <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-16 px-2">
+                               <div className="flex items-center gap-6">
+                                  <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center backdrop-blur-2xl border border-white/10 shadow-2xl">
+                                     <Zap size={36} className="text-indigo-400" />
+                                  </div>
+                                  <div>
+                                     <h4 className="text-5xl font-black tracking-tighter leading-none mb-2">Abonnement {showDetailsModal.plan}</h4>
+                                     <p className="text-slate-400 font-bold text-base tracking-tight italic opacity-60">Status de facturation : Actif & Conforme</p>
+                                  </div>
+                               </div>
+                               <div className="text-right">
+                                  <div className="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-500/30 mb-3 inline-block">Prochain Débit</div>
+                                  <p className="text-3xl font-black tracking-tight">{showDetailsModal.expiresAt}</p>
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-12 py-12 border-y border-white/5 mb-14 bg-white/[0.02] rounded-[3rem] px-10">
+                               <div className="space-y-2">
+                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Passerelle Dominante</p>
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                        <CreditCard size={14} className="text-indigo-300" />
+                                     </div>
+                                     <p className="font-black text-indigo-100 text-lg">Wave Money</p>
+                                  </div>
+                               </div>
+                               <div className="space-y-2">
+                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Cumul de commissionnement</p>
+                                  <p className="font-black text-indigo-100 text-lg uppercase tracking-tight">Standard (1.5%)</p>
+                               </div>
+                               <div className="space-y-2">
+                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Engagement</p>
+                                  <p className="font-black text-emerald-400 text-lg uppercase tracking-tight">Post-payé mensuel</p>
+                               </div>
+                            </div>
+
+                            <div className="flex gap-6">
+                               <button 
+                                 onClick={() => {
+                                   setShowPlanModal(showDetailsModal);
+                                   setShowDetailsModal(null);
+                                 }}
+                                 className="px-12 py-6 bg-white text-slate-950 rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:bg-indigo-100 transition-all shadow-xl hover:shadow-indigo-500/20 active:scale-95"
+                               >
+                                  Optimiser le Forfait
+                               </button>
+                               <button className="px-10 py-6 bg-white/5 border border-white/10 rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3">
+                                  <DownloadCloud size={18} className="opacity-40" /> Historique Factures
+                               </button>
+                            </div>
+                         </div>
+                         
+                         {/* Elite Accents */}
+                         <div className="absolute top-0 right-0 w-[50rem] h-[50rem] bg-indigo-600 rounded-full blur-[180px] opacity-20 -mr-60 -mt-60 group-hover:opacity-40 transition-opacity duration-1000" />
+                         <div className="absolute bottom-[-10%] w-full h-1/2 bg-gradient-to-t from-indigo-950/60 to-transparent pointer-events-none" />
+                      </div>
+
+                      {/* STATEMENT LEDGER */}
+                      <div className="bg-white rounded-[4rem] border border-slate-100 shadow-sm overflow-hidden p-12">
+                         <div className="flex items-center justify-between mb-12 pl-4">
+                            <div className="flex items-center gap-4">
+                               <div className="w-2.5 h-10 bg-[#3A4DB7] rounded-full" />
+                               <h4 className="text-3xl font-black text-slate-950 tracking-tight">Registre des Règlements</h4>
+                            </div>
+                            <div className="flex items-center gap-2 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                               Total : 24 Écritures
+                            </div>
+                         </div>
+                         <div className="space-y-4">
+                            <BillingItem date="24 Avril 2026" amount="29 900 F" refId="TX-REC-88219" mode="Master Gateway" />
+                            <BillingItem date="24 Mars 2026" amount="29 900 F" refId="TX-REC-77402" mode="Secondary Pipe" />
+                            <BillingItem date="24 Février 2026" amount="09 900 F" refId="TX-REC-66190" mode="Master Gateway" />
+                         </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* STICKY FOOTER ACTIONS */}
+              <div className="p-12 pt-8 border-t border-slate-100 bg-white flex gap-6 mt-auto z-20">
+                <button 
+                  onClick={() => toggleStatus(showDetailsModal.id)}
+                  className={`flex-[1.5] py-6 px-8 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] shadow-2xl transition-all hover:scale-[1.03] flex items-center justify-center gap-4 ${
+                    showDetailsModal.isActive 
+                      ? 'bg-white text-rose-500 border-2 border-rose-100 shadow-rose-500/5' 
+                      : 'bg-emerald-500 text-white shadow-emerald-500/20'
+                  }`}
+                >
+                  {showDetailsModal.isActive ? <Lock size={20} /> : <Unlock size={20} />}
+                  {showDetailsModal.isActive ? 'Suspendre' : 'Réactiver l\'accès'}
+                </button>
+                
+                <button 
+                  className="flex-1 py-6 px-8 bg-slate-950 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.25em] shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3 active:scale-95"
+                >
+                  <MessageSquare size={18} className="text-white/40" />
+                  Envoyer Message
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PLAN MANAGEMENT MODAL */}
+      <AnimatePresence>
+        {showPlanModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[400] bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-6"
+            onClick={() => setShowPlanModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div>
+                   <h3 className="text-2xl font-black text-slate-950 tracking-tight">Configuration de l'Offre</h3>
+                   <p className="text-sm font-medium text-slate-400 mt-1">Gérer les privilèges de <span className="text-[#3A4DB7] font-bold">{showPlanModal.name}</span></p>
+                </div>
+                <button onClick={() => setShowPlanModal(null)} className="w-12 h-12 flex items-center justify-center bg-white rounded-2xl text-slate-400 hover:text-slate-900 shadow-sm border border-slate-100 transition-all">
+                   <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-10 space-y-8">
+                 <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { type: 'Starter' as MerchantPlan, price: '9 900 F', desc: '5 agences, 10 agents' },
+                      { type: 'Pro' as MerchantPlan, price: '29 900 F', desc: 'Unlimited agencies, 50 agents' },
+                      { type: 'Business' as MerchantPlan, price: '99 000 F', desc: 'Full access, Priority support' },
+                      { type: 'Enterprise' as MerchantPlan, price: 'Contact', desc: 'Custom infrastructure & limits' }
+                    ].map((plan) => (
+                      <div 
+                        key={plan.type}
+                        onClick={() => handlePlanChange(showPlanModal.id, plan.type)}
+                        className={`p-6 rounded-[2rem] border-2 cursor-pointer transition-all flex flex-col gap-3 group relative overflow-hidden ${
+                          showPlanModal.plan === plan.type 
+                            ? 'border-[#3A4DB7] bg-indigo-50/30' 
+                            : 'border-slate-100 hover:border-indigo-200 bg-white'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${showPlanModal.plan === plan.type ? 'text-[#3A4DB7]' : 'text-slate-400'}`}>
+                            {plan.type}
+                          </span>
+                          {showPlanModal.plan === plan.type && (
+                            <CheckCircle2 size={16} className="text-[#3A4DB7]" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-2xl font-black text-slate-950 tracking-tighter">{plan.price}</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-1 leading-relaxed">{plan.desc}</p>
+                        </div>
+                        
+                        <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-[#3A4DB7]/5 rounded-full group-hover:scale-150 transition-transform" />
+                      </div>
+                    ))}
+                 </div>
+
+                 <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-4">
+                    <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-900 border border-slate-100 shadow-sm">
+                          <CreditCard size={18} />
+                       </div>
+                       <div>
+                          <p className="text-xs font-black text-slate-950 uppercase tracking-tight">Règles d'activation automatique</p>
+                          <p className="text-[10px] font-medium text-slate-400">En confirmant ce plan, l'accès est immédiatement prolongé de 12 mois.</p>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2">
+                       <ShieldCheck className="text-emerald-500" size={14} />
+                       <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Pérennité du compte garantie</span>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="p-10 bg-slate-950 flex gap-4">
+                 <button 
+                  onClick={() => setShowPlanModal(null)}
+                  className="flex-1 py-5 bg-white/10 hover:bg-white/20 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest transition-all"
+                 >
+                   Annuler l'ajustement
+                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* LIGHTBOX FOR DOCUMENTS */}
+      <AnimatePresence>
+        {activeKycDoc && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-20"
+          >
+            <button 
+              onClick={() => setActiveKycDoc(null)}
+              className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors"
+            >
+              <XCircle size={48} strokeWidth={1} />
+            </button>
+            
+            <div className="w-full max-w-5xl h-full flex flex-col items-center justify-center gap-8">
+               <div className="w-full bg-slate-900 rounded-[3rem] border border-white/10 aspect-[4/3] flex items-center justify-center relative shadow-2xl overflow-hidden">
+                  <FileText size={120} className="text-[#3A4DB7] opacity-40" />
+                  <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-slate-950 to-transparent text-center">
+                     <p className="text-white text-2xl font-black">{activeKycDoc}</p>
+                     <p className="text-slate-400 font-medium mt-2">Visualisation sécurisée du document original</p>
+                  </div>
+               </div>
+               
+               <div className="flex gap-6">
+                  <button className="px-12 py-5 bg-emerald-500 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-emerald-500/20 hover:scale-105 transition-all">
+                     Approuver Document
+                  </button>
+                  <button className="px-12 py-5 bg-white/10 border border-white/20 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all">
+                     Signaler Anomalie
+                  </button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.div>
   );
 }
 
+function DetailItem({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="space-y-1.5 p-6 rounded-2xl bg-slate-50/50 border border-transparent hover:border-slate-100 hover:bg-white transition-all">
+       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{label}</p>
+       <p className="text-sm font-black text-slate-900 tracking-tight leading-none">{value}</p>
+    </div>
+  );
+}
+
+function BillingItem({ date, amount, refId, mode }: { date: string, amount: string, refId: string, mode: string }) {
+  return (
+    <div className="flex items-center justify-between p-8 hover:bg-slate-50 transition-all group">
+       <div className="flex items-center gap-6">
+          <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#3A4DB7] group-hover:text-white group-hover:border-[#3A4DB7] transition-all shadow-sm">
+             <Calendar size={18} />
+          </div>
+          <div>
+             <p className="text-sm font-black text-slate-950 mb-1">{date}</p>
+             <div className="flex items-center gap-3">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{refId}</span>
+                <div className="w-1 h-1 rounded-full bg-slate-200" />
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">{mode}</span>
+             </div>
+          </div>
+       </div>
+       <div className="text-right">
+          <p className="text-lg font-black text-slate-950 tracking-tighter mb-0.5">+{amount}</p>
+          <div className="flex items-center justify-end gap-1.5">
+             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+             <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Succès</span>
+          </div>
+       </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex justify-between items-center pb-4 border-b border-slate-50 last:border-0 last:pb-0">
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+      <span className="text-sm font-bold text-slate-900 tracking-tight">{value}</span>
+    </div>
+  );
+}
+
+function BillingRow({ date, amount, status }: { date: string, amount: string, status: string }) {
+  return (
+    <div className="flex items-center justify-between p-6">
+       <div className="flex items-center gap-4">
+          <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400">
+             <Calendar size={14} />
+          </div>
+          <div>
+             <p className="text-xs font-black text-slate-950">{date}</p>
+             <p className="text-[9px] font-bold text-slate-400 uppercase">Paiement Récurrent</p>
+          </div>
+       </div>
+       <div className="text-right">
+          <p className="text-sm font-black text-emerald-600">{amount}</p>
+          <span className="text-[8px] font-black text-emerald-500 uppercase">{status}</span>
+       </div>
+    </div>
+  );
+}
+
 /* ------------------- VIEW: PLANS (OFFRES) ------------------- */
+interface Plan {
+  id: string;
+  code: string;
+  label: string;
+  price: number;
+  agencyLimit: number;
+  description: string;
+  isActive: boolean;
+}
+
+const INITIAL_PLANS: Plan[] = [
+  { id: "1", code: "STARTER", label: "Starter", price: 9900, agencyLimit: 1, description: "Pour les petites structures", isActive: true },
+  { id: "2", code: "PRO", label: "Pro", price: 29900, agencyLimit: 5, description: "Pour les marchands en croissance", isActive: true },
+  { id: "3", code: "ENTERPRISE", label: "Enterprise", price: 79900, agencyLimit: 20, description: "Pour les réseaux et grands comptes", isActive: true },
+];
+
 function PlansView() {
-  const plans = [
-    { 
-      title: "Starter", 
-      price: "0", 
-      color: "slate", 
-      icon: <Users size={24} />,
-      features: ["Max 100 tx / jour", "Commission Support 2.0%", "Support Standard", "Dashboard Basique"],
-      isPopular: false
-    },
-    { 
-      title: "Premium Pro", 
-      price: "25 000", 
-      color: "indigo", 
-      icon: <Zap size={24} />,
-      features: ["Volume Illimité", "Commission Priority 1.2%", "Support VIP 24/7", "Accès API & Webhooks", "Rapports Avancés"],
-      isPopular: true
-    },
-    { 
-      title: "Executive", 
-      price: "Custom", 
-      color: "slate", 
-      icon: <ShieldCheck size={24} />,
-      features: ["Négociation Directe", "Commission Tailored", "Account Manager", "IA Fraud Protection", "Multi-Region Hub"],
-      isPopular: false
-    },
-  ];
+  const [plans, setPlans] = useState<Plan[]>(INITIAL_PLANS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showToast, setShowToast] = useState<{message: string, type: 'success' | 'alert'} | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+
+  // Form State for Create/Edit
+  const [planForm, setPlanForm] = useState({
+    code: "",
+    label: "",
+    price: "",
+    agencyLimit: "",
+    description: "",
+    isActive: true
+  });
+
+  const openAddModal = () => {
+    setEditingPlan(null);
+    setPlanForm({ code: "", label: "", price: "", agencyLimit: "", description: "", isActive: true });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (plan: Plan) => {
+    setEditingPlan(plan);
+    setPlanForm({
+      code: plan.code,
+      label: plan.label,
+      price: plan.price.toString(),
+      agencyLimit: plan.agencyLimit.toString(),
+      description: plan.description,
+      isActive: plan.isActive
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleToggleStatus = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPlans(prev => prev.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
+    const plan = plans.find(p => p.id === id);
+    setShowToast({ 
+      message: `Plan ${!plan?.isActive ? 'activé' : 'désactivé'} avec succès`, 
+      type: 'success' 
+    });
+    setTimeout(() => setShowToast(null), 3000);
+  };
+
+  const handleSavePlan = () => {
+    if(!planForm.code || !planForm.label) {
+       setShowToast({ message: "Veuillez remplir au moins le code et le libellé", type: 'alert' });
+       setTimeout(() => setShowToast(null), 3000);
+       return;
+    }
+    
+    if (editingPlan) {
+      // Update
+      setPlans(prev => prev.map(p => p.id === editingPlan.id ? {
+        ...p,
+        code: planForm.code.toUpperCase(),
+        label: planForm.label,
+        price: Number(planForm.price) || 0,
+        agencyLimit: Number(planForm.agencyLimit) || 0,
+        description: planForm.description,
+        isActive: planForm.isActive
+      } : p));
+      setShowToast({ message: "Plan mis à jour avec succès", type: 'success' });
+    } else {
+      // Create
+      const planToAdd: Plan = {
+        id: Math.random().toString(36).substr(2, 9),
+        code: planForm.code.toUpperCase(),
+        label: planForm.label,
+        price: Number(planForm.price) || 0,
+        agencyLimit: Number(planForm.agencyLimit) || 0,
+        description: planForm.description,
+        isActive: planForm.isActive
+      };
+      setPlans([planToAdd, ...plans]);
+      setShowToast({ message: "Nouveau plan créé avec succès", type: 'success' });
+    }
+
+    setIsModalOpen(false);
+    setTimeout(() => setShowToast(null), 3000);
+  };
+
+  const handleDeletePlan = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPlans(prev => prev.filter(p => p.id !== id));
+    setShowToast({ message: "Plan supprimé du catalogue", type: 'alert' });
+    setTimeout(() => setShowToast(null), 3000);
+  };
+
+  const filteredPlans = plans.filter(p => 
+    p.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      className="space-y-12 pb-20"
+      className="space-y-10 pb-20"
     >
+      {/* TOAST NOTIFICATION SYSTEM */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -40, x: '-50%' }}
+            animate={{ opacity: 1, y: 40, x: '-50%' }}
+            exit={{ opacity: 0, y: -40, x: '-50%' }}
+            className={`fixed top-0 left-1/2 z-[200] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-4 border backdrop-blur-md ${
+              showToast.type === 'success' ? 'bg-indigo-600/90 text-white border-indigo-400' : 'bg-rose-500/90 text-white border-rose-400'
+            }`}
+          >
+            {showToast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            {showToast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* HEADER SECTION */}
       <div className="flex items-center justify-between">
-         <div className="animate-in slide-in-from-left duration-700">
-            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Plans & <span className="text-[#234D96]">Offres</span></h2>
-            <p className="text-slate-400 font-medium text-sm mt-3">Structurez les paliers de croissance pour vos partenaires marchands.</p>
+         <div className="flex flex-col gap-2">
+            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Plans d'abonnement</h2>
+            <p className="text-slate-400 font-medium">Pilotez le catalogue commercial de FinTrack sans changer la logique déjà en place.</p>
          </div>
-         <button className="px-8 py-5 bg-[#234D96] text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-indigo-900/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-b-4 border-indigo-950">
-            <Plus size={20} /> Créer une Offre
+         <button 
+           onClick={openAddModal}
+           className="flex items-center gap-3 px-8 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-105 active:scale-95 transition-all"
+         >
+            <Plus size={18} /> Nouveau Plan
          </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {plans.map((plan, idx) => (
-          <motion.div 
-            key={plan.title}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: plan.isPopular ? 1.05 : 1 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`relative p-12 rounded-[4rem] flex flex-col transition-all duration-500 group overflow-hidden ${
-              plan.isPopular 
-              ? 'bg-slate-950 text-white shadow-2xl shadow-slate-950/40 z-10' 
-              : 'bg-white/60 backdrop-blur-xl border border-white/60 shadow-xl shadow-slate-200/40 hover:shadow-2xl'
-            }`}
-          >
-            {plan.isPopular && (
-               <div className="absolute top-10 -right-16 bg-[#234D96] text-white px-20 py-1.5 rotate-45 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl z-20">
-                  Recommendé
-               </div>
-            )}
-            
-            <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-10 transition-transform duration-500 group-hover:scale-110 shadow-2xl ${
-              plan.isPopular ? 'bg-[#234D96] text-white shadow-indigo-900/40' : 'bg-slate-950 text-white shadow-slate-900/40'
-            }`}>
-               {plan.icon}
-            </div>
-
-            <div className="mb-10">
-               <h3 className={`text-3xl font-black tracking-tight mb-2 ${plan.isPopular ? 'text-white' : 'text-slate-950'}`}>{plan.title}</h3>
-               <div className="flex items-baseline gap-2">
-                  <span className={`text-5xl font-black tracking-tighter ${plan.isPopular ? 'text-white' : 'text-slate-950'}`}>{plan.price}</span>
-                  {plan.price !== "Custom" && <span className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">FCFA / mo</span>}
-               </div>
-            </div>
-
-            <div className="flex-1 space-y-6 mb-12">
-               {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-4">
-                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-colors ${
-                        plan.isPopular ? 'bg-white/10 border-white/20 text-[#234D96]' : 'bg-indigo-50 border-indigo-100 text-[#234D96]'
-                     }`}>
-                        <Plus size={14} />
+      {/* MODAL SYSTEM */}
+      <AnimatePresence>
+         {isModalOpen && (
+            <>
+               <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[250]"
+                  onClick={() => setIsModalOpen(false)}
+               />
+               <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-[3rem] z-[260] shadow-2xl overflow-hidden"
+               >
+                  <div className="p-12 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                     <div>
+                        <h3 className="text-2xl font-black text-slate-950 tracking-tight">
+                           {editingPlan ? "Modifier l'Offre" : "Configuration Offre"}
+                        </h3>
+                        <p className="text-slate-400 font-medium text-sm mt-1">Définissez les paramètres du plan.</p>
                      </div>
-                     <span className={`text-sm font-bold ${plan.isPopular ? 'text-slate-400' : 'text-slate-500'}`}>{f}</span>
+                     <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-slate-900 transition-colors">
+                        <XCircle size={32} strokeWidth={1.5} />
+                     </button>
                   </div>
-               ))}
-            </div>
+                  <div className="p-12 space-y-8">
+                     <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Code du Plan</label>
+                           <input 
+                              type="text" placeholder="ex: STARTER_PLUS" 
+                              value={planForm.code} onChange={e => setPlanForm({...planForm, code: e.target.value})}
+                              className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-[#3A4DB7] focus:bg-white outline-none transition-all" 
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Libellé Affiché</label>
+                           <input 
+                              type="text" placeholder="ex: Pack Starter Plus" 
+                              value={planForm.label} onChange={e => setPlanForm({...planForm, label: e.target.value})}
+                              className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-[#3A4DB7] focus:bg-white outline-none transition-all" 
+                           />
+                        </div>
+                     </div>
 
-            <button className={`w-full py-6 rounded-[2.2rem] font-black text-[11px] uppercase tracking-[0.3em] transition-all duration-300 shadow-xl border-b-4 ${
-              plan.isPopular 
-                ? 'bg-[#234D96] text-white border-indigo-950 shadow-indigo-900/40 hover:bg-white hover:text-slate-950 hover:border-slate-300' 
-                : 'bg-slate-950 text-white border-slate-700 shadow-slate-900/40 hover:bg-[#234D96] hover:border-indigo-900'
-            }`}>
-              Activer Plan
-            </button>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#234D96] rounded-full blur-[60px] opacity-10 pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
-          </motion.div>
-        ))}
+                     <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Prix Mensuel (FCFA)</label>
+                           <input 
+                              type="number" placeholder="9900" 
+                              value={planForm.price} onChange={e => setPlanForm({...planForm, price: e.target.value})}
+                              className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-[#3A4DB7] focus:bg-white outline-none transition-all" 
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Limite Agences</label>
+                           <input 
+                              type="number" placeholder="1" 
+                              value={planForm.agencyLimit} onChange={e => setPlanForm({...planForm, agencyLimit: e.target.value})}
+                              className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-[#3A4DB7] focus:bg-white outline-none transition-all" 
+                           />
+                        </div>
+                     </div>
+
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Description Commerciale</label>
+                        <textarea 
+                           placeholder="Quels sont les avantages de ce plan ?" 
+                           value={planForm.description} onChange={e => setPlanForm({...planForm, description: e.target.value})}
+                           className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-[#3A4DB7] focus:bg-white outline-none transition-all min-h-[120px] resize-none"
+                        ></textarea>
+                     </div>
+
+                     <div className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                        <div className="flex flex-col">
+                           <span className="text-xs font-black text-slate-900 uppercase tracking-tight">Statut du plan</span>
+                           <span className="text-[10px] font-medium text-slate-400">Le plan sera immédiatement visible dans le catalogue.</span>
+                        </div>
+                        <div 
+                           onClick={() => setPlanForm({...planForm, isActive: !planForm.isActive})}
+                           className={`w-14 h-7 rounded-full p-1 cursor-pointer transition-all duration-300 ${planForm.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                        >
+                           <div className={`w-5 h-5 bg-white rounded-full transition-transform duration-300 shadow-md ${planForm.isActive ? 'translate-x-7' : 'translate-x-0'}`} />
+                        </div>
+                     </div>
+
+                     <div className="pt-4 flex gap-4">
+                        <button 
+                           onClick={handleSavePlan}
+                           className="flex-1 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-[1.02] active:scale-95 transition-all"
+                        >
+                           {editingPlan ? "Enregistrer les modifications" : "Confirmer la création"}
+                        </button>
+                        <button 
+                           onClick={() => setIsModalOpen(false)}
+                           className="px-10 py-5 bg-slate-50 border-2 border-slate-100 text-slate-400 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all"
+                        >
+                           Annuler
+                        </button>
+                     </div>
+                  </div>
+               </motion.div>
+            </>
+         )}
+      </AnimatePresence>
+
+      {/* SUMMARY STATS */}
+      <div className="grid grid-cols-4 gap-6">
+         {[
+           { label: "PLANS", val: plans.length, sub: "Catalogue total", icon: <Layers className="text-[#3A4DB7]" size={20} />, bg: "bg-indigo-50" },
+           { label: "ACTIFS", val: plans.filter(p => p.isActive).length, sub: "Commercialisables", icon: <CheckCircle2 className="text-emerald-500" size={20} />, bg: "bg-emerald-50" },
+           { label: "INACTIFS", val: plans.filter(p => !p.isActive).length, sub: "Masqués ou suspendus", icon: <XCircle className="text-rose-500" size={20} />, bg: "bg-rose-50" },
+           { label: "LIMITE MOYENNE", val: Math.round(plans.reduce((acc, curr) => acc + curr.agencyLimit, 0) / (plans.length || 1)), sub: "Agences autorisées", icon: <CreditCard className="text-amber-500" size={20} />, bg: "bg-amber-50" }
+         ].map((stat, i) => (
+           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all">
+              <div>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
+                 <span className="text-4xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
+                 <p className="text-[11px] font-medium text-slate-400 mt-2">{stat.sub}</p>
+              </div>
+              <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center`}>
+                 {stat.icon}
+              </div>
+           </div>
+         ))}
       </div>
 
-      <motion.div 
-         initial={{ opacity: 0, y: 20 }}
-         whileInView={{ opacity: 1, y: 0 }}
-         className="bg-[#234D96] rounded-[4rem] p-16 text-white relative overflow-hidden group shadow-2xl shadow-indigo-900/40"
-      >
-         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="space-y-6 max-w-xl text-center md:text-left">
-               <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-xl mb-4 group-hover:scale-110 transition-transform">
-                  <Ticket size={32} />
-               </div>
-               <h3 className="text-4xl font-black tracking-tighter">Marketing & Coupons</h3>
-               <p className="text-indigo-100/70 font-medium text-lg leading-relaxed">Générez des codes promotionnels massifs pour injecter de la liquidité et attirer de nouveaux agents sur votre réseau.</p>
+      {/* CATALOG TABLE */}
+      <div className="bg-white rounded-[2rem] border border-slate-200/60 shadow-sm overflow-hidden">
+         <div className="p-10 border-b border-slate-100 flex items-center justify-between">
+            <div>
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Catalogue actuel</h3>
+               <p className="text-xs font-bold text-slate-400 mt-1">{filteredPlans.length} plan(s) visible(s)</p>
             </div>
-            <button className="px-12 py-7 bg-white text-slate-950 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.3em] border-b-4 border-slate-200 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-white/10">
-               Générer une Campagne
+            <div className="flex gap-4">
+               <div className="relative">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" placeholder="Rechercher un plan..." 
+                    value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 w-72 shadow-inner" 
+                  />
+               </div>
+            </div>
+         </div>
+
+         <div className="overflow-x-auto">
+            <table className="w-full text-left">
+               <thead className="bg-slate-50/50">
+                  <tr className="border-b border-slate-100">
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">IDENTIFIANT</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">NOM DU PLAN</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">TARIF (FCFA)</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">MAX AGENCES</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">RÉSUMÉ COMMERCIAL</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">VISIBILITÉ</th>
+                     <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</th>
+                  </tr>
+               </thead>
+               <tbody className="divide-y divide-slate-50">
+                  {filteredPlans.map((plan) => (
+                     <tr key={plan.id} className="hover:bg-indigo-50/20 transition-colors group">
+                        <td className="px-10 py-8">
+                           <span className="font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-xs tracking-wider border border-slate-200">{plan.code}</span>
+                        </td>
+                        <td className="px-10 py-8">
+                           <span className="font-black text-slate-800 text-sm">{plan.label}</span>
+                        </td>
+                        <td className="px-10 py-8">
+                           <div className="flex items-center gap-2">
+                              <span className="font-black text-slate-900">{plan.price.toLocaleString()}</span>
+                              <span className="text-[10px] font-black text-slate-400 lowercase">fcfa</span>
+                           </div>
+                        </td>
+                        <td className="px-10 py-8 text-center">
+                           <span className="font-black text-slate-900 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 text-xs">{plan.agencyLimit}</span>
+                        </td>
+                        <td className="px-10 py-8">
+                           <p className="text-xs font-bold text-slate-400 max-w-[200px] line-clamp-1">{plan.description}</p>
+                        </td>
+                        <td className="px-10 py-8">
+                           <div className="flex justify-center">
+                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border inline-flex items-center gap-2 ${
+                                 plan.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                              }`}>
+                                 <div className={`w-1 h-1 rounded-full ${plan.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                 {plan.isActive ? 'ACTIF' : 'INACTIF'}
+                              </span>
+                           </div>
+                        </td>
+                        <td className="px-10 py-8">
+                           <div className="flex items-center justify-end gap-3 transition-opacity">
+                              <button 
+                                onClick={(e) => handleToggleStatus(plan.id, e)}
+                                className={`p-3 border rounded-xl transition-all shadow-sm ${
+                                  plan.isActive 
+                                  ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-600 hover:text-white' 
+                                  : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-900 hover:text-white'
+                                }`}
+                                title={plan.isActive ? "Désactiver le plan" : "Activer le plan"}
+                              >
+                                 {plan.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                              </button>
+                              <button 
+                                onClick={() => openEditModal(plan)}
+                                className="p-3 bg-white border border-slate-200 text-[#3A4DB7] rounded-xl hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm"
+                                title="Modifier le plan"
+                              >
+                                 <Settings size={18} />
+                              </button>
+                              <button 
+                                onClick={(e) => handleDeletePlan(plan.id, e)}
+                                className="p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+                                title="Supprimer le plan"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </div>
+                        </td>
+                     </tr>
+                  ))}
+               </tbody>
+            </table>
+         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ------------------- VIEW: SUPPORT ------------------- */
+function SupportView() {
+  const [activeTicketTab, setActiveTicketTab] = useState<'open' | 'closed'>('open');
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-12 pb-20"
+    >
+      <div className="flex items-center justify-between">
+         <div className="space-y-4">
+            <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Support & <span className="text-[#234D96]">Retours</span></h2>
+            <p className="text-slate-400 font-medium italic">Gérez les demandes d'assistance des marchands et les retours utilisateurs.</p>
+         </div>
+         <div className="flex bg-white/60 p-2 rounded-3xl border border-slate-200/60 shadow-sm">
+            <button 
+               onClick={() => setActiveTicketTab('open')}
+               className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTicketTab === 'open' ? 'bg-[#234D96] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
+            >
+               Ouverts (12)
+            </button>
+            <button 
+               onClick={() => setActiveTicketTab('closed')}
+               className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTicketTab === 'closed' ? 'bg-[#234D96] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
+            >
+               Résolus
             </button>
          </div>
-         <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-      </motion.div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-10">
+         <div className="col-span-8 space-y-6">
+            {[1, 2, 3].map((ticket) => (
+               <div key={ticket} className="bg-white p-8 rounded-[3rem] border border-slate-200/60 shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all group cursor-pointer">
+                  <div className="flex items-start justify-between mb-8">
+                     <div className="flex items-center gap-5">
+                        <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-[1.5rem] flex items-center justify-center border border-slate-100 group-hover:bg-[#234D96] group-hover:text-white transition-all">
+                           <MessageSquare size={24} />
+                        </div>
+                        <div className="space-y-1">
+                           <h4 className="text-xl font-black text-slate-900 tracking-tight">Problème d'impression sur terminal Sunmi V2</h4>
+                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Posté par : <span className="text-[#3A4DB7]">Pharmacie du Pont</span> • Il y a 2h</p>
+                        </div>
+                     </div>
+                     <span className="px-5 py-2 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black tracking-widest border border-rose-100 uppercase">Haute Priorité</span>
+                  </div>
+                  <p className="text-sm font-medium text-slate-500 leading-relaxed font-sans px-2">
+                     Le ticket de clôture journalière ne s'imprime pas correctement. Le texte est coupé à droite. J'ai essayé de redémarrer l'application mais le problème persiste...
+                  </p>
+                  <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between">
+                     <div className="flex -space-x-3">
+                        <div className="w-10 h-10 bg-slate-950 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white">JY</div>
+                        <div className="w-10 h-10 bg-[#3A4DB7] rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white font-sans">+1</div>
+                     </div>
+                     <button className="flex items-center gap-3 text-[10px] font-black text-slate-900 uppercase tracking-widest hover:text-[#234D96] transition-colors">
+                        Voir la conversation <ArrowRight size={14} />
+                     </button>
+                  </div>
+               </div>
+            ))}
+         </div>
+
+         <div className="col-span-4 space-y-10">
+             <div className="bg-[#234D96] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                <div className="relative z-10 space-y-8">
+                   <div className="flex items-center gap-4">
+                      <Star size={20} className="text-amber-400" />
+                      <h3 className="text-xl font-black tracking-tight">Analyse de Satisfaction</h3>
+                   </div>
+                   <div className="space-y-4">
+                      <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-indigo-200">
+                         <span>Score CSAT</span>
+                         <span className="text-white">4.8/5</span>
+                      </div>
+                      <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl">
+                         <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} className="h-full bg-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.3)]" />
+                      </div>
+                   </div>
+                   <p className="text-indigo-100 text-[11px] font-medium opacity-60 leading-relaxed font-sans italic">
+                      "La réactivité de l'équipe technique est exceptionnelle. Les retours sur les bugs sont traités en moins de 24h."
+                   </p>
+                </div>
+                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
+             </div>
+
+             <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
+                <div className="flex items-center gap-4">
+                   <AlertCircle size={20} className="text-rose-500" />
+                   <h3 className="text-xl font-black text-slate-950 tracking-tight">Stats Support</h3>
+                </div>
+                <div className="space-y-6">
+                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Temps Moyen de Réponse</span>
+                      <span className="text-sm font-black text-slate-900">1h 12m</span>
+                   </div>
+                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Taux de Résolution</span>
+                      <span className="text-sm font-black text-emerald-500">92%</span>
+                   </div>
+                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tickets d'Urgence</span>
+                      <span className="text-sm font-black text-rose-500">2</span>
+                   </div>
+                </div>
+             </div>
+         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ------------------- VIEW: SETTINGS ------------------- */
+function SettingsView() {
+  const [activeSubTab, setActiveSubTab] = useState<'platform' | 'gateways' | 'security' | 'team'>('platform');
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleSave = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="space-y-10 pb-20"
+    >
+      <AnimatePresence>
+        {showToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: -40, x: '-50%' }}
+            animate={{ opacity: 1, y: 40, x: '-50%' }}
+            exit={{ opacity: 0, y: -40, x: '-50%' }}
+            className="fixed top-0 left-1/2 z-[200] px-10 py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-4 border border-emerald-400"
+          >
+            <CheckCircle2 size={20} /> Configuration enregistrée avec succès
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-center justify-between">
+         <div className="flex flex-col gap-2">
+            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Paramètres Système</h2>
+            <p className="text-slate-400 font-medium italic">Configuration globale des moteurs de FinTrack.</p>
+         </div>
+      </div>
+
+      <div className="flex gap-4 p-2 bg-white/60 backdrop-blur-md rounded-[2rem] border border-slate-200/60 w-fit self-start">
+         {[
+           { id: 'platform', label: 'Plateforme', icon: <Cpu size={16} /> },
+           { id: 'gateways', label: 'Passerelles', icon: <Globe size={16} /> },
+           { id: 'security', label: 'Sécurité', icon: <ShieldCheck size={16} /> },
+           { id: 'team', label: 'Équipe Admin', icon: <Users size={16} /> }
+         ].map(tab => (
+           <button
+             key={tab.id}
+             onClick={() => setActiveSubTab(tab.id as any)}
+             className={`px-6 py-3.5 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+               activeSubTab === tab.id 
+                 ? 'bg-[#234D96] text-white shadow-xl shadow-indigo-900/20' 
+                 : 'text-slate-400 hover:bg-white hover:text-slate-900'
+             }`}
+           >
+             {tab.icon} {tab.label}
+           </button>
+         ))}
+      </div>
+
+      <div className="grid grid-cols-12 gap-10 mt-6">
+         {/* LEFT SETTINGS PANEL */}
+         <div className="col-span-8 space-y-8">
+            {activeSubTab === 'platform' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
+                   <div className="flex items-center gap-4 mb-4">
+                      <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+                      <h3 className="text-xl font-black text-slate-900">Identité Visuelle</h3>
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom de l'application</label>
+                         <input 
+                           type="text" defaultValue="FinTrack Hub" 
+                           className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
+                         />
+                      </div>
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Slogan principal</label>
+                         <input 
+                           type="text" defaultValue="Le moteur de facturation IA" 
+                           className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
+                         />
+                      </div>
+                   </div>
+
+                   <div className="flex items-center gap-8 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                      <div className="w-24 h-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 gap-2 cursor-pointer hover:border-[#3A4DB7] hover:text-[#3A4DB7] transition-all">
+                         <Plus size={24} />
+                         <span className="text-[8px] font-black uppercase">Logo</span>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                         <h4 className="text-sm font-black text-slate-900">Logo de la Plateforme</h4>
+                         <p className="text-xs text-slate-400 font-medium">Format SVG ou PNG transparent recommandé. Taille max 2Mo.</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
+                   <div className="flex items-center gap-4 mb-4">
+                      <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+                      <h3 className="text-xl font-black text-slate-900">Localisation & Devise</h3>
+                   </div>
+                   <div className="grid grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Fuseau Horaire</label>
+                         <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none appearance-none">
+                            <option>(GMT+00:00) Abidjan / Dakar</option>
+                            <option>(GMT+01:00) Paris / Bruxelles</option>
+                         </select>
+                      </div>
+                      <div className="space-y-3">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Devise par défaut</label>
+                         <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none appearance-none">
+                            <option>FCFA (Afrique de l'Ouest)</option>
+                            <option>EUR (Euro)</option>
+                            <option>USD (Dollar US)</option>
+                         </select>
+                      </div>
+                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeSubTab === 'gateways' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                         <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+                         <h3 className="text-xl font-black text-slate-900">Passerelles Mobile Money</h3>
+                      </div>
+                      <span className="px-4 py-2 bg-emerald-50 text-emerald-500 rounded-xl text-[10px] font-black tracking-widest border border-emerald-100 uppercase">3 Actives</span>
+                   </div>
+
+                   <div className="space-y-4">
+                      {[
+                        { name: 'Wave Money', code: 'wave', status: true, color: 'bg-indigo-400' },
+                        { name: 'Orange Money', code: 'orange', status: true, color: 'bg-orange-500' },
+                        { name: 'Moov Money', code: 'moov', status: false, color: 'bg-blue-600' }
+                      ].map(gateway => (
+                        <div key={gateway.code} className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-md transition-all group">
+                           <div className="flex items-center gap-5">
+                              <div className={`w-12 h-12 rounded-2xl ${gateway.color} flex items-center justify-center text-white font-black text-xs shadow-lg`}>
+                                 {gateway.name[0]}
+                              </div>
+                              <div>
+                                 <h4 className="font-black text-slate-900">{gateway.name}</h4>
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connecteur API v3.2</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-4">
+                              <button className="px-6 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#3A4DB7] hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm">Configurer</button>
+                              <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-all ${gateway.status ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                                 <div className={`w-4 h-4 bg-white rounded-full transition-all ${gateway.status ? 'translate-x-6' : ''}`} />
+                              </div>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+
+                   <div className="pt-4">
+                      <button className="w-full py-5 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center gap-3 text-slate-400 hover:text-[#3A4DB7] hover:border-[#3A4DB7] transition-all font-black text-xs uppercase tracking-widest group">
+                         <Plus size={18} className="group-hover:scale-125 transition-transform" /> Ajouter une nouvelle passerelle
+                      </button>
+                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeSubTab === 'security' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
+                   <div className="flex items-center gap-4 mb-4">
+                      <div className="w-1.5 h-10 bg-rose-500 rounded-full" />
+                      <h3 className="text-xl font-black text-slate-900">Contrôles Systèmes Critiques</h3>
+                   </div>
+
+                   <div className="space-y-10">
+                      <div className="flex items-center justify-between">
+                         <div className="max-w-[70%] space-y-1">
+                            <h4 className="text-base font-black text-slate-900">Mode Maintenance</h4>
+                            <p className="text-xs text-slate-400 font-medium font-sans">Suspendre l'accès public à l'application. Seuls les administrateurs pourront se connecter pour effectuer des mises à jour.</p>
+                         </div>
+                         <div 
+                           onClick={() => setIsMaintenance(!isMaintenance)}
+                           className={`w-16 h-8 rounded-full p-1 cursor-pointer transition-all ${isMaintenance ? 'bg-rose-500' : 'bg-slate-200'}`}
+                         >
+                            <div className={`w-6 h-6 bg-white rounded-full shadow-lg transition-all ${isMaintenance ? 'translate-x-8' : ''}`} />
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-slate-50 pt-10">
+                         <div className="max-w-[70%] space-y-1">
+                            <h4 className="text-base font-black text-slate-900">Inscriptions Publiques</h4>
+                            <p className="text-xs text-slate-400 font-medium font-sans">Autoriser de nouveaux marchands à s'inscrire sur la plateforme en libre-service.</p>
+                         </div>
+                         <div 
+                           onClick={() => setIsRegistrationOpen(!isRegistrationOpen)}
+                           className={`w-16 h-8 rounded-full p-1 cursor-pointer transition-all ${isRegistrationOpen ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                         >
+                            <div className={`w-6 h-6 bg-white rounded-full shadow-lg transition-all ${isRegistrationOpen ? 'translate-x-8' : ''}`} />
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="bg-slate-950 p-10 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
+                   <div className="relative z-10 space-y-6">
+                      <div className="flex items-center gap-4">
+                         <Lock size={20} className="text-rose-400" />
+                         <h3 className="text-xl font-black tracking-tight">Réinitialisation des Données</h3>
+                      </div>
+                      <p className="text-slate-400 text-xs font-medium leading-relaxed font-sans italic opacity-60">Cette opération supprimera définitivement tous les logs de transactions de plus de 2 ans pour libérer de l'espace sur les serveurs FinTrack.</p>
+                      <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-rose-900/40">Exécuter le Nettoyage</button>
+                   </div>
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-rose-600 rounded-full blur-[100px] opacity-10 -mr-20 -mt-20 group-hover:opacity-20 transition-opacity" />
+                </div>
+              </motion.div>
+            )}
+
+            {activeSubTab === 'team' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
+                   <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-4">
+                          <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+                          <h3 className="text-xl font-black text-slate-900">Équipe Administrative</h3>
+                       </div>
+                       <button className="flex items-center gap-2 px-5 py-3 bg-[#3A4DB7]/10 text-[#3A4DB7] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#3A4DB7] hover:text-white transition-all">
+                          <Plus size={16} /> Inviter
+                       </button>
+                   </div>
+
+                   <div className="space-y-4">
+                      {[
+                        { name: 'Koffi G. Jean', role: 'Super Admin', email: 'koffi@fintrack.ci', avatar: 'KG' },
+                        { name: 'Sika Yao', role: 'Audit Manager', email: 'sika@fintrack.ci', avatar: 'SY' }
+                      ].map((member, i) => (
+                        <div key={i} className="flex items-center justify-between p-6 hover:bg-slate-50 rounded-3xl border border-transparent hover:border-slate-100 transition-all">
+                           <div className="flex items-center gap-6">
+                              <div className="w-14 h-14 bg-indigo-50 text-[#3A4DB7] rounded-2xl flex items-center justify-center font-black text-base border border-indigo-100 shadow-sm">
+                                 {member.avatar}
+                              </div>
+                              <div className="space-y-1">
+                                 <h4 className="font-black text-slate-950 text-sm tracking-tight">{member.name}</h4>
+                                 <p className="text-xs text-slate-400 font-bold">{member.email}</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-8 text-right">
+                              <div>
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Permissions</p>
+                                 <span className="text-[10px] font-black text-indigo-100 bg-[#3A4DB7] px-3 py-1 rounded-lg uppercase">{member.role}</span>
+                              </div>
+                              <button className="p-3 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </motion.div>
+            )}
+         </div>
+
+         {/* RIGHT SIDEBAR STATS/HELPER */}
+         <div className="col-span-4 space-y-8">
+            <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8 relative overflow-hidden group">
+               <div className="relative z-10">
+                  <h4 className="text-lg font-black text-slate-950 tracking-tight leading-tight">État de la<br/>Infrastructure</h4>
+                  <div className="mt-8 space-y-6">
+                     <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base de Données</span>
+                           <span className="text-[10px] font-black text-emerald-500 uppercase">99.9% Up</span>
+                        </div>
+                        <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
+                           <motion.div initial={{ width: 0 }} animate={{ width: '99%' }} className="h-full bg-emerald-500 rounded-full" />
+                        </div>
+                     </div>
+                     <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stockage (S3)</span>
+                           <span className="text-[10px] font-black text-emerald-500 uppercase">42% Utilisé</span>
+                        </div>
+                        <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
+                           <motion.div initial={{ width: 0 }} animate={{ width: '42%' }} className="h-full bg-[#3A4DB7] rounded-full" />
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="mt-10 p-6 bg-slate-950 rounded-3xl text-white">
+                     <div className="flex items-center gap-3 mb-4">
+                        <Zap size={18} className="text-indigo-400" />
+                        <h5 className="text-xs font-black uppercase tracking-widest">Temps de Réponse API</h5>
+                     </div>
+                     <p className="text-3xl font-black tracking-tight">124<span className="text-sm font-bold text-indigo-400 lowercase ml-1">ms</span></p>
+                  </div>
+               </div>
+               <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-[40px] opacity-40 -mr-16 -mb-16" />
+            </div>
+
+            <div className="bg-[#234D96] p-10 rounded-[3rem] text-white shadow-xl shadow-indigo-900/30 relative overflow-hidden">
+                <div className="relative z-10 flex flex-col gap-8">
+                   <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10">
+                      <Save size={24} className="text-white" />
+                   </div>
+                   <div className="space-y-2">
+                      <h4 className="text-2xl font-black tracking-tight">Enregistrer les Modifications</h4>
+                      <p className="text-indigo-100 text-[11px] font-medium opacity-60 font-sans">N'oubliez pas de valider vos changements pour qu'ils soient appliqués globalement sur tout FinTrack.</p>
+                   </div>
+                   <button 
+                     onClick={handleSave}
+                     className="w-full py-5 bg-white text-[#234D96] rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl"
+                   >
+                      Mettre à Jour le Système
+                   </button>
+                </div>
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent" />
+            </div>
+         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ------------------- VIEW: CATALOGUE ------------------- */
+function CatalogueView() {
+  const [entries, setEntries] = useState([
+    { id: 1, type: 'BANQUE', name: 'BOA', logo: 'BOA', usage: 1, status: 'Actif' },
+    { id: 2, type: 'BANQUE', name: 'Ecobank', logo: 'ECO', usage: 2, status: 'Actif' },
+    { id: 3, type: 'BANQUE', name: 'NSIA Banque', logo: 'NSIA', usage: 1, status: 'Actif' },
+    { id: 4, type: 'BANQUE', name: 'UBA', logo: 'UBA', usage: 1, status: 'Actif' },
+    { id: 5, type: 'RESEAU', name: 'Wave', logo: 'WAVE', usage: 12, status: 'Actif' },
+    { id: 6, type: 'RESEAU', name: 'Orange Money', logo: 'OM', usage: 15, status: 'Actif' },
+    { id: 7, type: 'RESEAU', name: 'MTN MoMo', logo: 'MTN', usage: 8, status: 'Actif' },
+    { id: 8, type: 'RESEAU', name: 'Moov Money', logo: 'MOOV', usage: 5, status: 'Actif' },
+  ]);
+
+  const [filterType, setFilterType] = useState('Tous les types');
+  const [filterStatus, setFilterStatus] = useState('Tous les statuts');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const toggleStatus = (id: number) => {
+    setEntries(entries.map(e => {
+      if (e.id === id) {
+        return { ...e, status: e.status === 'Actif' ? 'Suspendu' : 'Actif' };
+      }
+      return e;
+    }));
+  };
+
+  const deleteEntry = (id: number) => {
+    if (window.confirm('Voulez-vous vraiment supprimer cette entrée du catalogue ?')) {
+      setEntries(entries.filter(e => e.id !== id));
+    }
+  };
+
+  const filteredEntries = entries.filter(e => {
+    const matchesSearch = e.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === 'Tous les types' || e.type === filterType.toUpperCase();
+    const matchesStatus = filterStatus === 'Tous les statuts' || e.status === filterStatus;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const stats = {
+    total: entries.length,
+    active: entries.filter(e => e.status === 'Actif').length,
+    inactive: entries.filter(e => e.status !== 'Actif').length,
+    networks: entries.filter(e => e.type === 'RESEAU').length,
+    banks: entries.filter(e => e.type === 'BANQUE').length
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="space-y-12 pb-24"
+    >
+      <div className="flex items-center justify-between">
+         <div className="flex flex-col gap-2">
+            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Catalogue global des reseaux et banques</h2>
+            <p className="text-slate-400 font-medium italic">Publiez, filtrez et entretenez les entrees catalogue disponibles pour les marchands.</p>
+         </div>
+         <button 
+           onClick={() => setShowAddModal(true)}
+           className="px-10 py-5 bg-[#3A4DB7] text-white rounded-[2rem] font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-indigo-900/30 flex items-center gap-3 border-4 border-white"
+         >
+            <Plus size={20} strokeWidth={3} /> Nouvelle Entrée
+         </button>
+      </div>
+
+      {/* KPI CARDS */}
+      <div className="grid grid-cols-5 gap-6">
+         {[
+           { label: "CATALOGUES", val: stats.total, sub: "Entrees referencees", icon: <Layers size={20} />, color: "text-[#3A4DB7]", bg: "bg-indigo-50" },
+           { label: "BANQUES", val: stats.banks, sub: "Entites bancaires", icon: <Building2 size={20} />, color: "text-amber-500", bg: "bg-amber-50" },
+           { label: "RESEAUX", val: stats.networks, sub: "Mobile Money & Telco", icon: <Zap size={20} />, color: "text-indigo-400", bg: "bg-indigo-50" },
+           { label: "ACTIFS", val: stats.active, sub: "Disponibles au catalogue", icon: <CheckCircle2 size={20} />, color: "text-emerald-500", bg: "bg-emerald-50" },
+           { label: "RESEAUX RELIES", val: 16, sub: "Instances connectees", icon: <Globe size={20} />, color: "text-amber-600", bg: "bg-amber-50" }
+         ].map((stat, i) => (
+           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all">
+              <div>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
+                 <span className="text-4xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
+                 <p className="text-[11px] font-medium text-slate-400 mt-2">{stat.sub}</p>
+              </div>
+              <div className={`w-12 h-12 ${stat.bg} rounded-2xl flex items-center justify-center ${stat.color}`}>
+                 {stat.icon}
+              </div>
+           </div>
+         ))}
+      </div>
+
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+            <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setShowAddModal(false)}
+               className="fixed inset-0 bg-slate-950/40 backdrop-blur-3xl"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="relative w-full max-w-2xl bg-white rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.5)] overflow-hidden border border-white"
+            >
+               <div className="p-16 space-y-12">
+                  <div className="flex items-center justify-between">
+                     <div className="space-y-3">
+                        <h3 className="text-4xl font-black tracking-tighter text-slate-950 leading-none">Ajouter au Catalogue</h3>
+                        <p className="text-slate-400 font-medium italic">Configurez une nouvelle entité financière.</p>
+                     </div>
+                     <button 
+                       onClick={() => setShowAddModal(false)}
+                       className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all border border-slate-100"
+                     >
+                        <Plus size={30} className="rotate-45" />
+                     </button>
+                  </div>
+
+                  <div className="space-y-8">
+                     <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Type de l'Entrée</label>
+                           <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
+                              <option>BANQUE</option>
+                              <option>RESEAU</option>
+                           </select>
+                        </div>
+                        <div className="space-y-3">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Statut Initial</label>
+                           <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
+                              <option>Actif</option>
+                              <option>Inactif</option>
+                           </select>
+                        </div>
+                     </div>
+
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom de la Banque ou du Réseau</label>
+                        <input 
+                          type="text" placeholder="ex: Banque Atlantique..." 
+                          className="w-full px-10 py-6 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] text-lg font-black focus:border-[#3A4DB7] outline-none transition-all placeholder:text-slate-300"
+                        />
+                     </div>
+
+                     <div className="p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center gap-6 group hover:border-[#3A4DB7] transition-all cursor-pointer">
+                        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-xl text-slate-400 group-hover:bg-[#3A4DB7] group-hover:text-white transition-all">
+                           <Layers size={32} />
+                        </div>
+                        <div className="text-center space-y-2">
+                           <h4 className="text-base font-black text-slate-900 tracking-tight">Télécharger le Logo</h4>
+                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">SVG, PNG OU JPG • MAX 5MB</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowAddModal(false)}
+                    className="w-full py-7 bg-[#3A4DB7] text-white rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_30px_60px_-12px_rgba(58,77,183,0.4)]"
+                  >
+                     Publier l'entrée au catalogue
+                  </button>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+
+      {/* TABLE */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden min-h-[600px]">
+         <div className="p-10 border-b border-slate-100 flex items-center justify-between">
+            <div>
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Entrees catalogue</h3>
+               <p className="text-xs font-bold text-slate-400 mt-1">{filteredEntries.length} entree(s) visible(s)</p>
+            </div>
+            <div className="flex gap-4">
+               <div className="relative">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" placeholder="Rechercher une entree..." 
+                    value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 w-72" 
+                  />
+               </div>
+               <select 
+                 value={filterType} onChange={e => setFilterType(e.target.value)}
+                 className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 outline-none"
+               >
+                  <option>Tous les types</option>
+                  <option>Banque</option>
+                  <option>Reseau</option>
+               </select>
+               <select 
+                 value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                 className="px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 outline-none"
+               >
+                  <option>Tous les statuts</option>
+                  <option>Actif</option>
+                  <option>Inactif</option>
+               </select>
+            </div>
+         </div>
+
+         <div className="overflow-x-auto px-6 py-6">
+            <table className="w-full text-left">
+               <thead>
+                  <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                     <th className="px-6 py-6">LOGO</th>
+                     <th className="px-6 py-6">TYPE</th>
+                     <th className="px-6 py-6">NOM</th>
+                     <th className="px-6 py-6">UTILISATION MARCHANDS</th>
+                     <th className="px-6 py-6">STATUT</th>
+                     <th className="px-6 py-6 text-right">ACTION</th>
+                  </tr>
+               </thead>
+               <tbody className="divide-y divide-slate-50">
+                  {filteredEntries.map((entry) => (
+                    <tr key={entry.id} className="hover:bg-slate-50/50 transition-colors group">
+                       <td className="px-6 py-8">
+                          <div className="w-16 h-16 bg-slate-100 rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-1">
+                             <span className="text-[10px] font-black text-slate-300">{entry.logo}</span>
+                             <span className="text-[8px] font-bold text-slate-300 uppercase">Logo</span>
+                             <button className="text-[8px] font-black text-[#3A4DB7] mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Modifier</button>
+                          </div>
+                       </td>
+                       <td className="px-6 py-8">
+                          <div className="space-y-2">
+                             <span className="text-sm font-black text-slate-900">{entry.type}</span>
+                             <select className="block w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-[#3A4DB7] outline-none">
+                                <option>BANQUE</option>
+                                <option>RESEAU</option>
+                             </select>
+                          </div>
+                       </td>
+                       <td className="px-6 py-8">
+                          <input 
+                            type="text" defaultValue={entry.name}
+                            className="w-full px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-[#3A4DB7] outline-none"
+                          />
+                       </td>
+                       <td className="px-6 py-8">
+                          <div className="flex items-center gap-2">
+                             <span className="text-lg font-black text-slate-950">{entry.usage}</span>
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">liaison(s) marchands</span>
+                          </div>
+                       </td>
+                       <td className="px-6 py-8">
+                          <div className="space-y-4">
+                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-2 ${
+                               entry.status === 'Actif' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                             }`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${entry.status === 'Actif' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                {entry.status.toUpperCase()}
+                             </span>
+                          </div>
+                       </td>
+                       <td className="px-6 py-8">
+                          <div className="flex items-center justify-end gap-3">
+                             <button 
+                               className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-500 hover:text-white transition-all shadow-sm"
+                               title="Modifier"
+                             >
+                               <Edit3 size={16} />
+                             </button>
+
+                             {entry.status === 'Actif' ? (
+                               <button 
+                                 onClick={() => toggleStatus(entry.id)}
+                                 className="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                 title="Suspendre"
+                               >
+                                 <Pause size={16} />
+                               </button>
+                             ) : (
+                               <button 
+                                 onClick={() => toggleStatus(entry.id)}
+                                 className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                 title="Réactiver"
+                               >
+                                 <Play size={16} />
+                               </button>
+                             )}
+                             
+                             <button 
+                               onClick={() => deleteEntry(entry.id)}
+                               className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                               title="Supprimer"
+                             >
+                               <Trash2 size={16} />
+                             </button>
+                          </div>
+                       </td>
+                    </tr>
+                  ))}
+               </tbody>
+            </table>
+         </div>
+      </div>
     </motion.div>
   );
 }
