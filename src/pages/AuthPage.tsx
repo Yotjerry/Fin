@@ -9,10 +9,12 @@ import {
   ArrowRight, 
   ChevronLeft,
   ShieldCheck,
+  Shield,
   CheckCircle2,
   AlertCircle,
   Zap,
-  Smartphone
+  Smartphone,
+  Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
@@ -346,8 +348,24 @@ export default function AuthPage() {
               onClick={() => navigate("/agent/dashboard")}
               className="w-full mt-3 py-5 bg-amber-50/50 border border-amber-100 text-amber-700 font-black rounded-2xl hover:bg-amber-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
             >
-              <Zap className="w-4 h-4" />
-              <span>Accès Direct Agent (Déjà Activé)</span>
+              <Zap className="w-4 h-4 text-amber-500 group-hover:text-amber-500 transition-colors" />
+              <span>Accès Direct Agent</span>
+            </button>
+            <button 
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="w-full mt-3 py-5 bg-emerald-50/50 border border-emerald-100 text-emerald-700 font-black rounded-2xl hover:bg-emerald-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+            >
+              <Users className="w-5 h-5 text-emerald-600" />
+              <span>Accès Direct Marchand</span>
+            </button>
+            <button 
+              type="button"
+              onClick={() => navigate("/admin/dashboard")}
+              className="w-full mt-3 py-5 bg-indigo-50/50 border border-indigo-100 text-[#234D96] font-black rounded-2xl hover:bg-indigo-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
+            >
+              <Shield className="w-5 h-5 text-[#234D96]" />
+              <span>Accès Direct Admin (Superviseur)</span>
             </button>
           </form>
         </div>

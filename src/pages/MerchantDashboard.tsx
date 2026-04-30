@@ -3047,7 +3047,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
   };
 
   return (
-    <div className="flex h-full bg-[#F8FAFC] overflow-hidden font-sans">
+    <div className="fixed inset-0 flex bg-[#F8FAFC] overflow-hidden font-sans">
       {/* Sidebar - Fintrack2 Style */}
       <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
         <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-40 items-center">

@@ -24,6 +24,7 @@ import AgentAuthPage from "./pages/AgentAuthPage";
 import MerchantOnboarding from "./pages/MerchantOnboarding";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import AgentDashboard from "./pages/AgentDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import { 
   ChevronDown, 
   Search, 
@@ -73,6 +74,7 @@ export default function App() {
         <Route path="/onboarding" element={<MerchantOnboarding />} />
         <Route path="/dashboard" element={<MerchantDashboard />} />
         <Route path="/agent/dashboard" element={<AgentDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
@@ -1106,7 +1108,7 @@ function LandingPage() {
           </div>
         </section>
       </main>
-
+      <FooterSection />
     </div>
   );
 }

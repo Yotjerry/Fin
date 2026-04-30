@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowUpRight, 
@@ -7,6 +7,7 @@ import {
   Calendar,
   User, 
   Bell, 
+  BellOff,
   Smartphone,
   Wallet,
   MoreHorizontal,
@@ -20,6 +21,7 @@ import {
   Landmark,
   CreditCard,
   ChevronRight,
+  ChevronDown,
   Search,
   AlertCircle,
   AlertTriangle,
@@ -27,11 +29,20 @@ import {
   FileText,
   X,
   Zap,
+  MessageCircle,
   ArrowRight,
   Coins,
   ShieldCheck,
-  Check,
+  ShieldAlert,
+  Shield,
+  Briefcase,
+  LayoutDashboard,
+  MessageSquare,
   Plus,
+  Users,
+  Info,
+  Lock,
+  Check,
   Eye,
   EyeOff,
   Receipt,
@@ -49,15 +60,14 @@ import {
   Wifi,
   PhoneCall,
   Tv,
-  Users
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 
 // --- Types & Interfaces ---
 type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "pos_fintech" | "pos_bank";
 type WorkflowStep = "CATEGORY" | "OPERATOR" | "SERVICE" | "FORM" | "RECAP" | "SUCCESS";
-type ServiceCategory = "FINTECH" | "BANK" | "SALES";
+type ServiceCategory = "Réseaux" | "Banques" | "Facturiers";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -97,11 +107,381 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 export default function AgentDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Caisse");
+  const [agentProfile, setAgentProfile] = useState({ 
+    name: "Agent Cotonou", 
+    email: "agent1@fintrack.bj", 
+    phone: "+22900000003" 
+  });
+  const [passwords, setPasswords] = useState({ current: "********", new: "", confirm: "" });
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [feedback, setFeedback] = useState({ nature: "Avis général", stars: 5, message: "" });
   const [workflowStep, setWorkflowStep] = useState<WorkflowStep>("CATEGORY");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [momoTab, setMomoTab] = useState("DÉPÔT/RETRAIT");
+
+  // --- TYPES & DATA FOR SERVICES & COMMISSIONS ---
+  type OperationType = "Dépôt" | "Retrait" | "Transfert" | "Paiement Facture";
+  
+  interface CommissionTier {
+    id: string;
+    min: number;
+    max: number | "infinity";
+    fee: number;
+    type: "fixed" | "percentage";
+  }
+
+  interface ServiceConfig {
+    id: string;
+    name: string;
+    logo: string;
+    category: ServiceCategory;
+    isActive: boolean; // Merchant level activation
+    isGlobalMaintenance: boolean; // Admin level stop
+    commissions: Record<OperationType, CommissionTier[]>;
+  }
+
+  const [globalCatalogue, setGlobalCatalogue] = useState<ServiceConfig[]>([
+    {
+      id: "mtn-momo",
+      name: "MTN Mobile Money",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/MTN_Logo.svg/1024px-MTN_Logo.svg.png",
+      category: "Réseaux",
+      isActive: true,
+      isGlobalMaintenance: false,
+      commissions: {
+        "Dépôt": [{ id: "1", min: 0, max: 5000, fee: 100, type: "fixed" }, { id: "2", min: 5001, max: "infinity", fee: 1, type: "percentage" }],
+        "Retrait": [{ id: "3", min: 0, max: 5000, fee: 200, type: "fixed" }, { id: "4", min: 5001, max: "infinity", fee: 1.5, type: "percentage" }],
+        "Transfert": [],
+        "Paiement Facture": []
+      }
+    },
+    {
+      id: "moov-money",
+      name: "Moov Money",
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR07fJ00Z11aV86GZ_Qk0w4_f56y6a6E_2G-Q&s",
+      category: "Réseaux",
+      isActive: true,
+      isGlobalMaintenance: false,
+      commissions: {
+        "Dépôt": [], "Retrait": [], "Transfert": [], "Paiement Facture": []
+      }
+    },
+    {
+      id: "sbee",
+      name: "SBEE",
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3vY8Xv3U8_Y9W9I6o_7yYQ0Q0G8o7z9Y6aQ&s",
+      category: "Facturiers",
+      isActive: true,
+      isGlobalMaintenance: false,
+      commissions: {
+        "Dépôt": [], "Retrait": [], "Transfert": [], "Paiement Facture": []
+      }
+    }
+  ]);
+
+  const [selectedMerchantService, setSelectedMerchantService] = useState<ServiceConfig | null>(null);
+  const [activeCommissionTab, setActiveCommissionTab] = useState<OperationType>("Dépôt");
   const [showBalance, setShowBalance] = useState(false);
+  const [closingStep, setClosingStep] = useState(1);
+  const [virtualBalances, setVirtualBalances] = useState<Record<string, string>>({});
+  const [cashPhysique, setCashPhysique] = useState("");
+  const [mismatchNetwork, setMismatchNetwork] = useState<string | null>(null);
+  const [virtualJustification, setVirtualJustification] = useState("");
+  const [cashJustification, setCashJustification] = useState("");
+  const [isClosingFinished, setIsClosingFinished] = useState(false);
+
+  // Mock theoretical data for validation
+  const theoreticalBalances: Record<string, number> = {
+    "mtn": 450000,
+    "moov": 125000,
+    "wave": 500000,
+    "ecobank": 800000,
+    "celtis": 50000,
+    "boa": 300000,
+  };
+
+  const cashTheorique = 350000;
+
+  const commissions = [
+    { name: "MTN MoMo", amount: 1550, active: true },
+    { name: "Moov Money", amount: 850, active: true },
+    { name: "Wave", amount: 2100, active: true },
+    { name: "Ecobank", amount: 450, active: true },
+    { name: "Celtis Pay", amount: 0, active: false },
+    { name: "BOA Bénin", amount: 120, active: true },
+  ];
+
+  const handleVirtualValidation = () => {
+    let firstMismatch = null;
+    for (const [id, val] of Object.entries(virtualBalances)) {
+      if (parseInt(val.replace(/\s/g, "")) !== theoreticalBalances[id]) {
+        firstMismatch = id;
+        break;
+      }
+    }
+
+    if (firstMismatch) {
+      const operatorName = fintechOperators.find(o => o.id === firstMismatch)?.name || 
+                          bankOperators.find(o => o.id === firstMismatch)?.name || firstMismatch;
+      setMismatchNetwork(operatorName);
+    } else {
+      setMismatchNetwork(null);
+      setClosingStep(2);
+    }
+  };
+
+  const handleForcedVerification = () => {
+    if (virtualJustification.trim().length >= 5) {
+      setClosingStep(2);
+    }
+  };
+
+  const handleFinalSubmit = () => {
+    const enteredCash = parseInt(cashPhysique.replace(/\s/g, ""));
+    if (enteredCash !== cashTheorique && !cashJustification.trim()) {
+      // Error handled in UI
+      return;
+    }
+    setIsClosingFinished(true);
+    // In a real app, we would send data to backend here
+    setTimeout(() => {
+      navigate("/");
+    }, 3000);
+  };
+
+  function DailyClosingWorkflow() {
+    return (
+      <div className="fixed inset-0 z-[100] bg-slate-950/40 backdrop-blur-md flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        >
+          {/* Header */}
+          <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center">
+                <Power size={24} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-xl font-black text-slate-900 tracking-tight">Processus de Clôture</h3>
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Étape {closingStep} sur 2</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setActiveModal("none")}
+              className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-all"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-10 no-scrollbar">
+            <AnimatePresence mode="wait">
+              {isClosingFinished ? (
+                <motion.div 
+                  key="success"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-12 space-y-6"
+                >
+                  <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
+                    <CheckCircle size={48} strokeWidth={2.5} />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Caisse Clôturée !</h2>
+                    <p className="text-slate-500 font-medium max-w-md mx-auto leading-relaxed">
+                      Votre bilan a été généré avec succès. Le système va maintenant vous déconnecter pour la journée.
+                    </p>
+                  </div>
+                  <div className="pt-8">
+                     <div className="animate-spin h-8 w-8 border-4 border-fintrack-primary border-t-transparent rounded-full mx-auto" />
+                  </div>
+                </motion.div>
+              ) : closingStep === 1 ? (
+                <motion.div 
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <div className="bg-blue-50/50 rounded-[2rem] p-6 border border-blue-100/50 mb-8">
+                     <p className="text-blue-900 font-medium text-sm leading-relaxed">
+                       <span className="font-black text-blue-900">Note Importante :</span> Veuillez consulter vos téléphones et terminaux pour saisir le solde disponible exact pour chaque réseau.
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...fintechOperators, ...bankOperators.slice(0, 2)].map((op) => (
+                      <div key={op.id} className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">{op.name}</label>
+                        <div className="relative group">
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg overflow-hidden border border-slate-100 bg-white">
+                            <img src={op.img} alt={op.name} className="w-full h-full object-contain p-1" />
+                          </div>
+                          <input 
+                            type="text"
+                            placeholder="0"
+                            className="w-full pl-16 pr-12 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all text-lg tracking-tight"
+                            value={virtualBalances[op.id] || ""}
+                            onChange={(e) => setVirtualBalances({...virtualBalances, [op.id]: e.target.value})}
+                          />
+                          <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-slate-300 text-xs">CFA</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {mismatchNetwork && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="bg-rose-50 border border-rose-100 rounded-3xl p-6 space-y-4"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/20">
+                          <AlertTriangle size={20} />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-rose-900 font-black tracking-tight leading-tight">Écart détecté sur : {mismatchNetwork}</p>
+                          <p className="text-rose-700/70 text-xs font-medium leading-relaxed">
+                            Le solde saisi ne correspond pas aux prévisions du système. Revérifiez vos comptes ou justifiez cet écart ci-dessous.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <textarea 
+                          placeholder="Expliquez brièvement cet écart avant de forcer la validation..."
+                          className="w-full p-4 bg-white border border-rose-100 rounded-2xl text-rose-900 text-sm outline-none focus:ring-4 focus:ring-rose-500/5 transition-all placeholder:text-rose-300/50 font-medium min-h-[100px] resize-none"
+                          value={virtualJustification}
+                          onChange={(e) => setVirtualJustification(e.target.value)}
+                        />
+                        <button 
+                          onClick={handleForcedVerification}
+                          disabled={virtualJustification.trim().length < 5}
+                          className="w-full py-4 bg-rose-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100 active:scale-95"
+                        >
+                          Forcer la Validation
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {!mismatchNetwork && (
+                    <button 
+                      onClick={handleVirtualValidation}
+                      className="w-full py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-xl shadow-blue-900/10 hover:bg-[#2D3A8C] transition-all hover:scale-[1.02] active:scale-95 mt-4"
+                    >
+                      Valider et Suivant
+                    </button>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  {/* Commissions Summary */}
+                  <div className="bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 space-y-6">
+                    <div className="flex items-center justify-between">
+                       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">RESUMÉ DES COMMISSIONS</p>
+                       <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full border border-emerald-100">
+                          <TrendingUp size={12} strokeWidth={3} />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Succès</span>
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                       {commissions.map((comm) => (
+                         <div key={comm.name} className={`flex justify-between items-center ${comm.active ? "opacity-100" : "opacity-30 grayscale"}`}>
+                            <span className="text-xs font-bold text-slate-600">{comm.name}</span>
+                            <span className={`text-[13px] font-black ${comm.amount > 0 ? "text-emerald-500" : "text-slate-400"}`}>
+                              +{comm.amount.toLocaleString()} F
+                            </span>
+                         </div>
+                       ))}
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-200 flex justify-between items-end">
+                       <p className="text-[11px] font-black text-slate-400 uppercase">TOTAL JOURNÉE</p>
+                       <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-black text-slate-900 tracking-tighter">
+                            {commissions.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
+                          </span>
+                          <span className="text-xs font-black text-slate-400">CFA</span>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Cash Declaration */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">Cash total en agence</label>
+                       <div className="relative group">
+                         <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500">
+                           <Coins size={28} />
+                         </div>
+                         <input 
+                           type="text"
+                           placeholder="Ex: 500 000"
+                           className="w-full pl-16 pr-12 py-6 bg-white border border-slate-200 rounded-3xl font-black text-slate-900 outline-none focus:border-blue-500 focus:ring-8 focus:ring-blue-500/5 transition-all text-3xl tracking-tighter"
+                           value={cashPhysique}
+                           onChange={(e) => setCashPhysique(e.target.value)}
+                         />
+                         <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-300 text-lg">CFA</span>
+                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">
+                        Justification {parseInt(cashPhysique.replace(/\s/g, "")) !== cashTheorique && cashPhysique ? "(Obligatoire)" : "(Optionnel)"}
+                       </label>
+                       <textarea 
+                         placeholder="Éventuel écart de caisse physique..."
+                         className={`w-full p-6 bg-slate-50 border rounded-3xl text-sm font-medium outline-none transition-all min-h-[120px] resize-none ${
+                           parseInt(cashPhysique.replace(/\s/g, "")) !== cashTheorique && cashPhysique && !cashJustification
+                             ? "border-rose-200 bg-rose-50/10"
+                             : "border-slate-100 focus:bg-white focus:border-blue-500/30"
+                         }`}
+                         value={cashJustification}
+                         onChange={(e) => setCashJustification(e.target.value)}
+                       />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={() => setClosingStep(1)}
+                      className="py-5 bg-slate-50 text-slate-500 font-black text-sm uppercase tracking-widest rounded-3xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft size={18} />
+                      Retour
+                    </button>
+                    <button 
+                      onClick={handleFinalSubmit}
+                      disabled={!cashPhysique || (parseInt(cashPhysique.replace(/\s/g, "")) !== cashTheorique && !cashJustification.trim())}
+                      className="py-5 bg-rose-600 text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-xl shadow-rose-900/10 hover:bg-rose-700 transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Power size={18} />
+                      Fermer la Caisse
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   const [activeModal, setActiveModal] = useState<ModalType>("none");
   const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -123,7 +503,7 @@ export default function AgentDashboard() {
       amount: "10 000", 
       commission: "100", 
       operator: "Ecobank", 
-      type: "DEPOT", 
+      type: "Dépôt", 
       date: "28/04/2026", 
       time: "14:25", 
       status: "EN_ANNULATION", 
@@ -138,7 +518,7 @@ export default function AgentDashboard() {
       amount: "50 000", 
       commission: "500", 
       operator: "Wave", 
-      type: "PAIEMENT FACTURE", 
+      type: "Retrait", 
       date: "28/04/2026", 
       time: "13:42", 
       status: "EN_ANNULATION", 
@@ -153,7 +533,7 @@ export default function AgentDashboard() {
       amount: "2 500", 
       commission: "25", 
       operator: "Ecobank", 
-      type: "DEPOT", 
+      type: "Dépôt", 
       date: "25/04/2026", 
       time: "18:42", 
       status: "CONFIRME", 
@@ -167,11 +547,25 @@ export default function AgentDashboard() {
       amount: "50 000", 
       commission: "750", 
       operator: "NSIA Banque", 
-      type: "DEPOT", 
+      type: "Dépôt", 
       date: "25/04/2026", 
       time: "18:42", 
       status: "CONFIRME", 
       logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8F6tXG5S1O5A4Y7_qg7Z5y5o9G0Z3w-Q&s",
+      proofPhoto: true,
+      receiptPhoto: true,
+    },
+    { 
+      id: "TXN-C7196957", 
+      clientRef: "0719695722",
+      amount: "5 000", 
+      commission: "500", 
+      operator: "Celtis Cash", 
+      type: "Retrait", 
+      date: "25/04/2026", 
+      time: "15:20", 
+      status: "CONFIRME", 
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8F6tXG5S1O5A4Y7_qg7Z5y5o9G0Z3w-Q&s", // Placeholder for Celtis
       proofPhoto: true,
       receiptPhoto: true,
     },
@@ -182,7 +576,8 @@ export default function AgentDashboard() {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const handleReportError = (id: string) => {
+  const handleReportError = (id: string, reason: string) => {
+    console.log(`Reporting error for ${id} with reason: ${reason}`);
     setActivities(prev => prev.map(a => a.id === id ? { ...a, status: "EN_ANNULATION" } : a));
     setShowReportModal(false);
   };
@@ -486,6 +881,185 @@ export default function AgentDashboard() {
     );
   }
 
+  function AccountView() {
+    return (
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-3">
+          <h2 className="text-6xl font-black text-[#0F172A] tracking-tighter">Paramètres de Sécurité</h2>
+          <p className="text-slate-500 font-medium text-[17px] tracking-tight">Gérez vos informations personnelles et votre mot de passe pour la caisse.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Section 1: Profil Agent */}
+          <div className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm space-y-10 group hover:shadow-xl transition-all duration-500">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center">
+                <User size={28} />
+              </div>
+              <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Profil Agent</h3>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">NOM COMPLET</label>
+                <input 
+                  type="text"
+                  value={agentProfile.name}
+                  onChange={(e) => setAgentProfile({ ...agentProfile, name: e.target.value })}
+                  className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">ADRESSE EMAIL</label>
+                  <input 
+                    type="email"
+                    value={agentProfile.email}
+                    onChange={(e) => setAgentProfile({ ...agentProfile, email: e.target.value })}
+                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">TÉLÉPHONE</label>
+                  <input 
+                    type="tel"
+                    value={agentProfile.phone}
+                    onChange={(e) => setAgentProfile({ ...agentProfile, phone: e.target.value })}
+                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all"
+                  />
+                </div>
+              </div>
+
+              <button className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-900/10 hover:bg-[#2D3A8C] transition-all flex items-center justify-center gap-3">
+                <FileText size={18} />
+                Mettre à jour le profil
+              </button>
+            </div>
+          </div>
+
+          {/* Section 2: Sécurité du Terminal */}
+          <div className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm space-y-10 group hover:shadow-xl transition-all duration-500">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center">
+                <ShieldCheck size={28} />
+              </div>
+              <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Sécurité du Terminal</h3>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">MOT DE PASSE ACTUEL</label>
+                <div className="relative">
+                  <input 
+                    type={showCurrentPass ? "text" : "password"}
+                    value={passwords.current}
+                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  />
+                  <button 
+                    onClick={() => setShowCurrentPass(!showCurrentPass)}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+                  >
+                    {showCurrentPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">NOUVEAU MOT DE PASSE</label>
+                  <input 
+                    type="password"
+                    value={passwords.new}
+                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">CONFIRMEZ</label>
+                  <input 
+                    type="password"
+                    value={passwords.confirm}
+                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                    className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  />
+                </div>
+              </div>
+
+              <button className="w-full py-5 bg-white border border-blue-600 text-blue-600 font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-blue-50 transition-all flex items-center justify-center gap-3">
+                <Cpu size={18} />
+                Changer le mot de passe
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Avis & Feedback */}
+          <div className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm space-y-10 group hover:shadow-xl transition-all duration-500 lg:col-span-2 max-w-4xl mx-auto w-full">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center">
+                <MessageCircle size={28} />
+              </div>
+              <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Avis & Feedback</h3>
+            </div>
+
+            <p className="text-[#64748B] font-medium leading-relaxed">
+              Une suggestion ou un problème ? Votre retour nous aide à améliorer votre outil de travail au quotidien.
+            </p>
+
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">NATURE DU RETOUR</label>
+                <select 
+                  value={feedback.nature}
+                  onChange={(e) => setFeedback({ ...feedback, nature: e.target.value })}
+                  className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all appearance-none"
+                >
+                  <option>Avis général</option>
+                  <option>Bug technique</option>
+                  <option>Demande de fonctionnalité</option>
+                  <option>Autre</option>
+                </select>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">NOTE DE SATISFACTION</label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                       <button 
+                         key={star}
+                         onClick={() => setFeedback({ ...feedback, stars: star })}
+                         className={`transition-all ${feedback.stars >= star ? "text-amber-500 scale-110" : "text-slate-200 hover:text-slate-300"}`}
+                       >
+                          <svg className={`w-11 h-11 ${feedback.stars >= star ? "fill-amber-500" : "fill-slate-200"}`} viewBox="0 0 24 24">
+                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                       </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">MESSAGE</label>
+                <textarea 
+                  value={feedback.message}
+                  onChange={(e) => setFeedback({ ...feedback, message: e.target.value })}
+                  placeholder="Décrivez votre retour ici..."
+                  className="w-full px-6 py-6 bg-white border border-slate-200 rounded-[2rem] font-medium text-slate-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all min-h-[160px] resize-none"
+                />
+              </div>
+
+              <button className="w-full py-6 bg-[#55C59C] text-white font-black text-sm uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-emerald-500/10 hover:bg-[#45B08B] transition-all flex items-center justify-center gap-3">
+                <MessageCircle size={20} />
+                Envoyer mon retour
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const operators = [
     { id: "mtn", name: "MTN Bénin", img: "https://upload.wikimedia.org/wikipedia/commons/9/93/MTN_Logo.svg" },
     { id: "moov", name: "Moov Africa", img: "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/Logo_Moov_Africa.svg/1200px-Logo_Moov_Africa.svg.png" },
@@ -500,9 +1074,22 @@ export default function AgentDashboard() {
   ];
 
   const getOperators = () => {
-    if (selectedCategory === "BANK") return bankOperators;
-    if (selectedCategory === "SALES") return [{ id: "fintrack", name: "Fintrack Services", img: "https://fintrack.net/wp-content/uploads/2021/04/cropped-Fintrack-Logo.png", color: "border-blue-100" }];
-    return fintechOperators;
+    // Filter from global catalogue based on category and merchant activation
+    const activeFromCatalogue = globalCatalogue.filter(s => s.isActive && !s.isGlobalMaintenance);
+    
+    if (selectedCategory === "Banques") {
+      return activeFromCatalogue
+        .filter(s => s.category === "Banques")
+        .map(s => ({ id: s.id, name: s.name, img: s.logo, color: "border-blue-500" }));
+    }
+    if (selectedCategory === "Facturiers") {
+      return activeFromCatalogue
+        .filter(s => s.category === "Facturiers")
+        .map(s => ({ id: s.id, name: s.name, img: s.logo, color: "border-amber-500" }));
+    }
+    return activeFromCatalogue
+      .filter(s => s.category === "Réseaux")
+      .map(s => ({ id: s.id, name: s.name, img: s.logo, color: "border-emerald-500" }));
   };
 
   const handleBack = () => {
@@ -513,9 +1100,9 @@ export default function AgentDashboard() {
   };
 
   const categories = [
-    { id: "FINTECH", title: "Réseaux & Fintech", icon: <MonitorSmartphone size={32} />, color: "bg-fintrack-secondary/10", iconColor: "text-fintrack-secondary" },
-    { id: "BANK", title: "Banque & Transfert", icon: <Landmark size={32} />, color: "bg-fintrack-primary/10", iconColor: "text-fintrack-primary" },
-    { id: "SALES", title: "Ventes & Divers", icon: <HandCoins size={32} />, color: "bg-fintrack-dark/10", iconColor: "text-fintrack-dark" },
+    { id: "Réseaux", title: "Réseaux & Fintech", icon: <MonitorSmartphone size={32} />, color: "bg-fintrack-secondary/10", iconColor: "text-fintrack-secondary" },
+    { id: "Banques", title: "Banque & Transfert", icon: <Landmark size={32} />, color: "bg-fintrack-primary/10", iconColor: "text-fintrack-primary" },
+    { id: "Facturiers", title: "Ventes & Divers", icon: <HandCoins size={32} />, color: "bg-fintrack-dark/10", iconColor: "text-fintrack-dark" },
   ];
 
   const fintechOperators = [
@@ -535,6 +1122,20 @@ export default function AgentDashboard() {
     { id: "ABONNEMENT", title: "Abonnement", desc: "Canal+, DSTV, etc.", icon: <Tv />, color: "bg-fintrack-primary/5", iconColor: "text-fintrack-primary" },
   ];
 
+  const [rechargeStep, setRechargeStep] = useState(1);
+  const [rechargeOperator, setRechargeOperator] = useState<any>(null);
+  const [rechargeAmount, setRechargeAmount] = useState("");
+  const [rechargeReceipt, setRechargeReceipt] = useState<File | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleRechargeSuccess = () => {
+    setSuccessMessage(`Votre compte ${rechargeOperator.name} a bien été rechargé de ${rechargeAmount} F.`);
+    setShowSuccessToast(true);
+    closeModal();
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
   const closeModal = () => {
     setActiveModal("none");
     setSelectedOperator(null);
@@ -549,6 +1150,10 @@ export default function AgentDashboard() {
     setSelectedArticle("");
     setStep(1);
     setWorkflowStep("CATEGORY");
+    setRechargeStep(1);
+    setRechargeOperator(null);
+    setRechargeAmount("");
+    setRechargeReceipt(null);
   };
 
   return (
@@ -560,51 +1165,44 @@ export default function AgentDashboard() {
         </div>
         
         <div className="flex-1 px-5 py-6 overflow-y-auto no-scrollbar">
-          <div className="mb-8">
-            <nav className="space-y-1.5">
-              <SidebarItem 
-                icon={<Home size={20} />} 
-                label="Poste de Travail" 
-                active={activeTab === "Caisse"} 
-                onClick={() => {
-                  setActiveTab("Caisse");
-                  setWorkflowStep("CATEGORY");
-                }} 
-              />
-              <SidebarItem 
-                icon={<Activity size={20} />} 
-                label="Transactions" 
-                active={activeTab === "Transactions"} 
-                onClick={() => setActiveTab("Transactions")} 
-              />
-              <SidebarItem 
-                icon={<History size={20} />} 
-                label="Clôtures & Bilans" 
-                active={activeTab === "Historique"} 
-                onClick={() => setActiveTab("Historique")} 
-              />
-            </nav>
-          </div>
-
-          <div className="mb-8">
-            <nav className="space-y-1.5">
-              <SidebarItem 
-                icon={<Settings2 size={20} />} 
-                label="Paramètres" 
-                active={activeTab === "Settings"} 
-                onClick={() => setActiveTab("Settings")} 
-              />
-            </nav>
-          </div>
+          <nav className="space-y-1.5">
+            <SidebarItem 
+              icon={<Home size={20} />} 
+              label="Poste de Travail" 
+              active={activeTab === "Caisse"} 
+              onClick={() => {
+                setActiveTab("Caisse");
+                setWorkflowStep("CATEGORY");
+              }} 
+            />
+            <SidebarItem 
+              icon={<Activity size={20} />} 
+              label="Transactions" 
+              active={activeTab === "Transactions"} 
+              onClick={() => setActiveTab("Transactions")} 
+            />
+            <SidebarItem 
+              icon={<History size={20} />} 
+              label="Clôtures & Bilans" 
+              active={activeTab === "Historique"} 
+              onClick={() => setActiveTab("Historique")} 
+            />
+            <SidebarItem 
+              icon={<Settings2 size={20} />} 
+              label="Paramètres" 
+              active={activeTab === "Account"} 
+              onClick={() => setActiveTab("Account")} 
+            />
+          </nav>
         </div>
 
-        <div className="px-6 pb-10 flex flex-col gap-4">
+        <div className="px-6 pb-10">
           <button 
             onClick={() => navigate("/")}
-            className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] bg-rose-500/5 border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase active:scale-95 group/logout shadow-sm"
+            className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] bg-slate-100 border border-slate-200 text-slate-500 hover:bg-slate-950 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase active:scale-95 group/logout"
           >
             <LogOut size={16} className="group-hover/logout:-translate-x-1 transition-all" />
-            <span>Fermer la Caisse</span>
+            <span>Déconnexion</span>
           </button>
         </div>
       </aside>
@@ -612,38 +1210,211 @@ export default function AgentDashboard() {
       {/* Main Command Center */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FBFBFE]">
         {/* Simplified & More Breathing Header */}
-        <header className="h-24 bg-white border-b border-slate-100 flex items-center justify-between px-10 shrink-0 relative z-20">
+        <header className="h-28 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 flex items-center justify-between px-12 shrink-0 relative z-40 sticky top-0">
           <div className="flex items-center gap-10">
-            <h1 className="text-xl font-black text-slate-950 tracking-tight">
-              {activeTab === "Caisse" ? "Poste de Travail" : activeTab === "Transactions" ? "Gestion Transactions" : activeTab} 
-              <span className="text-fintrack-primary ml-2 uppercase text-sm opacity-50 font-bold">#001</span>
-            </h1>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-black text-slate-950 tracking-tighter leading-none">
+                {activeTab === "Caisse" ? "Poste de Travail" : activeTab === "Transactions" ? "Gestion Flux" : activeTab === "Account" ? "Paramètres" : activeTab} 
+              </h1>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Session Active • Agent #001</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-             <div className="flex items-center gap-4 px-5 py-3 bg-fintrack-primary/5 border border-fintrack-primary/10 rounded-2xl group cursor-pointer hover:bg-fintrack-primary/10 transition-all">
-               <div className="w-8 h-8 bg-fintrack-primary rounded-xl flex items-center justify-center text-white">
-                  <Zap size={16} strokeWidth={3} />
-               </div>
-               <div className="flex flex-col">
-                 <span className="text-[8px] font-black text-fintrack-primary uppercase tracking-[0.2em] leading-none mb-0.5">Session Live</span>
-                 <span className="text-sm font-mono font-black text-slate-900 leading-none">
-                   24 <span className="text-[9px] text-slate-400">OPS</span>
-                 </span>
-               </div>
-             </div>
-             
-             <div className="flex items-center gap-2">
-               <button className="w-11 h-11 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-950 hover:border-slate-300 transition-all relative">
-                 <Bell size={20} />
-                 <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
-               </button>
-               <button className="w-11 h-11 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-950 transition-all">
-                 <User size={20} />
-               </button>
-             </div>
+          <div className="flex items-center gap-8">
+            {/* Performance Preview */}
+            <div className="hidden lg:flex items-center gap-4 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Performance Jour</span>
+                <span className="text-lg font-mono font-black text-[#234D96] leading-none">2 485 000 <span className="text-[10px] ml-0.5 opacity-40">F</span></span>
+              </div>
+              <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-[#234D96] shadow-sm">
+                <TrendingUp size={20} />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Mobile Quick Actions */}
+              <div className="lg:hidden flex items-center gap-2">
+                <button 
+                  onClick={() => setActiveModal("cloture")}
+                  className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center border border-rose-100 shadow-sm active:scale-95 transition-all"
+                  title="Clôture"
+                >
+                  <Power size={18} />
+                </button>
+                <button 
+                  onClick={() => navigate("/")}
+                  className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm active:scale-95 transition-all"
+                  title="Déconnexion"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+
+              {/* Notification / Comments Icon */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative ${
+                    isNotificationsOpen 
+                      ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" 
+                      : "bg-white border border-slate-100 text-slate-400 hover:text-slate-950 hover:border-slate-300 shadow-sm"
+                  }`}
+                >
+                  <Bell size={22} />
+                  <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white" />
+                </button>
+
+                <AnimatePresence>
+                  {isNotificationsOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                        <div>
+                          <h3 className="text-xl font-black text-slate-900 tracking-tight">Journal d'Activité</h3>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dernières notifications</p>
+                        </div>
+                        <button className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all uppercase tracking-widest">
+                          Tout lire
+                        </button>
+                      </div>
+
+                      <div className="max-h-[450px] overflow-y-auto no-scrollbar">
+                        {[
+                          { title: "Sécurité", msg: "Nouveau terminal connecté", time: "2 min", type: "alert", color: "rose" },
+                          { title: "Système", msg: "Validation Wave optimisée", time: "1h", type: "info", color: "indigo" },
+                          { title: "Commission", msg: "Bonus quotidien +2,500F", time: "3h", type: "success", color: "emerald" },
+                        ].map((notif, idx) => (
+                          <div key={idx} className="p-6 border-b border-slate-50 hover:bg-slate-50/50 transition-all group cursor-pointer">
+                            <div className="flex gap-5">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                                notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
+                                notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
+                                'bg-emerald-50 text-emerald-500 border-emerald-100'
+                              }`}>
+                                {notif.type === 'alert' ? <ShieldAlert size={20} /> : notif.type === 'info' ? <Info size={20} /> : <CheckCircle size={20} />}
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
+                                  <span className="text-[10px] font-bold text-slate-300">•</span>
+                                  <span className="text-[10px] font-bold text-slate-300">{notif.time}</span>
+                                </div>
+                                <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{notif.msg}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-6 bg-slate-50/50 border-t border-slate-100">
+                        <button className="w-full py-4 bg-white text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:border-slate-900 transition-all shadow-sm">
+                          Voir tout l'historique
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="h-10 w-[1px] bg-slate-100 mx-2" />
+
+              <div className="relative">
+                <button 
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center gap-4 bg-white border border-slate-100 p-1.5 pr-6 rounded-[1.5rem] hover:border-slate-300 transition-all shadow-sm group"
+                >
+                  <div className="w-10 h-10 bg-slate-950 text-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-slate-950/20">
+                    <User size={20} />
+                  </div>
+                  <div className="flex flex-col items-start leading-tight">
+                    <span className="text-sm font-black text-slate-900">Jerry Yotto</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Agent Certifié</span>
+                  </div>
+                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isProfileMenuOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-4 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.1)] border border-slate-100 overflow-hidden z-50 p-2"
+                    >
+                      <div className="p-4 border-b border-slate-50 mb-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Active</p>
+                        <p className="text-xs font-bold text-slate-900">Agent ID: #001</p>
+                      </div>
+                      
+                      <button 
+                        onClick={() => {
+                          setActiveTab("Account");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-slate-950 transition-all text-xs font-bold"
+                      >
+                         <User size={16} /> Mon Compte
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          setActiveModal("cloture");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-rose-50 text-rose-500 transition-all text-xs font-bold"
+                      >
+                         <Power size={16} /> Clôture de Caisse
+                      </button>
+
+                      <div className="h-px bg-slate-50 my-2" />
+
+                      <button 
+                        onClick={() => navigate("/")}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-950 hover:text-white text-slate-500 transition-all text-xs font-bold"
+                      >
+                         <LogOut size={16} /> Déconnexion
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </header>
+
+        {/* Success Toast for Fleet Funding */}
+        <AnimatePresence>
+          {showSuccessToast && (
+            <motion.div 
+              initial={{ opacity: 0, y: -50, x: "-50%" }}
+              animate={{ opacity: 1, y: 100, x: "-50%" }}
+              exit={{ opacity: 0, y: -50, x: "-50%" }}
+              className="fixed top-0 left-1/2 z-[300] w-full max-w-md"
+            >
+              <div className="bg-emerald-500 text-white px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-4 border-2 border-emerald-400">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                  <CheckCircle size={24} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Approvisionnement réussi</p>
+                  <p className="text-sm font-bold leading-tight">{successMessage}</p>
+                </div>
+                <button onClick={() => setShowSuccessToast(false)} className="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Dynamic Content Grid */}
         <AnimatePresence mode="wait">
@@ -660,14 +1431,16 @@ export default function AgentDashboard() {
                 <TransactionsView />
               ) : activeTab === "Historique" ? (
                 <CloturesView />
+              ) : activeTab === "Account" ? (
+                <AccountView />
               ) : activeTab === "Caisse" ? (
                 <div className="space-y-10">
                   {/* Refined Stats - More White Space */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {[
-                      { label: "Flux Entrant", value: "845 000", delta: "+12.5%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
-                      { label: "Flux Sortant", value: "320 500", delta: "+4.2%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
-                      { label: "Volume OPS", value: "24", delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
+                      { label: "Cumul Entrant (Jour)", value: "845 000", delta: "+12.5%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
+                      { label: "Cumul Sortant (Jour)", value: "320 500", delta: "+4.2%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
+                      { label: "Transactions Shift", value: "24", delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
                     ].map((stat, i) => (
                       <div key={i} className="bg-white rounded-[2rem] p-8 border border-slate-100/60 shadow-sm group hover:shadow-md transition-all duration-300">
                         <div className="relative z-10 flex flex-col gap-6">
@@ -700,7 +1473,7 @@ export default function AgentDashboard() {
                     {[
                       { id: "ramassage", label: "Ramassage", icon: <ArrowUpRight />, color: "text-blue-600", bgColor: "bg-blue-600/5" },
                       { id: "ajustement", label: "Ajustement", icon: <Settings2 />, color: "text-violet-600", bgColor: "bg-violet-600/5" },
-                      { id: "recharge", label: "Réappro.", icon: <RefreshCw />, color: "text-emerald-600", bgColor: "bg-emerald-600/5" },
+                      { id: "recharge", label: "Approvisionnement", icon: <RefreshCw />, color: "text-emerald-600", bgColor: "bg-emerald-600/5" },
                       { id: "dette", label: "Dettes", icon: <HandCoins />, color: "text-slate-600", bgColor: "bg-slate-600/5" },
                       { id: "cloture", label: "Clôture", icon: <Power />, color: "text-rose-600", bgColor: "bg-rose-600/5" },
                     ].map((action) => (
@@ -863,7 +1636,7 @@ export default function AgentDashboard() {
                         <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-8">
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                              {/* FINTECH CATEGORY */}
-                             {selectedCategory === "FINTECH" && (
+                             {selectedCategory === "Réseaux" && (
                                <>
                                  {["DEPOT", "RETRAIT", "CREDIT", "INTERNET", "APPEL"].includes(selectedService?.id || "") && (
                                    <div className="space-y-3">
@@ -933,7 +1706,7 @@ export default function AgentDashboard() {
                              )}
 
                              {/* BANK CATEGORY */}
-                             {selectedCategory === "BANK" && (
+                             {selectedCategory === "Banques" && (
                                <>
                                  <div className="space-y-3">
                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">N° de compte bancaire (RIB)</label>
@@ -991,7 +1764,7 @@ export default function AgentDashboard() {
                              )}
 
                              {/* SALES CATEGORY */}
-                             {selectedCategory === "SALES" && (
+                             {selectedCategory === "Facturiers" && (
                                <>
                                  <div className="space-y-3">
                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Article Sélectionné</label>
@@ -1155,129 +1928,111 @@ export default function AgentDashboard() {
                     )}
                   </AnimatePresence>
 
-                  {/* ACTIVITY FEED - ONLY ON CATEGORY STEP */}
-                  {workflowStep === "CATEGORY" && (
-                    <div className="space-y-8 animate-in fade-in duration-700">
-                      <div className="flex items-center justify-between px-6 bg-white/50 backdrop-blur-sm py-4 rounded-3xl border border-white/50">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Activités récentes</h3>
-                        </div>
-                        <div className="bg-fintrack-primary/10 px-4 py-1.5 rounded-full border border-fintrack-primary/10">
-                           <span className="text-[11px] font-black text-fintrack-primary tracking-tight">{activities.length} Flux</span>
-                        </div>
-                      </div>
+                  {/* SECTION: ACTIVITES RECENTES (CLEAN PROFESSIONAL TABLE) */}
+                  <div className="mt-12 space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                       <div>
+                         <h3 className="text-xl font-black text-[#0F172A] tracking-tight">Activités Récentes</h3>
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historique de vos dernières opérations</p>
+                       </div>
+                       <div className="bg-[#DCE1F2]/50 text-[#234D96] px-4 py-1.5 rounded-xl text-[11px] font-black border border-[#DCE1F2]">
+                          {activities.length} Opérations
+                       </div>
+                    </div>
 
-                      <div className="bg-white border border-slate-100/60 rounded-[3rem] shadow-sm">
-                        <div className="overflow-x-auto no-scrollbar">
-                          <table className="w-full text-left border-separate border-spacing-0">
-                            <thead>
-                              <tr className="bg-slate-50/50">
-                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Flux & Type</th>
-                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Opérateur</th>
-                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Montant</th>
-                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Commission</th>
-                                <th className="py-6 px-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Date & Heure</th>
-                                <th className="py-6 px-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                              {activities.map((txn, i) => (
-                                <tr 
-                                  key={i} 
-                                  className={`group transition-all duration-500 ${
-                                    txn.status === "EN_ANNULATION" 
-                                      ? "bg-amber-50 animate-pulse border-y-2 border-dashed border-amber-400/50" 
-                                      : "hover:bg-slate-50/30"
-                                  }`}
-                                >
-                                  <td className="py-6 px-8">
-                                    <div className="flex items-center gap-4">
-                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-slate-50 ${
-                                        txn.type.includes('DEPOT') ? 'bg-emerald-50 text-emerald-500' : 'bg-fintrack-primary/5 text-fintrack-primary'
+                    <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50/50">
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date & Heure</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Opération</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Référence</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Montant</th>
+                              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {activities.map((tx) => (
+                              <motion.tr 
+                                key={tx.id}
+                                className={`group transition-colors ${tx.status === "EN_ANNULATION" ? "bg-amber-50/30" : "hover:bg-slate-50/50"}`}
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-black text-slate-900">{tx.date}</span>
+                                    <span className="text-[10px] font-bold text-slate-400">{tx.time}</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                                      tx.type === "Dépôt" ? "bg-emerald-50 border-emerald-100/50 text-emerald-500" : "bg-blue-50 border-blue-100/50 text-blue-500"
+                                    }`}>
+                                      {tx.type === "Dépôt" ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <div className="flex items-center gap-1.5">
+                                        <div className="w-3 h-3 rounded-sm overflow-hidden flex items-center justify-center bg-white shadow-xs p-[1px]">
+                                          <img src={tx.logo} alt="" className="w-full h-full object-contain" />
+                                        </div>
+                                        <span className="text-xs font-black text-slate-700">{tx.operator}</span>
+                                      </div>
+                                      <span className={`text-[9px] font-black uppercase tracking-tighter ${
+                                        tx.type === "Dépôt" ? "text-emerald-500" : "text-blue-500"
                                       }`}>
-                                        {txn.type.includes('DEPOT') ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
-                                      </div>
-                                      <div className="flex flex-col">
-                                        <span className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{txn.type}</span>
-                                        <span className="text-[10px] font-bold text-slate-400">Ref: {txn.id}</span>
-                                      </div>
+                                        {tx.type}
+                                      </span>
                                     </div>
-                                  </td>
-                                  <td className="py-6 px-8">
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-6 h-6 bg-slate-50 p-1 rounded-md border border-slate-100 flex items-center justify-center">
-                                        <img src={txn.logo} className="w-full h-full object-contain" alt="" />
-                                      </div>
-                                      <span className="text-[13px] font-bold text-slate-700">{txn.operator}</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-6 px-8">
-                                    <div className="flex flex-col">
-                                      <div className="flex items-baseline gap-1">
-                                        <span className="text-[18px] font-black text-slate-900 tracking-tighter">{txn.amount}</span>
-                                        <span className="text-[10px] font-black text-slate-900">F</span>
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="py-6 px-8">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                      <span className="text-[15px] font-black text-emerald-600 tracking-tight">+{txn.commission} F</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-6 px-8">
-                                    <div className="flex flex-col">
-                                      <span className="text-[13px] font-bold text-slate-600">{txn.date}</span>
-                                      <span className="text-[11px] font-bold text-slate-400">{txn.time}</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-6 px-8 text-right">
-                                    <div className="flex items-center justify-end gap-2">
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-[11px] font-black font-mono text-slate-400">{tx.clientRef}</span>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <div className="flex flex-col items-end">
+                                    <span className="text-sm font-black text-slate-950">{tx.amount} F</span>
+                                    {tx.status === "EN_ANNULATION" && (
+                                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter bg-amber-100/50 px-1.5 py-0.5 rounded">Annulation</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center justify-center gap-2">
+                                    <button 
+                                      onClick={() => {
+                                        setSelectedTxForReceipt(tx);
+                                        setShowReceiptModal(true);
+                                      }}
+                                      className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-400 rounded-lg hover:bg-slate-900 hover:text-white transition-all"
+                                      title="Facture"
+                                    >
+                                      <Receipt size={14} />
+                                    </button>
+                                    {tx.status !== "EN_ANNULATION" && (
                                       <button 
                                         onClick={() => {
-                                          setSelectedTxForReceipt(txn);
-                                          setShowReceiptModal(true);
+                                          setSelectedTxForReport(tx);
+                                          setShowReportModal(true);
                                         }}
-                                        className="px-4 py-2 bg-white border border-[#234D96] text-[#234D96] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-fintrack-primary hover:text-white transition-all shadow-sm active:scale-95"
+                                        className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-400 rounded-lg hover:bg-rose-500 hover:text-white transition-all"
+                                        title="Signaler"
                                       >
-                                        Facture
+                                        <AlertTriangle size={14} />
                                       </button>
-                                      {txn.status === "EN_ANNULATION" ? (
-                                        <div className="px-4 py-2 bg-amber-100 text-amber-600 rounded-xl font-black text-[9px] uppercase tracking-widest border border-amber-200">
-                                          EN_ANNULATION
-                                        </div>
-                                      ) : (
-                                        <button 
-                                          onClick={() => {
-                                            setSelectedTxForReport(txn);
-                                            setShowReportModal(true);
-                                          }}
-                                          className="px-4 py-2 bg-[#F84F4F] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E03E3E] transition-all shadow-sm active:scale-95"
-                                        >
-                                          Signaler
-                                        </button>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </motion.tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-[60vh]">
-                  <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                      <Settings2 size={32} />
-                    </div>
-                    <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Page en cours de développement</p>
                   </div>
+
                 </div>
-              )}
+              ) : null}
             </div>
           </motion.div>
         </AnimatePresence>
@@ -1329,6 +2084,10 @@ export default function AgentDashboard() {
         {/* Terminate main main content area */}
       </main>
 
+      <AnimatePresence>
+        {activeModal === "cloture" && <DailyClosingWorkflow />}
+      </AnimatePresence>
+
       {/* --- REFINED MODALS --- */}
       <ReceiptModal 
         isOpen={showReceiptModal} 
@@ -1344,7 +2103,7 @@ export default function AgentDashboard() {
       />
 
       <AnimatePresence>
-        {activeModal !== "none" && (
+        {activeModal !== "none" && activeModal !== "cloture" && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <motion.div 
               initial={{ opacity: 0 }}
@@ -1367,8 +2126,7 @@ export default function AgentDashboard() {
                     {activeModal === "vente" && "Vente Divers"}
                     {activeModal === "ramassage" && "Nouveau Ramassage"}
                     {activeModal === "ajustement" && "Ajustement de Caisse"}
-                    {activeModal === "cloture" && "Clôture de Caisse"}
-                    {activeModal === "recharge" && "Recharge de Compte"}
+                    {activeModal === "recharge" && "Approvisionnement Flotte"}
                     {activeModal === "dette" && "Rembourser Dette"}
                     {activeModal === "pos_fintech" && "Fintech & Mobile Money"}
                     {activeModal === "pos_bank" && "Banque & Transferts"}
@@ -1542,23 +2300,150 @@ export default function AgentDashboard() {
 
                 {activeModal === "recharge" && (
                    <div className="space-y-8">
-                      <div className="p-8 bg-emerald-50 border border-emerald-100 rounded-3xl flex flex-col items-center text-center gap-4">
-                        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
-                          <RefreshCw size={32} />
-                        </div>
-                        <p className="text-sm font-bold text-slate-600">Recharger le compte agent via un dépôt bancaire ou un transfert externe.</p>
-                      </div>
-                      <div className="space-y-4">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Montant de la recharge</label>
-                         <input 
-                           type="number" 
-                           placeholder="0"
-                           className="w-full px-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-emerald-400 rounded-2xl font-bold text-slate-900 outline-none transition-all text-2xl"
-                         />
-                         <button className="w-full py-5 bg-emerald-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-emerald-400/20 active:scale-95 transition-all">
-                           Confirmer la recharge
-                         </button>
-                      </div>
+                      {/* Sub-steps of Recharge */}
+                      {rechargeStep === 1 ? (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="space-y-8"
+                        >
+                          <div className="text-center space-y-3">
+                            <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
+                              <RefreshCw size={32} />
+                            </div>
+                            <div>
+                              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Approvisionnement Flotte</h3>
+                              <p className="text-[13px] font-medium text-slate-500">Choisissez le compte virtuel ou bancaire à recharger.</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto no-scrollbar pb-4">
+                            {[...fintechOperators, ...bankOperators].map((op) => (
+                              <button 
+                                key={op.id}
+                                onClick={() => {
+                                  setRechargeOperator(op);
+                                  setRechargeStep(2);
+                                }}
+                                className={`flex flex-col items-center gap-4 p-6 rounded-[2rem] border-2 transition-all group ${
+                                  rechargeOperator?.id === op.id 
+                                    ? "bg-white border-emerald-500 shadow-xl shadow-emerald-500/10 scale-95" 
+                                    : "bg-slate-50 border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg"
+                                }`}
+                              >
+                                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-sm border border-slate-50 group-hover:scale-110 transition-transform">
+                                  <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{op.name}</p>
+                                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                    {fintechOperators.find(f => f.id === op.id) ? "Mobile Money" : "Banque"}
+                                  </p>
+                                </div>
+                                {rechargeOperator?.id === op.id && (
+                                  <div className="absolute top-3 right-3 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg">
+                                    <Check size={14} strokeWidth={3} />
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="space-y-8"
+                        >
+                          <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+                             <button 
+                               onClick={() => setRechargeStep(1)}
+                               className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-all"
+                             >
+                               <ArrowLeft size={18} />
+                             </button>
+                             <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white border border-slate-100 rounded-xl p-1.5 flex items-center justify-center">
+                                  <img src={rechargeOperator?.img} alt="" className="w-full h-full object-contain" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{rechargeOperator?.name}</h4>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuration du montant</p>
+                                </div>
+                             </div>
+                          </div>
+
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Montant de la recharge</label>
+                              <div className="relative group">
+                                <input 
+                                  type="text" 
+                                  placeholder="0"
+                                  value={rechargeAmount}
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, "");
+                                    setRechargeAmount(val.replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+                                  }}
+                                  className="w-full px-8 py-6 bg-[#F8FAFC] border-2 border-transparent focus:border-emerald-500 rounded-[2rem] font-black text-slate-900 outline-none transition-all text-4xl placeholder:text-slate-200 shadow-inner"
+                                />
+                                <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xl font-black text-slate-300">FCFA</span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                               <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Reçu de dépôt (Justificatif)</label>
+                               <div className="relative group">
+                                  <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                    onChange={(e) => setRechargeReceipt(e.target.files?.[0] || null)}
+                                  />
+                                  <div className={`w-full py-10 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-all ${
+                                    rechargeReceipt 
+                                      ? "bg-emerald-50/50 border-emerald-200" 
+                                      : "bg-slate-50 border-slate-200 group-hover:border-slate-300 group-hover:bg-slate-100/50"
+                                  }`}>
+                                     {rechargeReceipt ? (
+                                       <>
+                                         <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                            <Check size={24} strokeWidth={3} />
+                                         </div>
+                                         <p className="text-sm font-black text-emerald-600">{rechargeReceipt.name}</p>
+                                         <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Justificatif ajouté avec succès</p>
+                                       </>
+                                     ) : (
+                                       <>
+                                         <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center">
+                                            <Camera size={24} />
+                                         </div>
+                                         <p className="text-sm font-bold text-slate-400">Cliquez ou glissez le reçu ici</p>
+                                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Capture photo sur mobile</p>
+                                       </>
+                                     )}
+                                  </div>
+                               </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-4 flex flex-col gap-4">
+                            <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100">
+                               <div className="flex justify-between items-center">
+                                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">IMPACT SUR LA CAISSE</p>
+                                 <p className="text-sm font-black text-rose-500 tabular-nums">-{rechargeAmount || "0"} F</p>
+                               </div>
+                            </div>
+                            <button 
+                              onClick={handleRechargeSuccess}
+                              disabled={!rechargeAmount || !rechargeOperator}
+                              className="w-full py-6 bg-slate-950 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/20 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                            >
+                              Valider l'Approvisionnement
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
                    </div>
                 )}
 
@@ -1586,82 +2471,6 @@ export default function AgentDashboard() {
                    </div>
                 )}
 
-                {activeModal === "cloture" && (
-                   <div className="space-y-8">
-                      <div className="bg-slate-950 rounded-[2.5rem] p-10 text-white relative overflow-hidden border border-white/5">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-fintrack-primary/20 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-                        <div className="relative z-10 space-y-8">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                               <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-amber-500">
-                                  <AlertCircle size={20} />
-                               </div>
-                               <div>
-                                  <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Rapport de Session</p>
-                                  <p className="text-xl font-black tracking-tight">Clôture Terminal #001</p>
-                               </div>
-                            </div>
-                            <div className="text-right">
-                               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Date</p>
-                               <p className="text-sm font-bold">24/04/2026</p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                             <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-1">
-                                <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">Flux Entrant</p>
-                                <p className="text-2xl font-black">845 000 <span className="text-xs font-bold text-white/40">F</span></p>
-                             </div>
-                             <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-1">
-                                <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">Flux Sortant</p>
-                                <p className="text-2xl font-black">320 500 <span className="text-xs font-bold text-white/40">F</span></p>
-                             </div>
-                          </div>
-
-                          <div className="p-8 bg-emerald-500/10 rounded-[2rem] border border-emerald-500/20 flex items-center justify-between">
-                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Bénéfice Net (Commissions)</p>
-                                <p className="text-4xl font-black text-emerald-400 tracking-tighter">+12 400 F</p>
-                             </div>
-                             <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                                <TrendingUp size={24} />
-                             </div>
-                          </div>
-
-                          <div className="pt-6 border-t border-white/10 flex items-center justify-between">
-                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-white/30 uppercase tracking-widest leading-none">Caisse de Clôture</p>
-                                <p className="text-4xl font-black text-fintrack-secondary tracking-tighter">536 900 F</p>
-                             </div>
-                             <div className="text-right">
-                                <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30">
-                                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                                   <span className="text-[9px] font-black uppercase tracking-widest">Équilibré</span>
-                                </div>
-                             </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4 px-2">
-                        <p className="text-xs font-bold text-slate-400 text-center leading-relaxed">Cette action est irréversible. Toutes les données de session seront archivées et transmises au gestionnaire du point de vente.</p>
-                        <div className="flex gap-4">
-                           <button 
-                             onClick={closeModal}
-                             className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all"
-                           >
-                             Annuler
-                           </button>
-                           <button 
-                             onClick={() => navigate("/")}
-                             className="flex-[2] py-5 bg-slate-950 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-                           >
-                             Signer & Déconnecter <ShieldCheck size={18} />
-                           </button>
-                        </div>
-                      </div>
-                   </div>
-                )}
               </div>
             </motion.div>
           </div>
@@ -1818,7 +2627,9 @@ const ReceiptModal = ({ isOpen, onClose, transaction }: { isOpen: boolean; onClo
 };
 
 // Report Error Modal
-const ReportModal = ({ isOpen, onClose, transaction, onConfirm }: { isOpen: boolean; onClose: () => void; transaction: any; onConfirm: (id: string) => void }) => {
+const ReportModal = ({ isOpen, onClose, transaction, onConfirm }: { isOpen: boolean; onClose: () => void; transaction: any; onConfirm: (id: string, reason: string) => void }) => {
+  const [reason, setReason] = useState("");
+  
   if (!isOpen || !transaction) return null;
 
   return (
@@ -1836,44 +2647,611 @@ const ReportModal = ({ isOpen, onClose, transaction, onConfirm }: { isOpen: bool
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-[440px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-10 flex flex-col items-center text-center gap-8"
+          className="relative w-full max-w-[480px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col gap-6"
         >
-          <button 
-            onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-100 transition-all"
-          >
-            <X size={20} />
-          </button>
-
-          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mt-4">
-            <AlertTriangle size={40} />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-[#0F172A] tracking-tight">Signaler une erreur</h3>
+                <p className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest">Transaction {transaction.id}</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-100 transition-all"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-3xl font-black text-[#0F172A] tracking-tight">Signaler une erreur</h3>
-            <p className="text-[15px] font-medium text-slate-500 leading-relaxed max-w-[300px] mx-auto">
-              Voulez-vous vraiment signaler cette transaction ? Elle sera soumise à l'annulation auprès du marchand.
-            </p>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white p-1">
+                   <img src={transaction.logo} alt="" className="w-full h-full object-contain" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight">{transaction.operator}</span>
+                   <span className="text-xs font-bold text-slate-900">{transaction.clientRef}</span>
+                </div>
+             </div>
+             <span className="text-sm font-black text-slate-900">{transaction.amount} F</span>
           </div>
 
-          <div className="w-full flex flex-col gap-3">
+          <div className="space-y-3">
+             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Raison du signalement</label>
+             <textarea 
+               value={reason}
+               onChange={(e) => setReason(e.target.value)}
+               placeholder="Expliquez pourquoi vous signalez cette transaction..."
+               className="w-full h-32 p-4 bg-slate-50 border-2 border-transparent focus:border-rose-500 rounded-2xl font-medium text-slate-900 outline-none transition-all resize-none placeholder:text-slate-300"
+             />
+          </div>
+
+          <div className="flex flex-col gap-3">
              <button 
                onClick={() => {
-                 onConfirm(transaction.id);
+                 onConfirm(transaction.id, reason);
+                 setReason("");
                }}
-               className="w-full py-5 bg-[#F84F4F] text-white rounded-3xl font-black text-[15px] hover:bg-[#E03E3E] transition-all shadow-xl shadow-red-500/20 active:scale-95"
+               disabled={!reason.trim()}
+               className="w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
              >
-               Signaler l'erreur
+               Confirmer le signalement
              </button>
              <button 
                onClick={onClose}
-               className="w-full py-5 bg-slate-50 text-slate-500 rounded-3xl font-black text-[15px] hover:bg-slate-100 transition-all active:scale-95"
+               className="w-full py-5 bg-slate-50 text-slate-500 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-all"
              >
-               Annuler
+               Retour
              </button>
           </div>
         </motion.div>
       </div>
     </AnimatePresence>
+  );
+};
+
+// --- Admin Super Tower Component ---
+const AdminView = ({ 
+  subTab, 
+  setSubTab, 
+  merchants, 
+  setMerchants, 
+  catalogue, 
+  updateCatalogue,
+  plans,
+  feedbacks
+}: any) => {
+  
+  const toggleMerchantStatus = (id: string, newStatus: string) => {
+    setMerchants((prev: any[]) => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIF': return 'bg-emerald-100 text-emerald-600';
+      case 'ATTENTE': return 'bg-amber-100 text-amber-600';
+      case 'SUSPENDU': return 'bg-rose-100 text-rose-600';
+      default: return 'bg-slate-100 text-slate-500';
+    }
+  };
+
+  return (
+    <div className="space-y-8 pb-20 overflow-visible">
+      {/* Admin Sub-Navigation */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+             <Shield className="text-[#234D96]" size={32} />
+             Tour de Contrôle Admin
+          </h2>
+          <p className="text-sm font-bold text-slate-400">Pilotage global de l'écosystème Fintrack</p>
+        </div>
+        
+        <div className="flex gap-2 p-1.5 bg-slate-100/80 rounded-2xl md:self-end">
+          {[
+            { id: "DASHBOARD", label: "Dashboard", icon: <LayoutDashboard size={16}/> },
+            { id: "MERCHANTS", label: "Marchands", icon: <Users size={16}/> },
+            { id: "NETWORKS", label: "Catalogue", icon: <Zap size={16}/> },
+            { id: "PLANS", label: "Offres", icon: <CreditCard size={16}/> },
+            { id: "SUPPORT", label: "Support", icon: <MessageSquare size={16}/> },
+          ].map((item) => (
+            <button 
+              key={item.id} 
+              onClick={() => setSubTab(item.id)}
+              className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${subTab === item.id ? 'bg-[#234D96] text-white shadow-lg shadow-indigo-900/20' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'}`}
+            >
+              {item.icon}
+              <span className="hidden lg:inline">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {subTab === "DASHBOARD" && (
+          <motion.div 
+            key="dashboard"
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-10"
+          >
+            {/* KPI Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { label: "Utilisateurs", value: "2 485", delta: "+120", color: "text-emerald-500", icon: <Users /> },
+                { label: "Marchands", value: "142", delta: "+4", color: "text-[#234D96]", icon: <Briefcase /> },
+                { label: "Agents Actifs", value: "856", delta: "Normal", color: "text-indigo-500", icon: <Activity /> },
+                { label: "Transactions 24h", value: "12k", delta: "+15%", color: "text-rose-500", icon: <Zap /> },
+              ].map((kpi, i) => (
+                <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 mb-6">{kpi.icon}</div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.label}</p>
+                  <div className="flex items-end justify-between">
+                    <span className="text-2xl font-black text-slate-900 leading-none">{kpi.value}</span>
+                    <span className={`text-[10px] font-black ${kpi.color}`}>{kpi.delta}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              {/* Critical Alerts */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black text-slate-950 tracking-tight">Alertes Prioritaires</h3>
+                  <span className="px-3 py-1 bg-rose-100 text-rose-500 text-[9px] font-black rounded-lg">3 ACTIONS REQUISES</span>
+                </div>
+                <div className="space-y-3">
+                   <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 flex items-center gap-5">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-amber-500 shadow-sm"><Users size={20}/></div>
+                      <div className="flex-1">
+                         <p className="text-xs font-black text-slate-900">3 Marchands en attente</p>
+                         <p className="text-[10px] font-bold text-slate-500">Dernier inscrit : Benin Express</p>
+                      </div>
+                      <button className="text-[10px] font-black text-amber-600 uppercase tracking-widest hover:underline">Gérer</button>
+                   </div>
+                   <div className="bg-rose-50 p-5 rounded-2xl border border-rose-100 flex items-center gap-5">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-rose-500 shadow-sm"><CreditCard size={20}/></div>
+                      <div className="flex-1">
+                         <p className="text-xs font-black text-slate-900">5 Abonnements expirés</p>
+                         <p className="text-[10px] font-bold text-slate-500">Action : Suspension automatique</p>
+                      </div>
+                      <button className="text-[10px] font-black text-rose-600 uppercase tracking-widest hover:underline">Vérifier</button>
+                   </div>
+                </div>
+              </div>
+
+              {/* Feedback Loop */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black text-slate-950 tracking-tight">Derniers Retours</h3>
+                  <button onClick={() => setSubTab("SUPPORT")} className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">Voir tout</button>
+                </div>
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm">
+                   {feedbacks.map((f: any) => (
+                      <div key={f.id} className="p-6 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                         <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">{f.category}</span>
+                            <span className="text-[9px] font-bold text-slate-400">{f.date}</span>
+                         </div>
+                         <p className="text-xs font-medium text-slate-600 leading-relaxed mb-3">"{f.message}"</p>
+                         <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-slate-900">{f.user} • {f.role}</span>
+                            <div className={`w-2 h-2 rounded-full ${f.status === 'NON_LU' ? 'bg-rose-400' : 'bg-emerald-400'}`} title={f.status} />
+                         </div>
+                      </div>
+                   ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {subTab === "MERCHANTS" && (
+          <motion.div 
+            key="merchants"
+            initial={{ opacity: 0, x: 20 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 flex-1 max-w-md shadow-sm">
+                   <Search size={20} className="text-slate-400" />
+                   <input type="text" placeholder="Rechercher par nom ou IFU..." className="bg-transparent border-none outline-none text-sm font-bold w-full" />
+                </div>
+                <div className="flex gap-4">
+                   <button className="px-6 py-4 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/10">+ Ajouter Marchand</button>
+                </div>
+             </div>
+
+             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+                <table className="w-full">
+                   <thead>
+                      <tr className="bg-slate-50/50 border-b border-slate-100">
+                         <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Entreprise / IFU</th>
+                         <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Statut</th>
+                         <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Plan</th>
+                         <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Réseau</th>
+                         <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+                      </tr>
+                   </thead>
+                   <tbody className="divide-y divide-slate-50">
+                      {merchants.map((m: any) => (
+                         <tr key={m.id} className="hover:bg-slate-50/30 transition-colors">
+                            <td className="px-8 py-6">
+                               <div className="flex flex-col">
+                                  <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{m.name}</span>
+                                  <span className="text-[10px] font-bold text-slate-400">IFU : {m.ifu}</span>
+                               </div>
+                            </td>
+                            <td className="px-8 py-6">
+                               <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(m.status)}`}>
+                                  {m.status}
+                               </span>
+                            </td>
+                            <td className="px-8 py-6">
+                               <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black text-slate-900 uppercase">{m.plan}</span>
+                                  <span className="text-[10px] font-bold text-slate-400">• Exp 30 jours</span>
+                               </div>
+                            </td>
+                            <td className="px-8 py-6">
+                               <div className="flex flex-col">
+                                  <span className="text-[10px] font-black text-slate-900 uppercase">{m.agencies} Agences</span>
+                                  <span className="text-[10px] font-bold text-slate-400">{m.agents} Agents total</span>
+                               </div>
+                            </td>
+                            <td className="px-8 py-6">
+                               <div className="flex items-center justify-center gap-2">
+                                  {m.status !== 'ACTIF' && (
+                                     <button onClick={() => toggleMerchantStatus(m.id, 'ACTIF')} className="w-10 h-10 flex items-center justify-center bg-emerald-50 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"><Check size={18}/></button>
+                                  )}
+                                  {m.status !== 'SUSPENDU' && (
+                                     <button onClick={() => toggleMerchantStatus(m.id, 'SUSPENDU')} className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><Lock size={18}/></button>
+                                  )}
+                                  <button className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-950 hover:text-white transition-all"><Settings2 size={18}/></button>
+                               </div>
+                            </td>
+                         </tr>
+                      ))}
+                   </tbody>
+                </table>
+             </div>
+          </motion.div>
+        )}
+
+        {subTab === "NETWORKS" && (
+           <motion.div 
+             key="networks"
+             initial={{ opacity: 0, scale: 0.95 }} 
+             animate={{ opacity: 1, scale: 1 }} 
+             exit={{ opacity: 0, scale: 0.95 }}
+           >
+              <AdminCatalogue catalogue={catalogue} updateCatalogue={updateCatalogue} />
+           </motion.div>
+        )}
+
+        {subTab === "PLANS" && (
+           <motion.div 
+             key="plans"
+             initial={{ opacity: 0, y: 20 }} 
+             animate={{ opacity: 1, y: 0 }} 
+             exit={{ opacity: 0, y: -20 }}
+             className="grid grid-cols-1 md:grid-cols-3 gap-8"
+           >
+              {plans.map((p: any) => (
+                 <div key={p.id} className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm flex flex-col items-center text-center group hover:shadow-xl transition-all duration-500">
+                    <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform duration-500 mb-8">
+                       <CreditCard size={32}/>
+                    </div>
+                    <span className="px-4 py-1.5 bg-slate-100 rounded-full text-[9px] font-black text-slate-500 uppercase tracking-widest mb-6">{p.status}</span>
+                    <h3 className="text-2xl font-black text-slate-950 mb-2 truncate px-4 w-full">{p.name}</h3>
+                    <p className="text-sm font-bold text-slate-400 mb-8">Jusqu'à {p.limit}</p>
+                    
+                    <div className="text-4xl font-black text-slate-900 mb-10">
+                       {p.price} <span className="text-sm font-bold text-slate-400">F / mo</span>
+                    </div>
+
+                    <button className="w-full py-5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 group-hover:bg-slate-950 group-hover:text-white group-hover:border-slate-950 transition-all duration-300">Modifier l'Offre</button>
+                 </div>
+              ))}
+           </motion.div>
+        )}
+
+        {subTab === "SUPPORT" && (
+           <motion.div 
+             key="support"
+             initial={{ opacity: 0 }} 
+             animate={{ opacity: 1 }} 
+             exit={{ opacity: 0 }}
+             className="space-y-8"
+           >
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                 <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between mb-2">
+                       <h3 className="text-xl font-black text-slate-900 tracking-tight">Gestion des Feedbacks</h3>
+                       <button className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">Marquer tout comme traité</button>
+                    </div>
+                    <div className="space-y-4">
+                       {feedbacks.map((f: any) => (
+                          <div key={f.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-6">
+                             <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                   <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-[#234D96]"><User size={24}/></div>
+                                   <div>
+                                      <h4 className="text-sm font-black text-slate-900">{f.user}</h4>
+                                      <p className="text-[10px] font-bold text-slate-400">{f.role} • {f.date}</p>
+                                   </div>
+                                </div>
+                                <span className="px-4 py-1.5 bg-slate-50 text-slate-400 rounded-lg text-[9px] font-black uppercase tracking-widest">{f.category}</span>
+                             </div>
+                             <p className="text-sm font-medium text-slate-600 leading-relaxed bg-slate-50/50 p-5 rounded-2xl">"{f.message}"</p>
+                             <div className="flex gap-4">
+                                <button className="flex-1 py-4 bg-[#234D96] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/10">Répondre</button>
+                                <button className="flex-1 py-4 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest">Muter</button>
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="space-y-8">
+                    <div className="bg-slate-950 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
+                       <Shield className="absolute -bottom-10 -right-10 text-white/5" size={160} />
+                       <div className="relative z-10">
+                          <h3 className="text-xl font-black mb-1">Logs d'Auteur</h3>
+                          <p className="text-xs font-bold text-white/40 mb-8">Dernières actions système</p>
+                          <div className="space-y-6">
+                             {[
+                               { action: "Catalogue mis à jour", time: "14:20", by: "Admin S." },
+                               { action: "Nouveau marchand créé", time: "11:05", by: "System" },
+                               { action: "Frais MTN modifiés", time: "09:12", by: "Admin J." },
+                             ].map((log, i) => (
+                                <div key={i} className="flex gap-4 border-l-2 border-white/10 pl-6 relative">
+                                   <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-[#234D96]" />
+                                   <div>
+                                      <p className="text-xs font-bold">{log.action}</p>
+                                      <p className="text-[10px] text-white/40">{log.time} • par {log.by}</p>
+                                   </div>
+                                </div>
+                             ))}
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Merchant Hub Component ---
+const MerchantHub = ({ catalogue, updateCatalogue }: { catalogue: any[]; updateCatalogue: any }) => {
+  const [editingService, setEditingService] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>("Dépôt");
+
+  const toggleService = (id: string) => {
+    updateCatalogue((prev: any[]) => prev.map(s => s.id === id ? { ...s, isActive: !s.isActive } : s));
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hub des Services</h2>
+        <p className="text-sm font-bold text-slate-400">Activez et configurez vos services pour vos agences</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {catalogue.map((service) => (
+          <div key={service.id} className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex items-start justify-between mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-3">
+                <img src={service.logo} alt="" className="w-full h-full object-contain" />
+              </div>
+              <button 
+                onClick={() => toggleService(service.id)}
+                className={`w-12 h-6 rounded-full relative transition-all duration-300 ${service.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${service.isActive ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-lg font-black text-slate-900 leading-tight mb-1">{service.name}</h3>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{service.category}</span>
+            </div>
+
+            <button 
+              onClick={() => setEditingService(service)}
+              className="w-full py-3 bg-[#234D96] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-900 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+            >
+              Configurer Commissions
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {editingService && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setEditingService(null)} />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-50 p-2 border border-slate-100">
+                    <img src={editingService.logo} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">{editingService.name}</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuration des paliers</p>
+                  </div>
+                </div>
+                <button onClick={() => setEditingService(null)} className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-100"><X size={20}/></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl">
+                  {["Dépôt", "Retrait", "Transfert"].map((t) => (
+                    <button key={t} onClick={() => setActiveTab(t)} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === t ? 'bg-white text-[#234D96] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>{t}</button>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <h4 className="text-xs font-black text-slate-950 uppercase tracking-widest">Paliers de commission</h4>
+                    <button 
+                      onClick={() => {
+                        const newTier = { id: Date.now().toString(), min: 0, max: "infinity", fee: 0, type: "fixed" };
+                        updateCatalogue((prev: any[]) => prev.map(s => s.id === editingService.id ? { 
+                          ...s, 
+                          commissions: { 
+                            ...s.commissions, 
+                            [activeTab]: [...(s.commissions[activeTab] || []), newTier] 
+                          } 
+                        } : s));
+                        // Update local editingService to trigger re-render
+                        setEditingService((prev: any) => ({
+                          ...prev,
+                          commissions: {
+                            ...prev.commissions,
+                            [activeTab]: [...(prev.commissions[activeTab] || []), newTier]
+                          }
+                        }));
+                      }}
+                      className="text-[10px] font-black text-[#234D96] uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-all"
+                    >
+                      + Ajouter une tranche
+                    </button>
+                  </div>
+
+                  {editingService.commissions[activeTab]?.length > 0 ? (
+                    <div className="space-y-3">
+                      {editingService.commissions[activeTab].map((tier: any, i: number) => (
+                        <div key={tier.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-right-4 duration-300" style={{ animationDelay: `${i * 100}ms` }}>
+                          <div className="flex-1 grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black text-slate-400 uppercase">Min (F)</label>
+                              <input type="text" value={tier.min} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black text-slate-400 uppercase">Max (F)</label>
+                              <input type="text" value={tier.max === "infinity" ? "∞" : tier.max} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold" />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1 w-24">
+                            <label className="text-[9px] font-black text-slate-400 uppercase">Frais ({tier.type === "fixed" ? "F" : "%"})</label>
+                            <input type="text" value={tier.fee} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-black text-indigo-600" />
+                          </div>
+                          <button 
+                            onClick={() => {
+                               updateCatalogue((prev: any[]) => prev.map(s => s.id === editingService.id ? { 
+                                 ...s, 
+                                 commissions: { 
+                                   ...s.commissions, 
+                                   [activeTab]: s.commissions[activeTab].filter((t: any) => t.id !== tier.id) 
+                                 } 
+                               } : s));
+                               setEditingService((prev: any) => ({
+                                 ...prev,
+                                 commissions: {
+                                   ...prev.commissions,
+                                   [activeTab]: prev.commissions[activeTab].filter((t: any) => t.id !== tier.id)
+                                 }
+                               }));
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-rose-400 hover:text-rose-600 transition-colors"
+                          >
+                            <X size={16}/>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 flex flex-col items-center justify-center text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-300 mb-4 shadow-sm"><Activity size={24}/></div>
+                      <p className="text-xs font-bold text-slate-400">Aucun palier configuré pour ce type</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex gap-4">
+                <button onClick={() => setEditingService(null)} className="flex-1 py-5 bg-white border border-slate-200 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-100 transition-all">Annuler</button>
+                <button className="flex-1 py-5 bg-[#234D96] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl shadow-indigo-900/10">Enregistrer les Tarifs</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Admin Catalogue Component ---
+const AdminCatalogue = ({ catalogue, updateCatalogue }: { catalogue: any[]; updateCatalogue: any }) => {
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Catalogue Global</h2>
+          <p className="text-sm font-bold text-slate-400">Bibliothèque centrale des services du pays</p>
+        </div>
+        <button className="px-8 py-4 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-3">
+          <Plus size={18}/> Nouveau Produit
+        </button>
+      </div>
+
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-2">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-slate-50/50">
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Produit</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Catégorie</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Maintenance</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {catalogue.map((product) => (
+              <tr key={product.id} className="hover:bg-slate-50/30 transition-colors">
+                <td className="px-8 py-5">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white border border-slate-100 rounded-xl p-2 shrink-0">
+                         <img src={product.logo} alt="" className="w-full h-full object-contain" />
+                      </div>
+                      <span className="text-sm font-black text-slate-900">{product.name}</span>
+                   </div>
+                </td>
+                <td className="px-8 py-5">
+                   <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase tracking-tight">{product.category}</span>
+                </td>
+                <td className="px-8 py-5">
+                   <div className="flex items-center gap-3">
+                      <button className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${product.isGlobalMaintenance ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-300'}`}>
+                         <Zap size={18} />
+                      </button>
+                      <span className="text-[10px] font-bold text-slate-400">{product.isGlobalMaintenance ? 'En maintenance' : 'Opérationnel'}</span>
+                   </div>
+                </td>
+                <td className="px-8 py-5">
+                   <div className="flex items-center justify-center gap-2">
+                      <button className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-950 hover:text-white transition-all"><Settings2 size={18}/></button>
+                      <button className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"><X size={18}/></button>
+                   </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
