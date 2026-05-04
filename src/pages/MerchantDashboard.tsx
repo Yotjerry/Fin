@@ -586,7 +586,7 @@ function DashboardView({
       {/* Row 3: Operational & Alerts */}
       <div className="grid grid-cols-12 gap-6">
         <DashboardCard className="col-span-12 lg:col-span-8" title="État des Stocks (Gaz & Divers)">
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto no-scrollbar">
             <table className="w-full">
               <thead>
                 <tr className="text-left">
@@ -1208,7 +1208,7 @@ function TransactionsView() {
 
       {/* Transactions Table */}
       <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-50">
@@ -1485,7 +1485,7 @@ function CaissesView({ agences }: { agences: any[] }) {
                 <h3 className="text-base font-black text-slate-900 tracking-tight">Historique des flux</h3>
              </div>
              
-             <div className="flex-1 overflow-x-auto relative">
+             <div className="flex-1 overflow-x-auto relative no-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-50 bg-slate-50/20">
@@ -1734,7 +1734,7 @@ function CloturesView() {
 
       {/* Table Section */}
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-50 uppercase tracking-widest">
@@ -2044,7 +2044,7 @@ function RapportsView() {
          <div className="p-8 border-b border-slate-50">
             <h3 className="text-base font-black text-slate-900 tracking-tight">Détail des Performances</h3>
          </div>
-         <div className="overflow-x-auto">
+         <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left border-collapse">
                <thead>
                   <tr className="border-b border-slate-50 uppercase tracking-widest">

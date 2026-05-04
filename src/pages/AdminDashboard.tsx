@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
@@ -15,8 +15,11 @@ import {
   MoreHorizontal,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   X,
+  Check,
   Calendar,
+  Clock,
   TrendingUp,
   AlertCircle,
   Globe,
@@ -36,6 +39,8 @@ import {
   Eye,
   Settings,
   Mail,
+  Archive,
+  Inbox,
   Building2,
   FileText,
   Trash2,
@@ -46,13 +51,16 @@ import {
   UserCircle,
   FileCheck,
   Fingerprint,
+  Phone,
   User,
   Edit3,
+  Download,
   DownloadCloud,
   BookOpen,
   Pause,
   Play,
-  RotateCcw
+  RotateCcw,
+  Headphones
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -70,7 +78,7 @@ import {
   Legend
 } from 'recharts';
 
-type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "Settings";
+type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "Settings" | "Audit";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("Overview");
@@ -91,16 +99,14 @@ export default function AdminDashboard() {
   const NavItem = ({ active, onClick, icon, label, badge }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string, badge?: string }) => (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-6 py-5 rounded-2xl transition-all duration-300 group ${
+      className={`w-full flex items-center gap-4 px-6 py-5 rounded-2xl transition-all duration-300 group ${
         active 
           ? 'bg-[#234D96] text-white shadow-xl shadow-indigo-900/20' 
           : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50 border border-transparent hover:border-slate-100 hover:shadow-sm'
       }`}
     >
-      <div className="flex items-center gap-4">
-        <span className={`${active ? 'text-white' : 'text-slate-400 group-hover:text-[#234D96]'} transition-colors mt-0.5`}>{icon}</span>
-        <span className="text-[13px] font-black tracking-widest">{label}</span>
-      </div>
+      <span className={`${active ? 'text-white' : 'text-slate-400 group-hover:text-[#234D96]'} transition-colors mt-0.5`}>{icon}</span>
+      <span className="text-[13px] font-black tracking-widest flex-1 text-left">{label}</span>
       {badge && (
         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
           active ? 'bg-white/20 text-white' : 'bg-rose-500 text-white'
@@ -166,8 +172,8 @@ export default function AdminDashboard() {
                 label="Paramètres" 
               />
               <NavItem 
-                active={false} 
-                onClick={() => {}} 
+                active={activeTab === "Audit"} 
+                onClick={() => setActiveTab("Audit")} 
                 icon={<ShieldCheck size={18} />} 
                 label="Journal d'Audit" 
               />
@@ -188,16 +194,7 @@ export default function AdminDashboard() {
         {/* TOP BAR - SLEEK */}
         <header className="h-24 bg-white/40 backdrop-blur-md border-b border-white/20 px-12 flex items-center justify-end shrink-0 z-40">
           <div className="flex items-center gap-8">
-            <div className="flex bg-slate-200/50 p-1 rounded-2xl border border-white/50">
-               <button className="px-6 py-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">Staging</button>
-            </div>
-
             <div className="flex items-center gap-4">
-              <button className="w-11 h-11 bg-white border border-slate-200/50 rounded-2xl flex items-center justify-center text-slate-400 relative hover:text-[#234D96] hover:border-[#234D96]/30 transition-all">
-                <Bell size={20} />
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
-              </button>
-              
               <div className="h-11 w-11 bg-[#234D96] rounded-2xl p-[2px] shadow-lg shadow-indigo-900/20">
                  <div className="w-full h-full bg-slate-900 rounded-[0.9rem] flex items-center justify-center text-white font-black text-xs">
                     JY
@@ -216,6 +213,7 @@ export default function AdminDashboard() {
 
             {activeTab === "Plans" && <PlansView key="plans" />}
             {activeTab === "Support" && <SupportView key="support" />}
+            {activeTab === "Audit" && <AuditView key="audit" />}
             {activeTab === "Settings" && <SettingsView key="settings" />}
           </AnimatePresence>
         </div>
@@ -299,12 +297,15 @@ function OverviewView() {
       exit={{ opacity: 0, scale: 0.98 }}
       className="space-y-8 pb-20"
     >
-      <div className="flex items-end justify-between">
-        <div className="space-y-4">
-          <p className="text-[10px] font-black text-[#234D96] tracking-[0.3em] font-sans">Système Centralisé</p>
-          <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Vision</span></h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <div className="w-1.5 h-12 bg-[#234D96] rounded-full" />
+          <div className="flex items-baseline gap-4">
+            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Vision</span></h2>
+            <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] font-sans">SYSTÈME CENTRALISÉ</p>
+          </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
            <button 
              onClick={handleRefresh}
              className={`w-16 h-16 bg-white border border-slate-200/60 rounded-2xl flex items-center justify-center text-slate-400 hover:text-[#234D96] hover:border-[#234D96]/30 transition-all ${isRefreshing ? 'animate-spin' : ''}`}
@@ -540,19 +541,17 @@ function KpiCard({ label, value, growth, color, isCurrency }: { label: string, v
   const isPositive = growth.startsWith('+');
 
   return (
-    <div className="bg-white rounded-[2rem] p-8 border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 group">
-       <div className="space-y-4">
-          <h4 className="text-[10px] font-black text-slate-400 tracking-widest">{label}</h4>
-          <div className="flex items-baseline justify-between">
-             <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-950 tracking-tighter leading-none">{value}</span>
-                {isCurrency && <span className="text-[10px] font-black text-slate-400">FCFA</span>}
-             </div>
-             <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                {isPositive ? <TrendingUp size={10} strokeWidth={3} /> : <TrendingDown size={10} strokeWidth={3} />}
-                {growth}
-             </div>
+    <div className="bg-white rounded-[2rem] p-8 border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 group flex items-center justify-between">
+       <div className="flex flex-col gap-1">
+          <h4 className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{label}</h4>
+          <div className="flex items-baseline gap-2">
+             <span className="text-3xl font-black text-slate-950 tracking-tighter leading-none">{value}</span>
+             {isCurrency && <span className="text-[10px] font-black text-slate-400">FCFA</span>}
           </div>
+       </div>
+       <div className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+          {isPositive ? <TrendingUp size={10} strokeWidth={3} /> : <TrendingDown size={10} strokeWidth={3} />}
+          {growth}
        </div>
     </div>
   );
@@ -841,9 +840,14 @@ function MerchantsView() {
       </AnimatePresence>
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col gap-2">
-         <h2 className="text-4xl font-black tracking-tighter text-slate-950">Gestion des marchands</h2>
-         <p className="text-slate-400 font-medium">Activez les comptes marchands et renouvelez leurs abonnements depuis un seul écran.</p>
+      <div className="flex items-center justify-between">
+         <div className="flex items-center gap-6">
+            <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+            <div className="flex items-baseline gap-4">
+               <h2 className="text-4xl font-black tracking-tighter text-slate-950">Gestion des marchands</h2>
+               <p className="text-slate-400 font-medium text-xs">Activez les comptes marchands et renouvelez leurs abonnements.</p>
+            </div>
+         </div>
       </div>
 
       {/* SUMMARY STATS BAR */}
@@ -884,7 +888,7 @@ function MerchantsView() {
             </div>
          </div>
 
-         <div className="overflow-x-auto">
+         <div className="overflow-x-auto no-scrollbar">
             <table className="w-full">
                <thead>
                   <tr className="bg-white border-b border-slate-100">
@@ -989,7 +993,7 @@ function MerchantsView() {
                            </div>
                         </td>
                         <td className="px-10 py-8 text-right">
-                           <div className="flex items-center justify-end gap-3">
+                           <div className="flex items-center justify-end gap-4">
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1004,7 +1008,7 @@ function MerchantsView() {
                                   e.stopPropagation();
                                   setShowDetailsModal(merchant);
                                 }}
-                                className="px-5 py-2.5 bg-white border border-indigo-100 text-[#3A4DB7] rounded-xl text-[10px] font-black tracking-widest hover:bg-indigo-50 transition-all"
+                                className="px-5 py-2.5 bg-white border border-slate-200 text-[#3A4DB7] rounded-xl text-[10px] font-black tracking-widest hover:bg-slate-50 transition-all"
                               >
                                 Détails
                               </button>
@@ -1019,9 +1023,9 @@ function MerchantsView() {
          {/* PAGINATION */}
          <div className="p-8 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-black text-slate-400 tracking-widest">Affichage 1 - {filteredMerchants.length} sur {merchants.length} marchands</p>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-4">
                <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all">Précédent</button>
-               <button className="px-4 py-2 bg-slate-950 text-white rounded-xl text-[10px] font-black uppercase transition-all">1</button>
+               <button className="px-4 py-2 bg-slate-950 text-white rounded-xl text-[10px] font-black transition-all">1</button>
                <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all">Suivant</button>
             </div>
          </div>
@@ -1033,519 +1037,184 @@ function MerchantsView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[400] bg-slate-950/40 backdrop-blur-md flex items-center justify-end"
+            className="fixed inset-0 z-[400] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setShowDetailsModal(null)}
           >
             <motion.div 
-              initial={{ x: '100%', opacity: 0.5 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '100%', opacity: 0.5 }}
-              transition={{ type: 'spring', damping: 35, stiffness: 250 }}
-              className="bg-white w-full max-w-4xl h-full shadow-[-40px_0_100px_rgba(0,0,0,0.1)] flex flex-col relative overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-200"
               onClick={e => e.stopPropagation()}
             >
-              {/* Header Context Bar */}
-              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-[#3A4DB7] to-transparent opacity-20" />
-
-              {/* Dynamic Header */}
-              <div className="p-12 pb-0 shrink-0 relative overflow-hidden">
-                {/* Navigation & Actions */}
-                <div className="flex items-center justify-between mb-12 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => navigateMerchant('prev')}
-                      className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#3A4DB7] hover:text-white transition-all disabled:opacity-20 shadow-sm"
-                      disabled={filteredMerchants.findIndex(m => m.id === showDetailsModal.id) === 0}
-                    >
-                      <ChevronLeft size={22} />
-                    </button>
-                    <button 
-                      onClick={() => navigateMerchant('next')}
-                      className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#3A4DB7] hover:text-white transition-all disabled:opacity-20 shadow-sm"
-                      disabled={filteredMerchants.findIndex(m => m.id === showDetailsModal.id) === filteredMerchants.length - 1}
-                    >
-                      <ChevronRight size={22} />
-                    </button>
-                    <div className="h-8 w-px bg-slate-100 mx-2" />
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-                      Marchand {filteredMerchants.findIndex(m => m.id === showDetailsModal.id) + 1} / {filteredMerchants.length}
-                    </span>
-                  </div>
-                  
-                  <button 
-                    onClick={() => setShowDetailsModal(null)} 
-                    className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-rose-500 border border-slate-100 hover:border-rose-500 shadow-sm transition-all"
-                  >
-                    <X size={22} />
-                  </button>
-                </div>
-
-                {/* Profile Identity */}
-                <div className="flex items-start gap-10 relative z-10">
-                   <motion.div 
-                     initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                     transition={{ type: 'spring', damping: 20 }}
-                     className="w-40 h-40 bg-slate-950 text-white rounded-[3.5rem] flex items-center justify-center font-black text-6xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border-8 border-white group relative"
-                   >
-                    {showDetailsModal.name.charAt(0)}
-                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg">
-                      <CheckCircle2 size={16} className="text-white" />
+              {/* HEADER: IDENTITY & STATUS */}
+              <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                 <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg">
+                       {showDetailsModal.name.charAt(0)}
                     </div>
-                   </motion.div>
-                   
-                   <div className="flex-1 pt-4">
-                    <motion.div 
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="flex flex-wrap items-center gap-3 mb-6"
-                    >
-                      <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-2.5">
-                        <div className={`w-2.5 h-2.5 rounded-full ${showDetailsModal.isActive ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-rose-500'} animate-pulse`} />
-                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em]">
-                          {showDetailsModal.isActive ? 'En Ligne' : 'Hors Ligne'}
-                        </span>
-                      </div>
-                      <div className={`px-4 py-2 rounded-2xl flex items-center gap-2.5 ${
-                        showDetailsModal.kycStatus === 'Verified' 
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                          : 'bg-amber-50 text-amber-600 border border-amber-100'
-                      }`}>
-                        <ShieldCheck size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{showDetailsModal.kycStatus === 'Verified' ? 'Identité Validée' : 'Vérification en cours'}</span>
-                      </div>
-                      <div className="px-4 py-2 bg-indigo-50 text-[#3A4DB7] border border-indigo-100 rounded-2xl">
-                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">Réseau {showDetailsModal.plan}</span>
-                      </div>
-                    </motion.div>
-                    
-                    <motion.h3 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="text-7xl font-black text-slate-950 tracking-tighter leading-[0.85] mb-6"
-                    >
-                      {showDetailsModal.name}
-                    </motion.h3>
-                    
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="flex items-center gap-8"
-                    >
-                       <div className="flex items-center gap-3 text-slate-400">
-                          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[#3A4DB7]">
-                            <User size={16} />
-                          </div>
-                          <span className="text-sm font-bold text-slate-900">{showDetailsModal.manager}</span>
+                    <div>
+                       <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{showDetailsModal.name}</h3>
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                            showDetailsModal.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                          }`}>
+                            {showDetailsModal.isActive ? 'Opérationnel' : 'Compte Suspendu'}
+                          </span>
                        </div>
-                       <div className="flex items-center gap-3 text-slate-400">
-                          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[#3A4DB7]">
-                            <Globe size={16} />
-                          </div>
-                          <span className="text-sm font-bold text-slate-900">Abidjan, CIV</span>
+                       <div className="flex items-center gap-4 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="flex items-center gap-1.5"><Fingerprint size={12} /> ID: {showDetailsModal.id}</span>
+                          <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                          <span className="flex items-center gap-1.5"><Calendar size={12} /> Inscrit le {showDetailsModal.joinedAt}</span>
                        </div>
-                    </motion.div>
-                   </div>
-                </div>
+                    </div>
+                 </div>
+                 <button 
+                   onClick={() => setShowDetailsModal(null)} 
+                   className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-900 transition-colors shadow-sm"
+                 >
+                   <X size={20} />
+                 </button>
+              </div>
 
-                {/* Tabs Bar */}
-                <div className="flex gap-12 mt-16 border-b border-slate-100 px-2 lg:px-4">
-                  {[
-                    { id: 'stats', label: 'Profil & Stats', icon: <UserCircle size={20} /> },
-                    { id: 'kyc', label: 'Documents', icon: <FileCheck size={20} />, badge: showDetailsModal.kycStatus === 'Verified' ? null : '!' },
-                    { id: 'billing', label: 'Finances', icon: <CreditCard size={20} /> }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveDetailTab(tab.id as any)}
-                      className={`flex items-center gap-3 py-6 text-[11px] font-black uppercase tracking-[0.25em] transition-all relative group ${
-                        activeDetailTab === tab.id ? 'text-[#3A4DB7]' : 'text-slate-400 hover:text-slate-950'
+              {/* BODY: ALL INFO IN ONE VIEW */}
+              <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-12 gap-0">
+                 
+                 {/* COLUMN 1: MERCHANT INFOS */}
+                 <div className="col-span-4 p-8 border-r border-slate-100 space-y-8">
+                    <section>
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Détails Structure</h5>
+                       <div className="space-y-4">
+                          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                             <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Gérant / Responsable</p>
+                             <p className="text-sm font-black text-slate-900">{showDetailsModal.manager}</p>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                             <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Email Professionnel</p>
+                             <p className="text-sm font-black text-slate-900">{showDetailsModal.email}</p>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                             <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Téléphone de Support</p>
+                             <p className="text-sm font-black text-slate-900">{showDetailsModal.phone}</p>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                             <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Offre de Service</p>
+                             <p className="text-sm font-black text-[#3A4DB7] uppercase">{showDetailsModal.plan}</p>
+                          </div>
+                       </div>
+                    </section>
+
+                    <section className="pt-4">
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Données d'Exploitation</h5>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center p-4 border border-slate-100 rounded-2xl bg-white">
+                             <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Agences</p>
+                             <p className="text-lg font-black text-slate-900">{showDetailsModal.agencies}</p>
+                          </div>
+                          <div className="text-center p-4 border border-slate-100 rounded-2xl bg-white">
+                             <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Agents</p>
+                             <p className="text-lg font-black text-slate-900">{showDetailsModal.agents}</p>
+                          </div>
+                       </div>
+                    </section>
+                 </div>
+
+                 {/* COLUMN 2: KYC DOCUMENTS & COMPLIANCE */}
+                 <div className="col-span-8 p-8 bg-slate-50/30 overflow-y-auto no-scrollbar space-y-8">
+                    <div className="flex items-center justify-between mb-2">
+                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dossier de Conformité (KYC)</h5>
+                       <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                          showDetailsModal.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                       }`}>
+                          {showDetailsModal.kycStatus === 'Verified' ? 'Dossier Validé' : 'En attente de revue'}
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                       {showDetailsModal.kycDocs.map((doc, idx) => (
+                          <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:border-[#3A4DB7] transition-all cursor-pointer">
+                             <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-[#3A4DB7] transition-all">
+                                   <FileText size={20} />
+                                </div>
+                                <div className="overflow-hidden">
+                                   <p className="text-[9px] font-black text-slate-400 uppercase mb-0.5">{doc.type}</p>
+                                   <p className="text-[11px] font-black text-slate-950 truncate max-w-[120px]">{doc.name}</p>
+                                </div>
+                             </div>
+                             <button className="p-2.5 rounded-lg bg-slate-50 text-slate-400 group-hover:text-[#3A4DB7] border border-slate-100 hover:bg-white transition-all">
+                                <Eye size={16} />
+                             </button>
+                          </div>
+                       ))}
+                    </div>
+
+                    <div className="mt-8 p-6 bg-white border border-slate-200 rounded-3xl space-y-6">
+                       <h5 className="text-[10px] font-black text-slate-950 uppercase tracking-widest pb-3 border-b border-slate-50">Analyse de l'auditeur</h5>
+                       <div className="grid grid-cols-2 gap-8">
+                          <div className="space-y-4">
+                             <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">Identité Vérifiée</span>
+                                <CheckCircle2 size={14} className="text-emerald-500" />
+                             </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">RCCM / Registre</span>
+                                <CheckCircle2 size={14} className="text-emerald-500" />
+                             </div>
+                             <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">Localisation Siège</span>
+                                <CheckCircle2 size={14} className="text-emerald-500" />
+                             </div>
+                          </div>
+                          <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                             <p className="text-[9px] font-bold text-indigo-600 uppercase mb-2">Note de sécurité</p>
+                             <div className="flex items-center gap-1 mb-2">
+                                {[1,2,3,4,5].map(s => <div key={s} className={`w-3 h-1.5 rounded-full ${s <= 4 ? 'bg-[#3A4DB7]' : 'bg-slate-200'}`} />)}
+                             </div>
+                             <p className="text-[10px] font-bold text-slate-500 italic">Profil fiable, aucune alerte de fraude détectée sur les réseaux Wave & Orange.</p>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              {/* FOOTER: FINAL ACTIONS */}
+              <div className="p-6 border-t border-slate-100 bg-white flex items-center justify-between">
+                 <div className="flex gap-3">
+                    <button 
+                      onClick={() => toggleStatus(showDetailsModal.id)}
+                      className={`h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 ${
+                        showDetailsModal.isActive 
+                          ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white' 
+                          : 'bg-emerald-500 text-white'
                       }`}
                     >
-                      <span className={`transition-transform duration-300 ${activeDetailTab === tab.id ? 'scale-110' : 'group-hover:scale-110'}`}>
-                        {tab.icon}
-                      </span>
-                      {tab.label}
-                      {tab.badge && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-lg shadow-rose-500/30">
-                          {tab.badge}
-                        </span>
-                      )}
-                      {activeDetailTab === tab.id && (
-                        <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 inset-x-0 h-[3px] bg-[#3A4DB7] rounded-full shadow-[0_-2px_10px_rgba(58,77,183,0.3)]" />
-                      )}
+                      {showDetailsModal.isActive ? <Lock size={14} /> : <Unlock size={14} />}
+                      {showDetailsModal.isActive ? 'Suspendre Compte' : 'Réactiver Compte'}
                     </button>
-                  ))}
-                </div>
+                    <button className="h-12 px-6 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2">
+                       <MessageSquare size={14} /> Contacter Support
+                    </button>
+                 </div>
 
-                {/* Ambient Background Decoration */}
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-50 rounded-full blur-[100px] opacity-50 -z-10" />
-              </div>
-
-              {/* Scrollable Viewport */}
-              <div className="flex-1 overflow-y-auto p-12 no-scrollbar bg-[#F8FAFC]">
-                <AnimatePresence mode="wait">
-                  {activeDetailTab === 'stats' && (
-                    <motion.div
-                      key="stats"
-                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      className="space-y-10"
-                    >
-                      {/* STATS HERO GRID */}
-                      <div className="grid grid-cols-12 gap-6">
-                        {/* MAIN VOLUME CARD */}
-                        <div className="col-span-8 p-10 bg-white rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-                           <div className="relative z-10">
-                              <div className="flex items-center gap-4 mb-10">
-                                 <div className="w-14 h-14 bg-indigo-50 text-[#3A4DB7] rounded-2xl flex items-center justify-center">
-                                    <TrendingUp size={28} />
-                                 </div>
-                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-1">Activité Réseau (30j)</p>
-                                    <h5 className="text-5xl font-black text-slate-950 tracking-tighter">{showDetailsModal.monthlyVolume} F</h5>
-                                 </div>
-                              </div>
-                              
-                              <div className="space-y-4">
-                                 <div className="flex items-center justify-between text-[10px] font-black tracking-widest text-slate-400">
-                                    <span>Taux de conversion</span>
-                                    <span>94.2%</span>
-                                 </div>
-                                 <div className="h-2.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                                    <motion.div 
-                                      initial={{ width: 0 }}
-                                      animate={{ width: '94.2%' }}
-                                      transition={{ duration: 1.5, ease: "circOut" }}
-                                      className="h-full bg-gradient-to-r from-[#3A4DB7] to-indigo-400 rounded-full" 
-                                    />
-                                 </div>
-                              </div>
-
-                              <div className="mt-10 flex gap-8">
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                    <span className="text-[11px] font-bold text-slate-600">Succès: 2.1k</span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                                    <span className="text-[11px] font-bold text-slate-600">Échecs: 12</span>
-                                 </div>
-                              </div>
-                           </div>
-                           <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-indigo-50/50 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-700" />
-                        </div>
-
-                        {/* BALANCE PILL */}
-                        <div className="col-span-4 p-10 bg-slate-950 rounded-[3.5rem] shadow-2xl flex flex-col justify-between text-white relative overflow-hidden">
-                           <div className="relative z-10">
-                              <p className="text-[10px] font-black text-indigo-300 tracking-[0.2em] mb-4">Solde de Service</p>
-                              <h5 className="text-4xl font-black tracking-tighter mb-2">428 500 F</h5>
-                              <p className="text-[10px] font-bold text-slate-400 italic">Dernière mise à jour: 14:02</p>
-                           </div>
-                           <div className="relative z-10 mt-12">
-                              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-4">
-                                 <div className="h-full w-2/3 bg-white rounded-full" />
-                              </div>
-                              <p className="text-[10px] font-black uppercase text-white/40 italic">75% du plafond utilisé</p>
-                           </div>
-                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600 rounded-full blur-[60px] opacity-20 -mr-16 -mt-16" />
-                        </div>
-                      </div>
-
-                      {/* NETWORK DISTRIBUTION */}
-                      <div className="grid grid-cols-12 gap-6">
-                        <div className="col-span-12 p-8 bg-white rounded-[3.5rem] border border-slate-100 shadow-sm flex items-center justify-between">
-                           <div className="flex items-center gap-12 pl-4">
-                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Points de Vente</span>
-                                 <span className="text-3xl font-black text-slate-950 tracking-tighter">{showDetailsModal.agencies}</span>
-                              </div>
-                              <div className="w-px h-10 bg-slate-100" />
-                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Agents Terrain Actifs</span>
-                                 <span className="text-3xl font-black text-[#3A4DB7] tracking-tighter">{showDetailsModal.agents}</span>
-                              </div>
-                              <div className="w-px h-10 bg-slate-100" />
-                              <div className="flex flex-col">
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Capacité Transactionnelle</span>
-                                 <span className="text-3xl font-black text-emerald-500 tracking-tighter uppercase">Illimité</span>
-                              </div>
-                           </div>
-                           <button className="px-8 py-4 bg-slate-50 text-slate-900 border border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-950 hover:text-white transition-all shadow-sm group flex items-center gap-3">
-                              Fiche Réseau <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                           </button>
-                        </div>
-                      </div>
-
-                      {/* ADMINISTRATIVE RECORD */}
-                      <div className="bg-white rounded-[4rem] border border-slate-100 shadow-sm p-14 relative group">
-                        <div className="flex items-center justify-between mb-12">
-                           <div className="flex items-center gap-4">
-                              <div className="w-3 h-8 bg-[#3A4DB7] rounded-full" />
-                              <h4 className="text-3xl font-black text-slate-950 tracking-tight">Registre d'identité</h4>
-                           </div>
-                           <button className="flex items-center gap-3 px-8 py-4 bg-[#3A4DB7] text-white rounded-2xl text-[10px] font-black tracking-[0.1em] hover:shadow-2xl hover:bg-slate-900 transition-all">
-                              <Edit3 size={16} /> Édition Administrative
-                           </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-x-20 gap-y-12">
-                           <DetailItem label="Directeur de Structure" value={showDetailsModal.manager} />
-                           <DetailItem label="Canal de communication" value={showDetailsModal.email} />
-                           <DetailItem label="Ligne Téléphonique" value={showDetailsModal.phone} />
-                           <DetailItem label="Immatriculation (RCCM)" value={showDetailsModal.id.replace('M-', 'RCCM-CIV-ABJ-')} />
-                           <DetailItem label="Localisation Siège" value="Cocody, Cité des Arts, Abidjan" />
-                           <DetailItem label="Dernière Maintenance" value="Aujourd'hui à 09:44" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {activeDetailTab === 'kyc' && (
-                    <motion.div
-                      key="kyc"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      className="space-y-10"
-                    >
-                      {/* AUDIT TIMELINE */}
-                      <div className="bg-white rounded-[3.5rem] border border-slate-100 p-10 flex items-center justify-between shadow-sm">
-                        {[
-                          { step: 'Dépôt', desc: 'Dossier Reçu', status: 'done' },
-                          { step: 'Analyse', desc: 'Vérification IA', status: 'done' },
-                          { step: 'Conformité', desc: 'Validation Humaine', status: showDetailsModal.kycStatus === 'Verified' ? 'done' : 'active' },
-                          { step: 'Activation', desc: 'Accès Réseau', status: showDetailsModal.kycStatus === 'Verified' ? 'done' : 'pending' }
-                        ].map((s, i, arr) => (
-                          <React.Fragment key={i}>
-                            <div className="flex flex-col items-center text-center px-4 relative z-10">
-                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all ${
-                                s.status === 'done' ? 'bg-[#3A4DB7] text-white shadow-lg shadow-indigo-500/20' : 
-                                s.status === 'active' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 scale-110' : 
-                                'bg-slate-100 text-slate-400'
-                              }`}>
-                                {s.status === 'done' ? <CheckCircle2 size={20} /> : <div className="text-[10px] font-black">{i + 1}</div>}
-                              </div>
-                              <p className="text-[10px] font-black text-slate-900 tracking-widest">{s.step}</p>
-                              <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase italic">{s.desc}</p>
-                            </div>
-                            {i < arr.length - 1 && (
-                              <div className="flex-1 h-px bg-slate-100 relative top-[-10px]">
-                                <motion.div 
-                                  initial={{ width: 0 }}
-                                  animate={{ width: s.status === 'done' ? '100%' : '0%' }}
-                                  className="h-full bg-[#3A4DB7]" 
-                                />
-                              </div>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </div>
-
-                      {/* DOCUMENT INTERFACE */}
-                      <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center justify-between mb-12">
-                           <div>
-                              <h4 className="text-2xl font-black text-slate-950 tracking-tight">Audit Documentaire</h4>
-                              <p className="text-sm font-bold text-slate-400 mt-1">Cliquez sur un document pour l'inspecter en plein écran</p>
-                           </div>
-                           <div className="flex items-center gap-2 px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl">
-                              <FileText size={16} className="text-[#3A4DB7]" />
-                              <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                                 {showDetailsModal.kycDocs.length} Pièces à conviction
-                              </span>
-                           </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-8">
-                           {showDetailsModal.kycDocs.map((doc, i) => (
-                              <motion.div 
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                onClick={() => setActiveKycDoc(doc.name)}
-                                className="group relative p-8 bg-slate-50/50 rounded-[3rem] border border-slate-100 hover:border-[#3A4DB7] hover:bg-white transition-all cursor-pointer overflow-hidden"
-                              >
-                                 <div className="flex items-start justify-between relative z-10">
-                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-[#3A4DB7] group-hover:scale-110 transition-all border border-slate-50 shadow-sm">
-                                       <FileText size={28} />
-                                    </div>
-                                    <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${
-                                      showDetailsModal.kycStatus === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
-                                    }`}>
-                                       {showDetailsModal.kycStatus === 'Verified' ? 'Validé' : 'En attente'}
-                                    </div>
-                                 </div>
-                                 
-                                 <div className="mt-8 relative z-10">
-                                    <span className="text-[9px] font-black text-[#3A4DB7] tracking-[0.2em] mb-2 block">{doc.type}</span>
-                                    <p className="font-black text-xl text-slate-950 tracking-tight group-hover:text-[#3A4DB7] transition-colors">{doc.name}</p>
-                                 </div>
-
-                                 <div className="mt-6 flex items-center gap-3 relative z-10 pt-6 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                       <Eye size={14} /> Aperçu rapide
-                                    </span>
-                                 </div>
-                                 
-                                 {/* Hover visual */}
-                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-[40px] opacity-0 group-hover:opacity-50 -mr-16 -mt-16 transition-opacity" />
-                              </motion.div>
-                           ))}
-                        </div>
-                      </div>
-
-                      {/* FLOATING ACTION GATEWAY (Only if not verified) */}
-                      {showDetailsModal.kycStatus !== 'Verified' && (
-                        <motion.div 
-                          initial={{ y: 100, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          className="bg-slate-950 rounded-[3rem] p-10 flex items-center justify-between shadow-[0_40px_80px_-15px_rgba(0,0,0,0.5)] border border-white/10 sticky bottom-4 z-[50]"
-                        >
-                           <div className="flex items-center gap-6">
-                              <div className="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center animate-pulse">
-                                 <ShieldCheck size={28} />
-                              </div>
-                              <div>
-                                 <h5 className="text-xl font-black text-white tracking-tight">Décision Administrative</h5>
-                                 <p className="text-sm font-bold text-slate-400 mt-0.5 tracking-tight">Le compte sera activé instantanément après l'approbation.</p>
-                              </div>
-                           </div>
-                           <div className="flex gap-4">
-                              <button 
-                                onClick={() => handleKycAction(showDetailsModal.id, 'reject')}
-                                className="px-10 py-5 bg-white/5 border border-white/10 text-slate-400 rounded-3xl font-black text-[11px] uppercase tracking-widest hover:bg-rose-500/10 hover:border-rose-500 hover:text-rose-500 transition-all"
-                              >
-                                 Notifications Rejet
-                              </button>
-                              <button 
-                                onClick={() => handleKycAction(showDetailsModal.id, 'approve')}
-                                className="px-12 py-5 bg-[#3A4DB7] text-white rounded-3xl font-black text-[11px] tracking-widest hover:bg-white hover:text-[#3A4DB7] transition-all shadow-xl shadow-indigo-500/20 flex items-center gap-3"
-                              >
-                                 <CheckCircle2 size={18} /> Approuver l'inscription
-                              </button>
-                           </div>
-                         </motion.div>
-                      )}
-                    </motion.div>
-                  )}
-
-                  {activeDetailTab === 'billing' && (
-                    <motion.div
-                      key="billing"
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
-                      className="space-y-12"
-                    >
-                      {/* SUBSCRIPTION CENTER */}
-                      <div className="p-14 bg-slate-950 rounded-[4.5rem] text-white relative overflow-hidden shadow-[0_48px_96px_-24px_rgba(0,0,0,0.3)] border border-white/5 group">
-                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-16 px-2">
-                               <div className="flex items-center gap-6">
-                                  <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center backdrop-blur-2xl border border-white/10 shadow-2xl">
-                                     <Zap size={36} className="text-indigo-400" />
-                                  </div>
-                                  <div>
-                                     <h4 className="text-5xl font-black tracking-tighter leading-none mb-2">Abonnement {showDetailsModal.plan}</h4>
-                                     <p className="text-slate-400 font-bold text-base tracking-tight italic opacity-60">Status de facturation : Actif & Conforme</p>
-                                  </div>
-                               </div>
-                               <div className="text-right">
-                                  <div className="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-500/30 mb-3 inline-block">Prochain Débit</div>
-                                  <p className="text-3xl font-black tracking-tight">{showDetailsModal.expiresAt}</p>
-                               </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-12 py-12 border-y border-white/5 mb-14 bg-white/[0.02] rounded-[3rem] px-10">
-                               <div className="space-y-2">
-                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Passerelle Dominante</p>
-                                  <div className="flex items-center gap-3">
-                                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <CreditCard size={14} className="text-indigo-300" />
-                                     </div>
-                                     <p className="font-black text-indigo-100 text-lg">Wave Money</p>
-                                  </div>
-                               </div>
-                               <div className="space-y-2">
-                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Cumul de commissionnement</p>
-                                  <p className="font-black text-indigo-100 text-lg uppercase tracking-tight">Standard (1.5%)</p>
-                               </div>
-                               <div className="space-y-2">
-                                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest opacity-40">Engagement</p>
-                                  <p className="font-black text-emerald-400 text-lg uppercase tracking-tight">Post-payé mensuel</p>
-                               </div>
-                            </div>
-
-                            <div className="flex gap-6">
-                               <button 
-                                 onClick={() => {
-                                   setShowPlanModal(showDetailsModal);
-                                   setShowDetailsModal(null);
-                                 }}
-                                 className="px-12 py-6 bg-white text-slate-950 rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:bg-indigo-100 transition-all shadow-xl hover:shadow-indigo-500/20 active:scale-95"
-                               >
-                                  Optimiser le Forfait
-                               </button>
-                               <button className="px-10 py-6 bg-white/5 border border-white/10 rounded-[2.5rem] font-black text-[13px] uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-3">
-                                  <DownloadCloud size={18} className="opacity-40" /> Historique Factures
-                               </button>
-                            </div>
-                         </div>
-                         
-                         {/* Elite Accents */}
-                         <div className="absolute top-0 right-0 w-[50rem] h-[50rem] bg-indigo-600 rounded-full blur-[180px] opacity-20 -mr-60 -mt-60 group-hover:opacity-40 transition-opacity duration-1000" />
-                         <div className="absolute bottom-[-10%] w-full h-1/2 bg-gradient-to-t from-indigo-950/60 to-transparent pointer-events-none" />
-                      </div>
-
-                      {/* STATEMENT LEDGER */}
-                      <div className="bg-white rounded-[4rem] border border-slate-100 shadow-sm overflow-hidden p-12">
-                         <div className="flex items-center justify-between mb-12 pl-4">
-                            <div className="flex items-center gap-4">
-                               <div className="w-2.5 h-10 bg-[#3A4DB7] rounded-full" />
-                               <h4 className="text-3xl font-black text-slate-950 tracking-tight">Registre des Règlements</h4>
-                            </div>
-                            <div className="flex items-center gap-2 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                               Total : 24 Écritures
-                            </div>
-                         </div>
-                         <div className="space-y-4">
-                            <BillingItem date="24 Avril 2026" amount="29 900 F" refId="TX-REC-88219" mode="Master Gateway" />
-                            <BillingItem date="24 Mars 2026" amount="29 900 F" refId="TX-REC-77402" mode="Secondary Pipe" />
-                            <BillingItem date="24 Février 2026" amount="09 900 F" refId="TX-REC-66190" mode="Master Gateway" />
-                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* STICKY FOOTER ACTIONS */}
-              <div className="p-12 pt-8 border-t border-slate-100 bg-white flex gap-6 mt-auto z-20">
-                <button 
-                  onClick={() => toggleStatus(showDetailsModal.id)}
-                  className={`flex-[1.5] py-6 px-8 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] shadow-2xl transition-all hover:scale-[1.03] flex items-center justify-center gap-4 ${
-                    showDetailsModal.isActive 
-                      ? 'bg-white text-rose-500 border-2 border-rose-100 shadow-rose-500/5' 
-                      : 'bg-emerald-500 text-white shadow-emerald-500/20'
-                  }`}
-                >
-                  {showDetailsModal.isActive ? <Lock size={20} /> : <Unlock size={20} />}
-                  {showDetailsModal.isActive ? 'Suspendre' : 'Réactiver l\'accès'}
-                </button>
-                
-                <button 
-                  className="flex-1 py-6 px-8 bg-slate-950 text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.25em] shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3 active:scale-95"
-                >
-                  <MessageSquare size={18} className="text-white/40" />
-                  Envoyer Message
-                </button>
+                 <div className="flex gap-3">
+                    {showDetailsModal.kycStatus !== 'Verified' && (
+                       <>
+                          <button 
+                             onClick={() => handleKycAction(showDetailsModal.id, 'reject')}
+                             className="h-12 px-6 bg-rose-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                          >
+                             Rejeter le dossier
+                          </button>
+                          <button 
+                             onClick={() => handleKycAction(showDetailsModal.id, 'approve')}
+                             className="h-12 px-8 bg-[#3A4DB7] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                          >
+                             <ShieldCheck size={14} /> Valider & Activer
+                          </button>
+                       </>
+                    )}
+                 </div>
               </div>
             </motion.div>
           </motion.div>
@@ -1693,6 +1362,36 @@ function DetailItem({ label, value }: { label: string, value: string }) {
        <p className="text-sm font-black text-slate-900 tracking-tight leading-none">{value}</p>
     </div>
   );
+}
+
+function InfoBlock({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+   return (
+      <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100">
+         <div className="w-10 h-10 bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-[#3A4DB7] rounded-xl flex items-center justify-center transition-all shrink-0">
+            {icon}
+         </div>
+         <div className="overflow-hidden">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+            <p className="text-sm font-black text-slate-950 tracking-tight truncate">{value}</p>
+         </div>
+      </div>
+   );
+}
+
+function ActionCard({ icon, label, color }: { icon: React.ReactNode, label: string, color: string }) {
+   const colors: Record<string, string> = {
+      indigo: 'bg-indigo-50 text-[#3A4DB7] hover:bg-[#3A4DB7] hover:text-white',
+      slate: 'bg-slate-50 text-slate-600 hover:bg-slate-900 hover:text-white',
+      amber: 'bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white',
+      rose: 'bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white',
+   };
+   
+   return (
+      <button className={`p-6 rounded-[2rem] flex flex-col items-center gap-4 transition-all duration-300 font-black text-[10px] uppercase tracking-widest border border-transparent hover:shadow-xl hover:shadow-indigo-500/10 ${colors[color]}`}>
+         {icon}
+         {label}
+      </button>
+   );
 }
 
 function BillingItem({ date, amount, refId, mode }: { date: string, amount: string, refId: string, mode: string }) {
@@ -1890,16 +1589,21 @@ function PlansView() {
 
       {/* HEADER SECTION */}
       <div className="flex items-center justify-between">
-         <div className="flex flex-col gap-2">
-            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Plans d'abonnement</h2>
-            <p className="text-slate-400 font-medium">Pilotez le catalogue commercial de FinTrack sans changer la logique déjà en place.</p>
+         <div className="flex items-center gap-6">
+            <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
+            <div className="flex items-baseline gap-4">
+               <h2 className="text-4xl font-black tracking-tighter text-slate-950">Plans d'abonnement</h2>
+               <p className="text-slate-400 font-medium text-xs">Pilotez le catalogue commercial de FinTrack.</p>
+            </div>
          </div>
-         <button 
-           onClick={openAddModal}
-           className="flex items-center gap-3 px-8 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-105 active:scale-95 transition-all"
-         >
-            <Plus size={18} /> Nouveau Plan
-         </button>
+         <div className="flex items-center gap-4">
+            <button 
+              onClick={openAddModal}
+              className="flex items-center gap-3 px-8 py-5 bg-[#3A4DB7] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-900/20 hover:scale-105 active:scale-95 transition-all"
+            >
+               <Plus size={18} /> Nouveau Plan
+            </button>
+         </div>
       </div>
 
       {/* MODAL SYSTEM */}
@@ -2051,7 +1755,7 @@ function PlansView() {
             </div>
          </div>
 
-         <div className="overflow-x-auto">
+         <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left">
                <thead className="bg-slate-50/50">
                   <tr className="border-b border-slate-100">
@@ -2096,7 +1800,7 @@ function PlansView() {
                            </div>
                         </td>
                         <td className="px-10 py-8">
-                           <div className="flex items-center justify-end gap-3 transition-opacity">
+                           <div className="flex items-center justify-end gap-4 transition-opacity">
                               <button 
                                 onClick={(e) => handleToggleStatus(plan.id, e)}
                                 className={`p-3 border rounded-xl transition-all shadow-sm ${
@@ -2136,115 +1840,657 @@ function PlansView() {
 
 /* ------------------- VIEW: SUPPORT ------------------- */
 function SupportView() {
-  const [activeTicketTab, setActiveTicketTab] = useState<'open' | 'closed'>('open');
+  const [activeTab, setActiveTab] = useState<'merchants' | 'agents'>('merchants');
+  const [filter, setFilter] = useState('Tous');
   
+  const [reports, setReports] = useState({
+    merchants: [
+      { id: '102', reporter: 'Pharmacie Grand Pont', type: 'Bug', label: 'Impression ticket', content: "Erreur 504 lors de la clôture journalière sur terminal V2.", status: 'pending', time: '14m', priority: 'high' },
+      { id: '054', reporter: 'Boulangerie Saveurs', type: 'Suggestion', label: 'UI/UX', content: "Ajouter un bouton 'Recharge Rapide' sur l'accueil marchand.", status: 'pending', time: '2h', priority: 'low' },
+      { id: '105', reporter: 'Supermarché Horizon', type: 'Bug', label: 'QR Scan', content: "Scan impossible en basse luminosité.", status: 'fixed', time: 'Hier', priority: 'medium' }
+    ],
+    agents: [
+      { id: '001', reporter: 'Agent Kamara', type: 'Alerte', label: 'Fraude', content: "Suspicion de double KYC secteur Nord.", status: 'pending', time: '5m', priority: 'high' },
+      { id: '088', reporter: 'Agent Doe', type: 'Note', label: 'Tarification', content: "Mise à jour des prix Canal+ requise.", status: 'notified', time: '3h', priority: 'medium' }
+    ]
+  });
+
+  const handleUpdateStatus = (type: 'merchants' | 'agents', id: string, newStatus: string) => {
+    setReports(prev => ({
+      ...prev,
+      [type]: prev[type].map(r => r.id === id ? { ...r, status: newStatus } : r)
+    }));
+  };
+
+  const currentData = reports[activeTab].filter(item => {
+    if (filter === 'all' || filter === 'Tous') return true;
+    if (filter === 'Bugs') return item.type === 'Bug';
+    if (filter === 'Alertes') return item.type === 'Alerte';
+    if (filter === 'Suggestions') return item.type === 'Suggestion';
+    return true;
+  });
+
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-12 pb-20"
+      className="max-w-6xl mx-auto space-y-8 pb-20"
     >
-      <div className="flex items-center justify-between">
-         <div className="space-y-4">
-            <h2 className="text-6xl font-black tracking-tighter text-slate-950 leading-none">Support & <span className="text-[#234D96]">Retours</span></h2>
-            <p className="text-slate-400 font-medium italic">Gérez les demandes d'assistance des marchands et les retours utilisateurs.</p>
-         </div>
-         <div className="flex bg-white/60 p-2 rounded-3xl border border-slate-200/60 shadow-sm">
-            <button 
-               onClick={() => setActiveTicketTab('open')}
-               className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTicketTab === 'open' ? 'bg-[#234D96] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
-            >
-               Ouverts (12)
-            </button>
-            <button 
-               onClick={() => setActiveTicketTab('closed')}
-               className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTicketTab === 'closed' ? 'bg-[#234D96] text-white shadow-lg' : 'text-slate-400 hover:text-slate-900'}`}
-            >
-               Résolus
-            </button>
-         </div>
+      {/* MINIMALIST NAV */}
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+        <div>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
+            Flux de Maintenance
+            <span className="text-xs bg-indigo-50 text-[#3A4DB7] px-3 py-1 rounded-full border border-indigo-100 font-black uppercase tracking-widest">{currentData.length} Actifs</span>
+          </h2>
+          <p className="text-slate-400 text-sm mt-2 font-medium">Supervision et résolution des incidents remontés par le réseau.</p>
+        </div>
+
+        <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/40">
+          <button 
+            onClick={() => { setActiveTab('merchants'); setFilter('all'); }}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'merchants' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <AlertCircle size={14} /> Flux Marchands
+          </button>
+          <button 
+            onClick={() => { setActiveTab('agents'); setFilter('all'); }}
+            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'agents' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            <Fingerprint size={14} /> Notes Agents
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-10">
-         <div className="col-span-8 space-y-6">
-            {[1, 2, 3].map((ticket) => (
-               <div key={ticket} className="bg-white p-8 rounded-[3rem] border border-slate-200/60 shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all group cursor-pointer">
-                  <div className="flex items-start justify-between mb-8">
-                     <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-[1.5rem] flex items-center justify-center border border-slate-100 group-hover:bg-[#234D96] group-hover:text-white transition-all">
-                           <MessageSquare size={24} />
-                        </div>
-                        <div className="space-y-1">
-                           <h4 className="text-xl font-black text-slate-900 tracking-tight">Problème d'impression sur terminal Sunmi V2</h4>
-                           <p className="text-xs font-bold text-slate-400 tracking-widest text-[#234D96]">Pharmacie du Pont <span className="text-slate-300 mx-2">•</span> Il y a 2h</p>
-                        </div>
-                     </div>
-                     <span className="px-5 py-2 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black tracking-widest border border-rose-100">Haute Priorité</span>
+      {/* FILTER BUTTONS */}
+      <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Filtrer :</span>
+        {['Tous', 'Bugs', 'Alertes', 'Suggestions'].map((t) => (
+          <button 
+            key={t} 
+            onClick={() => setFilter(t)}
+            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              filter === t || (filter === 'all' && t === 'Tous') 
+              ? 'bg-slate-900 text-white shadow-lg' 
+              : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+        <div className="flex-1" />
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase">
+           <Activity size={12} className="animate-pulse" /> Système Optimal
+        </div>
+      </div>
+
+      {/* COMPACT LIST / TABLE */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+        {currentData.length > 0 ? (
+          <div className="divide-y divide-slate-50">
+            {currentData.map((item) => (
+              <div 
+                key={item.id}
+                className={`group flex flex-col md:flex-row items-center gap-8 p-8 transition-all hover:bg-slate-50/50 ${item.status === 'fixed' ? 'opacity-60 grayscale-[0.5]' : ''}`}
+              >
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
+                  item.priority === 'high' ? 'bg-rose-50 text-rose-500' : 
+                  item.priority === 'medium' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'
+                }`}>
+                  {item.type === 'Bug' || item.type === 'Alerte' ? <Zap size={24} /> : <FileText size={24} />}
+                </div>
+
+                <div className="flex-1 space-y-3">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <span className="text-[10px] font-black text-slate-900 uppercase bg-slate-100 px-3 py-1 rounded-lg">#{item.id}</span>
+                    <h4 className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.reporter}</h4>
+                    <span className="text-[10px] font-black text-slate-400 uppercase italic flex items-center gap-2"><Clock size={12}/> {item.time}</span>
                   </div>
-                  <p className="text-sm font-medium text-slate-500 leading-relaxed font-sans px-2">
-                     Le ticket de clôture journalière ne s'imprime pas correctement. Le texte est coupé à droite. J'ai essayé de redémarrer l'application mais le problème persiste...
+                  <p className="text-sm font-bold text-slate-500 leading-relaxed italic max-w-2xl">
+                     "{item.content}"
                   </p>
-                  <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between">
-                     <div className="flex -space-x-3">
-                        <div className="w-10 h-10 bg-slate-950 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white">JY</div>
-                        <div className="w-10 h-10 bg-[#234D96] rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white font-sans">+1</div>
-                     </div>
-                     <button className="flex items-center gap-3 text-[10px] font-black text-slate-900 tracking-widest hover:text-[#234D96] transition-colors">
-                        Voir la conversation <ArrowRight size={14} />
-                     </button>
-                  </div>
-               </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  {/* ACTIONS BASED ON TYPE */}
+                  {(item.type === 'Bug' || item.type === 'Alerte') ? (
+                    item.status !== 'fixed' ? (
+                      <button 
+                        onClick={() => handleUpdateStatus(activeTab, item.id, 'fixed')}
+                        className="h-11 px-6 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#3A4DB7] transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2"
+                      >
+                        <CheckCircle2 size={14} /> Résoudre
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-3 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 font-black text-[10px] uppercase tracking-widest">
+                        <ShieldCheck size={16} /> Résolu
+                      </div>
+                    )
+                  ) : (
+                    /* SUGGESTION / NOTE WORKFLOW */
+                    <div className="flex items-center gap-2">
+                       {item.status === 'pending' && (
+                         <button 
+                           onClick={() => handleUpdateStatus(activeTab, item.id, 'acknowledged')}
+                           className="h-11 px-5 border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2"
+                         >
+                           <Bell size={14} /> Accuser réception
+                         </button>
+                       )}
+                       
+                       {(item.status === 'pending' || item.status === 'acknowledged') ? (
+                         <>
+                           <button 
+                             onClick={() => handleUpdateStatus(activeTab, item.id, 'accepted')}
+                             className="h-11 px-5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
+                           >
+                             <Check size={14} /> Accepter
+                           </button>
+                           <button 
+                             onClick={() => handleUpdateStatus(activeTab, item.id, 'declined')}
+                             className="h-11 px-5 bg-white border border-rose-100 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-all flex items-center gap-2"
+                           >
+                             <X size={14} /> Refuser
+                           </button>
+                         </>
+                       ) : (
+                         <div className={`flex items-center gap-3 px-6 py-2 rounded-xl border font-black text-[10px] uppercase tracking-widest ${
+                           item.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                           item.status === 'declined' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                           'bg-amber-50 text-amber-600 border-amber-100'
+                         }`}>
+                           {item.status === 'accepted' ? <Check size={16} /> : item.status === 'declined' ? <X size={16} /> : <Bell size={16} />}
+                           {item.status === 'accepted' ? 'Acceptée' : item.status === 'declined' ? 'Refusée' : 'Reçue'}
+                         </div>
+                       )}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
-         </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-32 text-center space-y-6">
+            <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200">
+               <ShieldCheck size={40} />
+            </div>
+            <div>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic">Aucun signalement actif pour ce filtre.</p>
+            </div>
+          </div>
+        )}
+      </div>
 
-         <div className="col-span-4 space-y-10">
-             <div className="bg-[#234D96] p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
-                <div className="relative z-10 space-y-8">
-                   <div className="flex items-center gap-4">
-                      <Star size={20} className="text-amber-400" />
-                      <h3 className="text-xl font-black tracking-tight">Analyse de Satisfaction</h3>
-                   </div>
-                   <div className="space-y-4">
-                      <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-indigo-200">
-                         <span>Score CSAT</span>
-                         <span className="text-white">4.8/5</span>
-                      </div>
-                      <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl">
-                         <motion.div initial={{ width: 0 }} animate={{ width: '85%' }} className="h-full bg-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.3)]" />
-                      </div>
-                   </div>
-                   <p className="text-indigo-100 text-[11px] font-medium opacity-60 leading-relaxed font-sans italic">
-                      "La réactivité de l'équipe technique est exceptionnelle. Les retours sur les bugs sont traités en moins de 24h."
-                   </p>
-                </div>
-                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
-             </div>
-
-             <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
-                <div className="flex items-center gap-4">
-                   <AlertCircle size={20} className="text-rose-500" />
-                   <h3 className="text-xl font-black text-slate-950 tracking-tight">Stats Support</h3>
-                </div>
-                <div className="space-y-6">
-                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Temps Moyen de Réponse</span>
-                      <span className="text-sm font-black text-slate-900">1h 12m</span>
-                   </div>
-                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Taux de Résolution</span>
-                      <span className="text-sm font-black text-emerald-500">92%</span>
-                   </div>
-                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tickets d'Urgence</span>
-                      <span className="text-sm font-black text-rose-500">2</span>
-                   </div>
-                </div>
-             </div>
+      {/* QUICK LOGS FOOTER */}
+      <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest px-6">
+         <span>Dernière synchronisation : 12:42:01</span>
+         <div className="flex items-center gap-4">
+            <button className="hover:text-slate-900 transition-colors underline">Vider cache alertes</button>
          </div>
       </div>
     </motion.div>
   );
 }
+
+/* ------------------- VIEW: AUDIT LOGS ------------------- */
+function AuditView() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showHourPicker, setShowHourPicker] = useState(false);
+  const [viewDate, setViewDate] = useState(new Date(2026, 3, 1)); // Default Apr 2026
+  const [yearInput, setYearInput] = useState('2026');
+  const [startInput, setStartInput] = useState('');
+  const [endInput, setEndInput] = useState('');
+  const [selectedHour, setSelectedHour] = useState('Tous');
+
+  // Sync year input when viewDate changes (e.g. via month arrows)
+  useEffect(() => {
+    setYearInput(viewDate.getFullYear().toString());
+  }, [viewDate]);
+
+  // Sync text inputs when dates change
+  useEffect(() => {
+    setStartInput(startDate ? startDate.toLocaleDateString('fr-FR') : '');
+    setEndInput(endDate ? endDate.toLocaleDateString('fr-FR') : '');
+  }, [startDate, endDate]);
+
+  const parseManualDate = (str: string) => {
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const year = parseInt(parts[2]);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 1000) {
+        return new Date(year, month, day);
+      }
+    }
+    return null;
+  };
+
+  const auditLogs = [
+    { id: 1, date: '28/04/2026', time: '14:36:59', timestamp: new Date(2026, 3, 28, 14, 36), actor: 'Agent Cotonou', action: 'agent.transaction.reversal_requested', target: 'transaction #53', description: 'Demande d\'annulation soumise par un agent.' },
+    { id: 2, date: '28/04/2026', time: '14:36:28', timestamp: new Date(2026, 3, 28, 14, 36), actor: 'Agent Cotonou', action: 'agent.transaction.reversal_requested', target: 'transaction #50', description: 'Demande d\'annulation soumise par un agent.' },
+    { id: 3, date: '25/04/2026', time: '00:47:31', timestamp: new Date(2026, 3, 25, 0, 47), actor: 'Agent Cotonou', action: 'agent.transaction.proof_uploaded', target: 'transaction #14', description: 'Preuve de transaction ajoutée et transaction confirmée.' },
+    { id: 4, date: '24/04/2026', time: '23:56:57', timestamp: new Date(2026, 3, 24, 23, 56), actor: 'Agent Cotonou', action: 'agent.transaction.created', target: 'transaction #46', description: 'Transaction enregistrée par un agent.' },
+    { id: 5, date: '15/03/2026', time: '18:12:45', timestamp: new Date(2026, 2, 15, 18, 12), actor: 'Admin Koffi', action: 'admin.user.access_granted', target: 'marchand #202', description: 'Accès plateforme validé suite au KYC.' },
+    { id: 6, date: '02/03/2026', time: '09:05:11', timestamp: new Date(2026, 2, 2, 9, 5), actor: 'Système', action: 'system.autobackup.success', target: 'DB_Production', description: 'Sauvegarde journalière effectuée avec succès.' },
+  ];
+
+  const hourOptions = ['Tous', ...Array.from({ length: 24 }, (_, i) => i.toString())];
+
+  const filteredLogs = auditLogs.filter(log => {
+    const matchesSearch = 
+      log.actor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const logTime = log.timestamp.getTime();
+    const startAt = startDate ? new Date(startDate).setHours(0,0,0,0) : 0;
+    const endAt = endDate ? new Date(endDate).setHours(23,59,59,999) : Infinity;
+    
+    const matchesDate = logTime >= startAt && logTime <= endAt;
+    const matchesHour = selectedHour === 'Tous' || log.timestamp.getHours().toString() === selectedHour;
+
+    return matchesSearch && matchesDate && matchesHour;
+  });
+
+  const resetFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setSelectedHour('Tous');
+    setSearchQuery('');
+  };
+
+  const handleDateClick = (day: number) => {
+    const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(clickedDate);
+      setEndDate(null);
+    } else if (startDate && !endDate) {
+      if (clickedDate < startDate) {
+        setEndDate(startDate);
+        setStartDate(clickedDate);
+      } else {
+        setEndDate(clickedDate);
+      }
+    }
+  };
+
+  const isSelected = (day: number) => {
+    const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+    if (startDate && d.getTime() === startDate.getTime()) return true;
+    if (endDate && d.getTime() === endDate.getTime()) return true;
+    return false;
+  };
+
+  const isInRange = (day: number) => {
+    if (!startDate || !endDate) return false;
+    const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+    return d > startDate && d < endDate;
+  };
+
+  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+  const monthName = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(viewDate);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-7xl mx-auto space-y-8 pb-20 px-6"
+    >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-100 pb-8">
+        <div>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">JOURNAL D'AUDIT</h2>
+        </div>
+        <div className="flex items-center gap-4">
+           <button 
+             onClick={resetFilters}
+             className="flex items-center gap-3 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:border-slate-400 hover:text-slate-900 transition-all"
+           >
+              <RotateCcw size={14} /> Reset Filters
+           </button>
+        </div>
+      </div>
+
+      {/* CONTEXTUAL SMART FILTER */}
+      <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/10 flex flex-col lg:flex-row gap-2 relative z-50">
+        <div className="flex-1 relative group rounded-2xl bg-slate-50/50 border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all duration-500">
+           <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors duration-500" />
+           <input 
+              type="text"
+              placeholder="Rechercher une empreinte..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-14 pr-6 py-4 bg-transparent border-none text-sm font-bold text-slate-900 outline-none placeholder:text-slate-300"
+           />
+        </div>
+
+        <div className="flex items-center gap-2">
+           {/* DATE RANGE TRIGGER */}
+           <div className="relative">
+              <button 
+                onClick={() => setShowCalendar(!showCalendar)}
+                className={`flex flex-col items-start px-6 py-2.5 rounded-2xl border transition-all duration-300 min-w-[200px] ${showCalendar ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-50 shadow-sm hover:border-slate-200'}`}
+              >
+                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-0.5">Période d'Analyse</span>
+                 <div className="flex items-center gap-2 text-xs font-black text-slate-900">
+                    <Calendar size={12} className="text-indigo-500" />
+                    <span>
+                       {startDate ? startDate.toLocaleDateString('fr-FR') : 'Choisir date'} 
+                       {endDate ? ` - ${endDate.toLocaleDateString('fr-FR')}` : ' ...'}
+                    </span>
+                 </div>
+              </button>
+
+              <AnimatePresence>
+                {showCalendar && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 mt-4 bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl p-8 w-[350px] z-[100]"
+                  >
+                      {/* CALENDAR HEADER - PROFESSIONAL PICKER STYLE */}
+                      <div className="flex flex-col gap-4 mb-6">
+                         <div className="flex items-center justify-between bg-slate-50/50 p-1.5 rounded-2xl border border-slate-100">
+                            <button 
+                              onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))} 
+                              className="w-10 h-10 rounded-xl hover:bg-white hover:shadow-sm flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all font-sans"
+                            >
+                               <ChevronLeft size={18} />
+                            </button>
+                            
+                            <div className="flex items-center gap-1 group/header">
+                               <div className="relative">
+                                  <select 
+                                     value={viewDate.getMonth()} 
+                                     onChange={(e) => setViewDate(new Date(viewDate.getFullYear(), parseInt(e.target.value), 1))}
+                                     className="appearance-none bg-transparent pl-3 pr-6 py-1 text-xs font-black text-slate-900 uppercase tracking-widest cursor-pointer outline-none hover:text-indigo-600 transition-colors z-10 relative no-scrollbar"
+                                  >
+                                     {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'].map((m, i) => (
+                                        <option key={m} value={i}>{m}</option>
+                                     ))}
+                                  </select>
+                                  <ChevronDown size={10} className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                               </div>
+                               <div className="w-[1px] h-3 bg-slate-200" />
+                               <div className="relative">
+                                  <input 
+                                     type="text"
+                                     value={yearInput} 
+                                     onChange={(e) => {
+                                        const val = e.target.value;
+                                        setYearInput(val);
+                                        const parsed = parseInt(val);
+                                        if (parsed >= 1000 && parsed <= 9999) {
+                                           setViewDate(new Date(parsed, viewDate.getMonth(), 1));
+                                        }
+                                     }}
+                                     className="w-14 bg-transparent border-none text-xs font-black text-slate-900 uppercase tracking-widest outline-none hover:text-indigo-600 transition-colors text-center"
+                                  />
+                               </div>
+                            </div>
+
+                            <button 
+                              onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))} 
+                              className="w-10 h-10 rounded-xl hover:bg-white hover:shadow-sm flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all"
+                            >
+                               <ChevronRight size={18} />
+                            </button>
+                         </div>
+
+                         {/* MANUAL TEXT ENTRY */}
+                         <div className="flex items-center gap-3">
+                            <div className="flex-1 flex flex-col gap-1.5 p-3 bg-slate-50/50 rounded-xl border border-slate-100 focus-within:border-indigo-200 transition-all">
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Du (JJ/MM/AAAA)</span>
+                               <input 
+                                 type="text" 
+                                 placeholder="JJ/MM/AAAA"
+                                 value={startInput}
+                                 onChange={(e) => {
+                                    setStartInput(e.target.value);
+                                    const d = parseManualDate(e.target.value);
+                                    if (d) setStartDate(d);
+                                 }}
+                                 className="bg-transparent border-none p-0 text-xs font-black text-slate-900 outline-none placeholder:text-slate-200"
+                               />
+                            </div>
+                            <div className="flex-1 flex flex-col gap-1.5 p-3 bg-slate-50/50 rounded-xl border border-slate-100 focus-within:border-indigo-200 transition-all">
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Au (JJ/MM/AAAA)</span>
+                               <input 
+                                 type="text" 
+                                 placeholder="JJ/MM/AAAA"
+                                 value={endInput}
+                                 onChange={(e) => {
+                                    setEndInput(e.target.value);
+                                    const d = parseManualDate(e.target.value);
+                                    if (d) setEndDate(d);
+                                 }}
+                                 className="bg-transparent border-none p-0 text-xs font-black text-slate-900 outline-none placeholder:text-slate-200"
+                               />
+                            </div>
+                         </div>
+                      </div>
+
+                      {/* WEEKDAYS - CLEARER HEADERS */}
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                         {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d, i) => (
+                            <div key={i} className="text-[10px] font-black text-slate-300 text-center uppercase py-2 tracking-tighter">{d}</div>
+                         ))}
+                      </div>
+
+                      {/* DAYS GRID - FLUID FEEDBACK */}
+                      <div className="grid grid-cols-7 gap-1">
+                         {Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1 }).map((_, i) => (
+                            <div key={`empty-${i}`} className="h-10" />
+                         ))}
+                         {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const day = i + 1;
+                            const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+                            const selected = isSelected(day);
+                            const range = isInRange(day);
+                            const isStart = startDate && d.getTime() === startDate.getTime();
+                            const isEnd = endDate && d.getTime() === endDate.getTime();
+                            
+                            return (
+                               <button 
+                                  key={day}
+                                  onClick={() => handleDateClick(day)}
+                                  className={`
+                                     h-10 rounded-xl text-xs font-bold transition-all relative group/day
+                                     ${selected ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 z-10 font-black' : ''}
+                                     ${range ? 'bg-indigo-50 text-indigo-700 rounded-none' : ''}
+                                     ${isStart && endDate ? 'rounded-l-xl' : ''}
+                                     ${isEnd ? 'rounded-r-xl' : ''}
+                                     ${!selected && !range ? 'text-slate-600 hover:bg-slate-50' : ''}
+                                     ${d.toDateString() === new Date().toDateString() ? 'ring-1 ring-inset ring-indigo-200' : ''}
+                                  `}
+                               >
+                                  <span className="relative z-10">{day}</span>
+                                  {!selected && !range && (
+                                     <div className="absolute inset-1 rounded-lg bg-indigo-50 scale-0 group-hover/day:scale-100 transition-transform duration-300" />
+                                  )}
+                               </button>
+                            );
+                         })}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-50">
+                         <button 
+                            onClick={() => { setStartDate(null); setEndDate(null); setViewDate(new Date(2026, 3, 1)); }}
+                            className="py-3.5 bg-slate-50 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 hover:text-slate-600 transition-all border border-slate-100/50"
+                         >
+                            Réinitialiser
+                         </button>
+                         <button 
+                            onClick={() => setShowCalendar(false)}
+                            className="py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-900/10"
+                         >
+                            Confirmer
+                         </button>
+                      </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+           </div>
+
+           <div className="w-[1px] h-10 bg-slate-100 mx-2" />
+
+           <div className="relative">
+              <button 
+                 onClick={() => setShowHourPicker(!showHourPicker)}
+                 className={`flex flex-col items-start px-5 py-2 rounded-2xl border transition-all duration-300 min-w-[120px] ${showHourPicker ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-slate-50 shadow-sm hover:border-slate-200'}`}
+              >
+                 <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-0.5">Heure</span>
+                 <div className="flex items-center gap-2 text-xs font-black text-slate-900">
+                    <Clock size={12} className="text-indigo-500" />
+                    <span>{selectedHour === 'Tous' ? 'Toutes' : `${selectedHour}h00`}</span>
+                 </div>
+              </button>
+
+              <AnimatePresence>
+                 {showHourPicker && (
+                    <>
+                       <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setShowHourPicker(false)} 
+                       />
+                       <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 top-full mt-4 w-72 bg-white/90 backdrop-blur-xl border border-white p-5 rounded-[2.5rem] shadow-2xl shadow-indigo-900/10 z-50 overflow-hidden"
+                       >
+                          <div className="flex items-center justify-between mb-4 px-2">
+                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sélecteur d'Heure</h4>
+                             <button 
+                                onClick={() => { setSelectedHour('Tous'); setShowHourPicker(false); }}
+                                className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700"
+                             >
+                                Réinitialiser
+                             </button>
+                          </div>
+                          
+                          <div className="grid grid-cols-5 gap-2">
+                             {hourOptions.map(h => (
+                                <button
+                                   key={h}
+                                   onClick={() => {
+                                      setSelectedHour(h);
+                                      setShowHourPicker(false);
+                                   }}
+                                   className={`
+                                      h-10 rounded-xl text-[10px] font-black transition-all
+                                      ${selectedHour === h 
+                                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-105' 
+                                         : 'bg-slate-50 text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm border border-transparent hover:border-indigo-50'
+                                      }
+                                   `}
+                                >
+                                   {h === 'Tous' ? 'ALL' : `${h}h`}
+                                </button>
+                             ))}
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-slate-50 text-center">
+                             <p className="text-[9px] font-bold text-slate-300 italic">
+                                Filtre les logs par créneau horaire spécifique
+                             </p>
+                          </div>
+                       </motion.div>
+                    </>
+                 )}
+              </AnimatePresence>
+           </div>
+        </div>
+      </div>
+
+      {/* AUDIT LOG TABLE */}
+      <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden min-h-[500px]">
+        {filteredLogs.length > 0 ? (
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead>
+                <tr className="bg-slate-50/30">
+                  <th className="px-10 py-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Horodatage</th>
+                  <th className="px-10 py-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Acteur</th>
+                  <th className="px-10 py-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Action Système</th>
+                  <th className="px-10 py-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Cible</th>
+                  <th className="px-10 py-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Détails de l'événement</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {filteredLogs.map((log, idx) => (
+                  <motion.tr 
+                    key={log.id} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="hover:bg-indigo-50/20 transition-all group cursor-pointer"
+                  >
+                    <td className="px-10 py-8 whitespace-nowrap">
+                       <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-300 group-hover:text-indigo-500 group-hover:border-indigo-100 transition-all shadow-sm group-hover:shadow-indigo-500/10">
+                             <Clock size={16} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-black text-slate-900">{log.date}</span>
+                            <span className="text-xs font-bold text-slate-400 uppercase">{log.time}</span>
+                          </div>
+                       </div>
+                    </td>
+                    <td className="px-10 py-8 whitespace-nowrap">
+                       <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[8px] font-black border-2 border-white shadow-sm italic group-hover:scale-110 transition-transform">
+                             {log.actor === 'Système' ? 'SY' : log.actor.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{log.actor}</span>
+                       </div>
+                    </td>
+                    <td className="px-10 py-8 whitespace-nowrap font-mono text-xs">
+                       <span className="px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm transition-all border border-slate-100/50 group-hover:border-indigo-100">
+                          {log.action}
+                       </span>
+                    </td>
+                    <td className="px-10 py-8 whitespace-nowrap">
+                       <span className="text-xs font-black text-[#234D96] uppercase tracking-widest bg-indigo-50/50 px-3 py-1 rounded-md group-hover:bg-indigo-50 group-hover:text-[#1a3a70] transition-colors">
+                          {log.target}
+                       </span>
+                    </td>
+                    <td className="px-10 py-8">
+                       <p className="text-xs font-bold text-slate-400 italic max-w-sm font-serif leading-relaxed line-clamp-2 group-hover:text-slate-600 transition-colors">
+                          "{log.description}"
+                       </p>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="py-40 text-center space-y-6">
+             <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200 mx-auto border-2 border-dashed border-slate-200 relative">
+                <Search size={40} />
+                <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-4 border-white">!</div>
+             </div>
+             <div>
+                <h4 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Aucune Empreinte Trouvée</h4>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] mt-3 italic">Ajustez vos filtres ou élargissez la période.</p>
+             </div>
+          </div>
+        )}
+      </div>
+
+
+    </motion.div>
+  );
+}
+
+// Cleanup unused components
 
 /* ------------------- VIEW: SETTINGS ------------------- */
 function SettingsView() {
@@ -2277,32 +2523,36 @@ function SettingsView() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between">
-         <div className="flex flex-col gap-2">
-            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Paramètres Système</h2>
-            <p className="text-slate-400 font-medium italic">Configuration globale des moteurs de FinTrack.</p>
+      <div className="flex items-center justify-between mb-8">
+         <div className="flex items-center gap-6">
+            <div className="w-1.5 h-10 bg-[#234D96] rounded-full" />
+            <div className="flex items-baseline gap-4">
+               <h2 className="text-4xl font-black tracking-tighter text-slate-950">Paramètres Système</h2>
+               <p className="text-slate-400 font-medium italic text-xs">Configuration globale.</p>
+            </div>
          </div>
-      </div>
 
-      <div className="flex gap-4 p-2 bg-white/60 backdrop-blur-md rounded-[2rem] border border-slate-200/60 w-fit self-start">
-         {[
-           { id: 'platform', label: 'Plateforme', icon: <Cpu size={16} /> },
-           { id: 'gateways', label: 'Passerelles', icon: <Globe size={16} /> },
-           { id: 'security', label: 'Sécurité', icon: <ShieldCheck size={16} /> },
-           { id: 'team', label: 'Équipe Admin', icon: <Users size={16} /> }
-         ].map(tab => (
-           <button
-             key={tab.id}
-             onClick={() => setActiveSubTab(tab.id as any)}
-             className={`px-6 py-3.5 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${
-               activeSubTab === tab.id 
-                 ? 'bg-[#234D96] text-white shadow-xl shadow-indigo-900/20' 
-                 : 'text-slate-400 hover:bg-white hover:text-slate-900'
-             }`}
-           >
-             {tab.icon} {tab.label}
-           </button>
-         ))}
+         <div className="flex items-center gap-3 p-2 bg-white/60 backdrop-blur-md rounded-[2rem] border border-slate-200/60 w-fit">
+            {[
+              { id: 'platform', label: 'Plateforme', icon: <Cpu size={16} /> },
+              { id: 'gateways', label: 'Passerelles', icon: <Globe size={16} /> },
+              { id: 'security', label: 'Sécurité', icon: <ShieldCheck size={16} /> },
+              { id: 'team', label: 'Équipe Admin', icon: <Users size={16} /> }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSubTab(tab.id as any)}
+                className={`px-6 py-3.5 rounded-2xl flex items-center gap-4 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  activeSubTab === tab.id 
+                    ? 'bg-[#234D96] text-white shadow-xl shadow-indigo-900/20' 
+                    : 'text-slate-400 hover:text-slate-900 hover:bg-white/80'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-10 mt-6">
@@ -2589,6 +2839,16 @@ function CatalogueView() {
   const [filterStatus, setFilterStatus] = useState('Tous les statuts');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<any>(null);
+
+  const handleUpdateEntry = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEntry) return;
+    
+    // In a real app, this would be a DB call
+    setEntries(entries.map(ent => ent.id === editingEntry.id ? editingEntry : ent));
+    setEditingEntry(null);
+  };
 
   const toggleStatus = (id: number) => {
     setEntries(entries.map(e => {
@@ -2628,8 +2888,8 @@ function CatalogueView() {
     >
       <div className="flex items-center justify-between">
          <div className="flex flex-col gap-2">
-            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Catalogue global des reseaux et banques</h2>
-            <p className="text-slate-400 font-medium italic">Publiez, filtrez et entretenez les entrees catalogue disponibles pour les marchands.</p>
+            <h2 className="text-4xl font-black tracking-tighter text-slate-950">Catalogue global des réseaux et banques</h2>
+            <p className="text-slate-400 font-medium italic">Publiez, filtrez et entretenez les entrées catalogue disponibles pour les marchands.</p>
          </div>
          <button 
            onClick={() => setShowAddModal(true)}
@@ -2642,11 +2902,11 @@ function CatalogueView() {
       {/* KPI CARDS */}
       <div className="grid grid-cols-5 gap-6">
          {[
-           { label: "CATALOGUES", val: stats.total, sub: "Entrees referencees", icon: <Layers size={20} />, color: "text-[#3A4DB7]", bg: "bg-indigo-50" },
-           { label: "BANQUES", val: stats.banks, sub: "Entites bancaires", icon: <Building2 size={20} />, color: "text-amber-500", bg: "bg-amber-50" },
-           { label: "RESEAUX", val: stats.networks, sub: "Mobile Money & Telco", icon: <Zap size={20} />, color: "text-indigo-400", bg: "bg-indigo-50" },
+           { label: "CATALOGUES", val: stats.total, sub: "Entrées référencées", icon: <Layers size={20} />, color: "text-[#3A4DB7]", bg: "bg-indigo-50" },
+           { label: "BANQUES", val: stats.banks, sub: "Entités bancaires", icon: <Building2 size={20} />, color: "text-amber-500", bg: "bg-amber-50" },
+           { label: "RÉSEAUX", val: stats.networks, sub: "Mobile Money & Telco", icon: <Zap size={20} />, color: "text-indigo-400", bg: "bg-indigo-50" },
            { label: "ACTIFS", val: stats.active, sub: "Disponibles au catalogue", icon: <CheckCircle2 size={20} />, color: "text-emerald-500", bg: "bg-emerald-50" },
-           { label: "RESEAUX RELIES", val: 16, sub: "Instances connectees", icon: <Globe size={20} />, color: "text-amber-600", bg: "bg-amber-50" }
+           { label: "RÉSEAUX RELIÉS", val: 16, sub: "Instances connectées", icon: <Globe size={20} />, color: "text-amber-600", bg: "bg-amber-50" }
          ].map((stat, i) => (
            <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all">
               <div>
@@ -2669,72 +2929,228 @@ function CatalogueView() {
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
                onClick={() => setShowAddModal(false)}
-               className="fixed inset-0 bg-slate-950/40 backdrop-blur-3xl"
+               className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              initial={{ opacity: 0, scale: 0.98, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              className="relative w-full max-w-2xl bg-white rounded-[4rem] shadow-[0_100px_200px_-50px_rgba(0,0,0,0.5)] overflow-hidden border border-white"
+              exit={{ opacity: 0, scale: 0.98, y: 20 }}
+              className="relative w-full max-w-2xl bg-[#F8FAFC] rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden border border-white"
             >
-               <div className="p-16 space-y-12">
-                  <div className="flex items-center justify-between">
-                     <div className="space-y-3">
-                        <h3 className="text-4xl font-black tracking-tighter text-slate-950 leading-none">Ajouter au Catalogue</h3>
-                        <p className="text-slate-400 font-medium italic">Configurez une nouvelle entité financière.</p>
+               <div className="flex flex-col h-full">
+                  {/* MODAL HEADER */}
+                  <div className="bg-white px-12 py-10 border-b border-slate-100 flex items-center justify-between">
+                     <div className="flex items-center gap-6">
+                        <div className="w-14 h-14 bg-[#3A4DB7] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-900/20">
+                           <Plus size={24} />
+                        </div>
+                        <div className="space-y-1">
+                           <div className="flex items-center gap-3">
+                              <h3 className="text-2xl font-black tracking-tight text-slate-950">Nouveau Catalogue</h3>
+                              <span className="px-2.5 py-1 bg-indigo-50 text-[#3A4DB7] text-[9px] font-black uppercase tracking-widest rounded-md border border-indigo-100">Draft Mode</span>
+                           </div>
+                           <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase">Enregistrement d'une nouvelle entité</p>
+                        </div>
                      </div>
                      <button 
                        onClick={() => setShowAddModal(false)}
-                       className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all border border-slate-100"
+                       className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-300 hover:text-slate-900 hover:bg-slate-50 transition-all"
                      >
-                        <Plus size={30} className="rotate-45" />
+                        <Plus size={24} className="rotate-45" />
                      </button>
                   </div>
 
-                  <div className="space-y-8">
-                     <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Type de l'Entrée</label>
-                           <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
+                  {/* MODAL BODY */}
+                  <div className="p-12 space-y-10">
+                     <div className="grid grid-cols-12 gap-8">
+                        <div className="col-span-12 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Nom Officiel de la Structure</label>
+                           <input 
+                              type="text" 
+                              placeholder="ex: Banque Nationale Africaine..."
+                              className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-base font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all shadow-sm"
+                           />
+                        </div>
+
+                        <div className="col-span-6 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Type de Canal</label>
+                           <select className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all appearance-none cursor-pointer shadow-sm">
                               <option>BANQUE</option>
                               <option>RESEAU</option>
                            </select>
                         </div>
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Statut Initial</label>
-                           <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all appearance-none">
+
+                        <div className="col-span-6 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Statut de Publication</label>
+                           <select className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all appearance-none cursor-pointer shadow-sm">
                               <option>Actif</option>
                               <option>Inactif</option>
                            </select>
                         </div>
                      </div>
 
-                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Nom de la Banque ou du Réseau</label>
-                        <input 
-                          type="text" placeholder="ex: Banque Atlantique..." 
-                          className="w-full px-10 py-6 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] text-lg font-black focus:border-[#3A4DB7] outline-none transition-all placeholder:text-slate-300"
-                        />
-                     </div>
-
-                     <div className="p-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center gap-6 group hover:border-[#3A4DB7] transition-all cursor-pointer">
-                        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-xl text-slate-400 group-hover:bg-[#3A4DB7] group-hover:text-white transition-all">
-                           <Layers size={32} />
+                     <div className="p-10 bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 group hover:border-[#3A4DB7] transition-all cursor-pointer">
+                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center shadow-sm text-slate-300 group-hover:bg-[#3A4DB7] group-hover:text-white transition-all">
+                           <Layers size={24} />
                         </div>
                         <div className="text-center space-y-2">
-                           <h4 className="text-base font-black text-slate-900 tracking-tight">Télécharger le Logo</h4>
-                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">SVG, PNG OU JPG • MAX 5MB</p>
+                           <h4 className="text-sm font-black text-slate-900 tracking-tight">Télécharger le Logo</h4>
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SVG, PNG OU WebP • Max 2Mo</p>
                         </div>
                      </div>
                   </div>
 
-                  <button 
-                    onClick={() => setShowAddModal(false)}
-                    className="w-full py-7 bg-[#234D96] text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_30px_60px_-12px_rgba(35,77,150,0.4)]"
-                  >
-                     Confirmer et Publier l'Entrée
-                  </button>
+                  {/* MODAL FOOTER */}
+                  <div className="px-12 py-10 bg-white border-t border-slate-100 flex gap-4">
+                    <button 
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-1 h-16 bg-slate-50 text-slate-500 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-all"
+                    >
+                       Annuler
+                    </button>
+                    <button 
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-[2] h-16 bg-[#3A4DB7] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-950 transition-all shadow-xl shadow-indigo-200"
+                    >
+                       Publier au catalogue
+                    </button>
+                  </div>
                </div>
+            </motion.div>
+          </div>
+        )}
+
+        {editingEntry && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+            <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setEditingEntry(null)}
+               className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 20 }}
+              className="relative w-full max-w-2xl bg-[#F8FAFC] rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden border border-white"
+            >
+               <form onSubmit={handleUpdateEntry} className="flex flex-col h-full">
+                  {/* MODAL HEADER */}
+                  <div className="bg-white px-12 py-10 border-b border-slate-100 flex items-center justify-between">
+                     <div className="flex items-center gap-6">
+                        <div className="w-14 h-14 bg-slate-950 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-900/10">
+                           <Edit3 size={24} />
+                        </div>
+                        <div className="space-y-1">
+                           <div className="flex items-center gap-3">
+                              <h3 className="text-2xl font-black tracking-tight text-slate-950">Modifier l'Entrée</h3>
+                              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-emerald-100 flex items-center gap-1.5">
+                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                 Live System
+                              </span>
+                           </div>
+                           <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase flex items-center gap-2">
+                              Catalogue ID <span className="text-slate-900">#ENT-{editingEntry.id.toString().padStart(3, '0')}</span>
+                           </p>
+                        </div>
+                     </div>
+                     <button 
+                       type="button"
+                       onClick={() => setEditingEntry(null)}
+                       className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-300 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                     >
+                        <Plus size={24} className="rotate-45" />
+                     </button>
+                  </div>
+
+                  {/* MODAL BODY */}
+                  <div className="p-12 space-y-10">
+                     <div className="grid grid-cols-12 gap-8">
+                        <div className="col-span-12 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Nom de l'entité catalogue</label>
+                           <div className="relative group">
+                              <input 
+                                 type="text" 
+                                 value={editingEntry.name}
+                                 onChange={(e) => setEditingEntry({...editingEntry, name: e.target.value})}
+                                 className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-base font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all shadow-sm"
+                                 required
+                              />
+                              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 transition-opacity">
+                                 <CheckCircle2 size={18} className="text-emerald-500" />
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="col-span-6 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Canal Opérationnel</label>
+                           <div className="relative">
+                              <select 
+                                 value={editingEntry.type}
+                                 onChange={(e) => setEditingEntry({...editingEntry, type: e.target.value})}
+                                 className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all appearance-none cursor-pointer shadow-sm"
+                              >
+                                 <option value="BANQUE">Banque / Institution</option>
+                                 <option value="RESEAU">Réseau / Telco</option>
+                              </select>
+                              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                 <Zap size={16} />
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="col-span-6 space-y-3">
+                           <label className="text-[10px] font-black text-slate-500 tracking-widest uppercase px-1">Disponibilité Marchand</label>
+                           <div className="relative">
+                              <select 
+                                 value={editingEntry.status}
+                                 onChange={(e) => setEditingEntry({...editingEntry, status: e.target.value})}
+                                 className="w-full h-16 px-8 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:border-[#3A4DB7] focus:ring-4 focus:ring-indigo-50 outline-none transition-all appearance-none cursor-pointer shadow-sm"
+                              >
+                                 <option value="Actif">Actif (Visible)</option>
+                                 <option value="Inactif">Inactif (Masqué)</option>
+                              </select>
+                              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                 {editingEntry.status === 'Actif' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <ShieldCheck size={16} className="text-rose-500" />}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="p-8 bg-white border border-slate-100 rounded-[1.5rem] flex items-center justify-between group cursor-pointer hover:border-[#3A4DB7] transition-all">
+                        <div className="flex items-center gap-6">
+                           <div className="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 font-black text-xs border border-slate-100 group-hover:bg-indigo-50 group-hover:text-[#3A4DB7] transition-all">
+                              {editingEntry.logo}
+                           </div>
+                           <div className="space-y-1">
+                              <h4 className="text-sm font-black text-slate-900 tracking-tight">Identité Visuelle</h4>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SVG, PNG OU WebP • Max 2Mo</p>
+                           </div>
+                        </div>
+                        <button type="button" className="px-6 py-3 bg-slate-50 text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-100 hover:bg-slate-900 hover:text-white transition-all">
+                           Remplacer
+                        </button>
+                     </div>
+                  </div>
+
+                  {/* MODAL FOOTER */}
+                  <div className="px-12 py-10 bg-white border-t border-slate-100 flex gap-4">
+                    <button 
+                      type="button"
+                      onClick={() => setEditingEntry(null)}
+                      className="flex-1 h-16 bg-slate-50 text-slate-500 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-all"
+                    >
+                       Annuler
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-[2] h-16 bg-[#3A4DB7] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-950 transition-all shadow-xl shadow-indigo-200"
+                    >
+                       Appliquer les changements
+                    </button>
+                  </div>
+               </form>
             </motion.div>
           </div>
         )}
@@ -2745,14 +3161,14 @@ function CatalogueView() {
       <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden min-h-[600px]">
          <div className="p-10 border-b border-slate-100 flex items-center justify-between">
             <div>
-               <h3 className="text-xl font-black text-slate-900 tracking-tight">Entrees catalogue</h3>
-               <p className="text-xs font-bold text-slate-400 mt-1">{filteredEntries.length} entree(s) visible(s)</p>
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Entrées catalogue</h3>
+               <p className="text-xs font-bold text-slate-400 mt-1">{filteredEntries.length} entrée(s) visible(s)</p>
             </div>
             <div className="flex gap-4">
                <div className="relative">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input 
-                    type="text" placeholder="Rechercher une entree..." 
+                    type="text" placeholder="Rechercher une entrée..." 
                     value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                     className="pl-14 pr-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-50 w-72" 
                   />
@@ -2763,7 +3179,7 @@ function CatalogueView() {
                >
                   <option>Tous les types</option>
                   <option>Banque</option>
-                  <option>Reseau</option>
+                  <option>Réseau</option>
                </select>
                <select 
                  value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
@@ -2776,7 +3192,7 @@ function CatalogueView() {
             </div>
          </div>
 
-         <div className="overflow-x-auto px-6 py-6">
+         <div className="overflow-x-auto px-6 py-6 no-scrollbar">
             <table className="w-full text-left">
                <thead>
                   <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
@@ -2792,26 +3208,15 @@ function CatalogueView() {
                   {filteredEntries.map((entry) => (
                     <tr key={entry.id} className="hover:bg-slate-50/50 transition-colors group">
                        <td className="px-6 py-8">
-                          <div className="w-16 h-16 bg-slate-100 rounded-2xl border border-slate-200 flex flex-col items-center justify-center gap-1">
-                             <span className="text-[10px] font-black text-slate-300">{entry.logo}</span>
-                             <span className="text-[8px] font-bold text-slate-300 uppercase">Logo</span>
-                             <button className="text-[8px] font-black text-[#3A4DB7] mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Modifier</button>
-                          </div>
+                           <div className="w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center">
+                              <span className="text-[12px] font-black text-slate-400">{entry.logo}</span>
+                           </div>
                        </td>
                        <td className="px-6 py-8">
-                          <div className="space-y-2">
-                             <span className="text-sm font-black text-slate-900">{entry.type}</span>
-                             <select className="block w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-[#3A4DB7] outline-none">
-                                <option>BANQUE</option>
-                                <option>RESEAU</option>
-                             </select>
-                          </div>
+                          <p className="text-sm font-black text-slate-900 tracking-tight">{entry.type}</p>
                        </td>
                        <td className="px-6 py-8">
-                          <input 
-                            type="text" defaultValue={entry.name}
-                            className="w-full px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-[#3A4DB7] outline-none"
-                          />
+                          <p className="text-sm font-black text-slate-900 tracking-tight">{entry.name}</p>
                        </td>
                        <td className="px-6 py-8">
                           <div className="flex items-center gap-2">
@@ -2832,7 +3237,8 @@ function CatalogueView() {
                        <td className="px-6 py-8">
                           <div className="flex items-center justify-end gap-3">
                              <button 
-                               className="p-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-500 hover:text-white transition-all shadow-sm"
+                               onClick={() => setEditingEntry(entry)}
+                               className="p-3 bg-indigo-50 text-[#3A4DB7] rounded-xl hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm"
                                title="Modifier"
                              >
                                <Edit3 size={16} />
