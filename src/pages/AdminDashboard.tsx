@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { 
+  ShieldAlert,
+  Info,
+  CheckCircle,
   Users, 
   ShieldCheck, 
   Cpu, 
@@ -33,6 +36,10 @@ import {
   XCircle,
   Zap,
   ArrowRight,
+  Power,
+  Smartphone,
+  PenTool,
+  Banknote,
   TrendingDown,
   Star,
   Ticket,
@@ -45,6 +52,7 @@ import {
   FileText,
   Trash2,
   Save,
+  Key,
   Layers,
   CreditCard,
   EyeOff,
@@ -82,6 +90,7 @@ type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("Overview");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [pulse, setPulse] = useState(false);
 
@@ -160,25 +169,21 @@ export default function AdminDashboard() {
             active={activeTab === "Support"} 
             onClick={() => setActiveTab("Support")} 
             icon={<MessageSquare size={20} />} 
-            label="Support & Retours" 
+            label="Support Client" 
           />
-          
-          <div className="pt-8 pb-4 px-4">
-            <div className="space-y-1">
-              <NavItem 
-                active={activeTab === "Settings"} 
-                onClick={() => setActiveTab("Settings")} 
-                icon={<Settings2 size={18} />} 
-                label="Paramètres" 
-              />
-              <NavItem 
-                active={activeTab === "Audit"} 
-                onClick={() => setActiveTab("Audit")} 
-                icon={<ShieldCheck size={18} />} 
-                label="Journal d'Audit" 
-              />
-            </div>
-          </div>
+
+          <NavItem 
+            active={activeTab === "Settings"} 
+            onClick={() => setActiveTab("Settings")} 
+            icon={<Settings2 size={20} />} 
+            label="Paramètres" 
+          />
+          <NavItem 
+            active={activeTab === "Audit"} 
+            onClick={() => setActiveTab("Audit")} 
+            icon={<ShieldCheck size={20} />} 
+            label="Journal d'Audit" 
+          />
         </nav>
 
         <div className="p-8">
@@ -194,6 +199,77 @@ export default function AdminDashboard() {
         {/* TOP BAR - SLEEK */}
         <header className="h-24 bg-white/40 backdrop-blur-md border-b border-white/20 px-12 flex items-center justify-end shrink-0 z-40">
           <div className="flex items-center gap-8">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative ${
+                  isNotificationsOpen 
+                    ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" 
+                    : "bg-white border border-slate-100 text-slate-400 hover:text-slate-950 hover:border-slate-300 shadow-sm"
+                }`}
+              >
+                <Bell size={22} />
+                <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white" />
+              </button>
+
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                      <div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">System Alerts</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dernières notifications admin</p>
+                      </div>
+                      <button className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all uppercase tracking-widest">
+                        Tout lire
+                      </button>
+                    </div>
+
+                    <div className="max-h-[450px] overflow-y-auto no-scrollbar">
+                      {[
+                        { title: "Sécurité", msg: "Tentative d'accès suspecte bloquée", time: "5 min", type: "alert", color: "rose" },
+                        { title: "Infrastructure", msg: "Base de données optimisée", time: "2h", type: "info", color: "indigo" },
+                        { title: "Merchant", msg: "5 nouveaux marchands inscrits", time: "5h", type: "success", color: "emerald" },
+                      ].map((notif, idx) => (
+                        <div key={idx} className="p-6 border-b border-slate-50 hover:bg-slate-50/50 transition-all group cursor-pointer">
+                          <div className="flex gap-5">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                              notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
+                              notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
+                              'bg-emerald-50 text-emerald-500 border-emerald-100'
+                            }`}>
+                              {notif.type === 'alert' ? <ShieldAlert size={20} /> : notif.type === 'info' ? <Info size={20} /> : <CheckCircle size={20} />}
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
+                                <span className="text-[10px] font-bold text-slate-300">•</span>
+                                <span className="text-[10px] font-bold text-slate-300">{notif.time}</span>
+                              </div>
+                              <p className="text-sm font-bold text-slate-900 group-hover:text-[#234D96] transition-colors leading-tight">{notif.msg}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="p-6 bg-slate-50/50 border-t border-slate-100">
+                      <button className="w-full py-4 bg-white text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:border-slate-900 transition-all shadow-sm">
+                        Voir journal complet
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <div className="flex items-center gap-4">
               <div className="h-11 w-11 bg-[#234D96] rounded-2xl p-[2px] shadow-lg shadow-indigo-900/20">
                  <div className="w-full h-full bg-slate-900 rounded-[0.9rem] flex items-center justify-center text-white font-black text-xs">
@@ -213,6 +289,7 @@ export default function AdminDashboard() {
 
             {activeTab === "Plans" && <PlansView key="plans" />}
             {activeTab === "Support" && <SupportView key="support" />}
+
             {activeTab === "Audit" && <AuditView key="audit" />}
             {activeTab === "Settings" && <SettingsView key="settings" />}
           </AnimatePresence>
@@ -2494,9 +2571,6 @@ function AuditView() {
 
 /* ------------------- VIEW: SETTINGS ------------------- */
 function SettingsView() {
-  const [activeSubTab, setActiveSubTab] = useState<'platform' | 'gateways' | 'security' | 'team'>('platform');
-  const [isMaintenance, setIsMaintenance] = useState(false);
-  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
   const [showToast, setShowToast] = useState(false);
 
   const handleSave = () => {
@@ -2504,323 +2578,400 @@ function SettingsView() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  // --- System Settings State ---
+  const [activeSubTab, setActiveSubTab] = useState<'security' | 'team'>('security');
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
+  
+  // Admin Team Management State
+  const [admins, setAdmins] = useState([
+    { id: 1, name: 'Koffi G. Jean-Marc', role: 'Super Admin', status: 'En ligne', email: 'koffi@fintrack.ci' },
+    { id: 2, name: 'Sarah Koné-Yao', role: 'Support Manager', status: 'Inactif', email: 'sarah.kone@fintrack.ci' },
+  ]);
+  const [isEditingAdmin, setIsEditingAdmin] = useState(false);
+  const [currentAdmin, setCurrentAdmin] = useState<any>(null);
+
+  const handleDeleteAdmin = (id: number) => {
+    setAdmins(prev => prev.filter(a => a.id !== id));
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleEditAdmin = (admin: any) => {
+    setCurrentAdmin(admin);
+    setIsEditingAdmin(true);
+  };
+
+  const handleSaveAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const adminData = {
+      id: currentAdmin ? currentAdmin.id : Date.now(),
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      role: formData.get('role') as string,
+      status: currentAdmin ? currentAdmin.status : 'En ligne'
+    };
+
+    if (currentAdmin) {
+      setAdmins(prev => prev.map(a => a.id === currentAdmin.id ? adminData : a));
+    } else {
+      setAdmins(prev => [...prev, adminData]);
+    }
+
+    setIsEditingAdmin(false);
+    setCurrentAdmin(null);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const tabs = [
+    { id: 'security', label: 'Sécurité & Système', icon: <ShieldCheck />, desc: 'Protection et accès' },
+    { id: 'team', label: 'Collaborateurs', icon: <Users />, desc: 'Gestion de l\'équipe' }
+  ];
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="space-y-10 pb-20"
-    >
+    <div className="max-w-7xl mx-auto pb-32">
       <AnimatePresence>
         {showToast && (
           <motion.div 
-            initial={{ opacity: 0, y: -40, x: '-50%' }}
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
             animate={{ opacity: 1, y: 40, x: '-50%' }}
-            exit={{ opacity: 0, y: -40, x: '-50%' }}
-            className="fixed top-0 left-1/2 z-[200] px-10 py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-4 border border-emerald-400"
+            exit={{ opacity: 0, y: -20, x: '-50%' }}
+            className="fixed top-0 left-1/2 z-[200] px-10 py-5 bg-slate-950 text-white rounded-[2rem] font-bold text-[11px] uppercase tracking-[0.2em] shadow-2xl flex items-center gap-4 border border-white/10 backdrop-blur-2xl"
           >
-            <CheckCircle2 size={20} /> Configuration enregistrée avec succès
+            <div className="w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Check size={14} strokeWidth={4} />
+            </div>
+            Configuration mise à jour avec succès
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between mb-8">
-         <div className="flex items-center gap-6">
-            <div className="w-1.5 h-10 bg-[#234D96] rounded-full" />
-            <div className="flex items-baseline gap-4">
-               <h2 className="text-4xl font-black tracking-tighter text-slate-950">Paramètres Système</h2>
-               <p className="text-slate-400 font-medium italic text-xs">Configuration globale.</p>
+      <div className="flex flex-col gap-10">
+        <header className="space-y-4 px-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full border border-slate-200">
+            <Settings size={12} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Configuration Master</span>
+          </div>
+          <h2 className="text-4xl font-black tracking-tight text-slate-950">Paramètres Généraux</h2>
+        </header>
+
+        <div className="grid grid-cols-12 gap-8 items-start px-4">
+          {/* Navigation Sidebar */}
+          <div className="col-span-3 space-y-2">
+            <div className="bg-white p-3 rounded-[2rem] border border-slate-200 shadow-sm">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSubTab(tab.id as any)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 ${
+                    activeSubTab === tab.id 
+                      ? 'bg-slate-950 text-white shadow-xl' 
+                      : 'hover:bg-slate-50 text-slate-500'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    activeSubTab === tab.id ? 'bg-white/10' : 'bg-slate-100 text-slate-400 font-sans'
+                  }`}>
+                    {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18 })}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[11px] font-black uppercase tracking-widest">{tab.label}</p>
+                    <p className={`text-[9px] font-bold opacity-40 ${activeSubTab === tab.id ? 'text-white' : 'text-slate-400'}`}>{tab.desc}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-         </div>
 
-         <div className="flex items-center gap-3 p-2 bg-white/60 backdrop-blur-md rounded-[2rem] border border-slate-200/60 w-fit">
-            {[
-              { id: 'platform', label: 'Plateforme', icon: <Cpu size={16} /> },
-              { id: 'gateways', label: 'Passerelles', icon: <Globe size={16} /> },
-              { id: 'security', label: 'Sécurité', icon: <ShieldCheck size={16} /> },
-              { id: 'team', label: 'Équipe Admin', icon: <Users size={16} /> }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as any)}
-                className={`px-6 py-3.5 rounded-2xl flex items-center gap-4 text-[10px] font-black uppercase tracking-widest transition-all ${
-                  activeSubTab === tab.id 
-                    ? 'bg-[#234D96] text-white shadow-xl shadow-indigo-900/20' 
-                    : 'text-slate-400 hover:text-slate-900 hover:bg-white/80'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-         </div>
-      </div>
+            <div className="mt-8 p-6 bg-slate-50 rounded-[2rem] border border-slate-200">
+               <div className="flex items-center gap-2 text-slate-900 mb-3">
+                  <Info size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Aide Rapide</span>
+               </div>
+               <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                 Les changements appliqués ici sont immédiats et affectent l'ensemble de l'infrastructure FinTrack.
+               </p>
+            </div>
+          </div>
 
-      <div className="grid grid-cols-12 gap-10 mt-6">
-         {/* LEFT SETTINGS PANEL */}
-         <div className="col-span-8 space-y-8">
-            {activeSubTab === 'platform' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
-                   <div className="flex items-center gap-4 mb-4">
-                      <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
-                      <h3 className="text-xl font-black text-slate-900">Identité Visuelle</h3>
-                   </div>
-                   
-                   <div className="grid grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Nom de l'application</label>
-                         <input 
-                           type="text" defaultValue="FinTrack Hub" 
-                           className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
-                         />
-                      </div>
-                      <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 tracking-widest ml-4">Slogan principal</label>
-                         <input 
-                           type="text" defaultValue="Le moteur de facturation IA" 
-                           className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none transition-all"
-                         />
-                      </div>
-                   </div>
+          {/* Main Content Area */}
+          <div className="col-span-9">
+            <motion.div
+              key={activeSubTab}
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="space-y-6"
+            >
+              {activeSubTab === 'security' && (
+                <>
+                  <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 space-y-10">
+                    <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+                       <h3 className="text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
+                          <Lock size={20} className="text-indigo-600" /> Sécurité des Accès
+                       </h3>
+                    </div>
 
-                   <div className="flex items-center gap-8 p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
-                      <div className="w-24 h-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 gap-2 cursor-pointer hover:border-[#3A4DB7] hover:text-[#3A4DB7] transition-all">
-                         <Plus size={24} />
-                         <span className="text-[8px] font-black">Logo</span>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                         <h4 className="text-sm font-black text-slate-900">Logo de la Plateforme</h4>
-                         <p className="text-xs text-slate-400 font-medium">Format SVG ou PNG transparent recommandé. Taille max 2Mo.</p>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8">
-                   <div className="flex items-center gap-4 mb-4">
-                      <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
-                      <h3 className="text-xl font-black text-slate-900">Localisation & Devise</h3>
-                   </div>
-                   <div className="grid grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Fuseau Horaire</label>
-                         <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none appearance-none">
-                            <option>(GMT+00:00) Abidjan / Dakar</option>
-                            <option>(GMT+01:00) Paris / Bruxelles</option>
-                         </select>
-                      </div>
-                      <div className="space-y-3">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Devise par défaut</label>
-                         <select className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-100 rounded-3xl text-sm font-bold focus:border-[#3A4DB7] outline-none appearance-none">
-                            <option>FCFA (Afrique de l'Ouest)</option>
-                            <option>EUR (Euro)</option>
-                            <option>USD (Dollar US)</option>
-                         </select>
-                      </div>
-                   </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeSubTab === 'gateways' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                         <div className="w-1.5 h-10 bg-[#3A4DB7] rounded-full" />
-                         <h3 className="text-xl font-black text-slate-900">Passerelles Mobile Money</h3>
-                      </div>
-                      <span className="px-4 py-2 bg-emerald-50 text-emerald-500 rounded-xl text-[10px] font-black tracking-widest border border-emerald-100">3 Actives</span>
-                   </div>
-
-                   <div className="space-y-4">
-                      {[
-                        { name: 'Wave Money', code: 'wave', status: true, color: 'bg-indigo-400' },
-                        { name: 'Orange Money', code: 'orange', status: true, color: 'bg-orange-500' },
-                        { name: 'Moov Money', code: 'moov', status: false, color: 'bg-blue-600' }
-                      ].map(gateway => (
-                        <div key={gateway.code} className="flex items-center justify-between p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-md transition-all group">
-                           <div className="flex items-center gap-5">
-                              <div className={`w-12 h-12 rounded-2xl ${gateway.color} flex items-center justify-center text-white font-black text-xs shadow-lg`}>
-                                 {gateway.name[0]}
-                              </div>
-                              <div>
-                                 <h4 className="font-black text-slate-900">{gateway.name}</h4>
-                                 <p className="text-[10px] font-bold text-slate-400 tracking-widest">Connecteur API v3.2</p>
-                              </div>
-                           </div>
-                           <div className="flex items-center gap-4">
-                              <button className="px-6 py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#3A4DB7] hover:bg-[#3A4DB7] hover:text-white transition-all shadow-sm">Configurer</button>
-                              <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-all ${gateway.status ? 'bg-emerald-500' : 'bg-slate-200'}`}>
-                                 <div className={`w-4 h-4 bg-white rounded-full transition-all ${gateway.status ? 'translate-x-6' : ''}`} />
-                              </div>
-                           </div>
-                        </div>
-                      ))}
-                   </div>
-
-                   <div className="pt-4">
-                      <button className="w-full py-5 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center gap-3 text-slate-400 hover:text-[#3A4DB7] hover:border-[#3A4DB7] transition-all font-black text-xs tracking-widest group">
-                         <Plus size={18} className="group-hover:scale-125 transition-transform" /> Ajouter une nouvelle passerelle
-                      </button>
-                   </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeSubTab === 'security' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
-                   <div className="flex items-center gap-4 mb-4">
-                      <div className="w-1.5 h-10 bg-rose-500 rounded-full" />
-                      <h3 className="text-xl font-black text-slate-900">Contrôles Systèmes Critiques</h3>
-                   </div>
-
-                   <div className="space-y-10">
-                      <div className="flex items-center justify-between">
-                         <div className="max-w-[70%] space-y-1">
-                            <h4 className="text-base font-black text-slate-900">Mode Maintenance</h4>
-                            <p className="text-xs text-slate-400 font-medium font-sans">Suspendre l'accès public à l'application. Seuls les administrateurs pourront se connecter pour effectuer des mises à jour.</p>
-                         </div>
-                         <div 
-                           onClick={() => setIsMaintenance(!isMaintenance)}
-                           className={`w-16 h-8 rounded-full p-1 cursor-pointer transition-all ${isMaintenance ? 'bg-rose-500' : 'bg-slate-200'}`}
-                         >
-                            <div className={`w-6 h-6 bg-white rounded-full shadow-lg transition-all ${isMaintenance ? 'translate-x-8' : ''}`} />
-                         </div>
-                      </div>
-
-                      <div className="flex items-center justify-between border-t border-slate-50 pt-10">
-                         <div className="max-w-[70%] space-y-1">
-                            <h4 className="text-base font-black text-slate-900">Inscriptions Publiques</h4>
-                            <p className="text-xs text-slate-400 font-medium font-sans">Autoriser de nouveaux marchands à s'inscrire sur la plateforme en libre-service.</p>
-                         </div>
-                         <div 
-                           onClick={() => setIsRegistrationOpen(!isRegistrationOpen)}
-                           className={`w-16 h-8 rounded-full p-1 cursor-pointer transition-all ${isRegistrationOpen ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                         >
-                            <div className={`w-6 h-6 bg-white rounded-full shadow-lg transition-all ${isRegistrationOpen ? 'translate-x-8' : ''}`} />
-                         </div>
-                      </div>
-                   </div>
-                </div>
-
-                <div className="bg-slate-950 p-10 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
-                   <div className="relative z-10 space-y-6">
-                      <div className="flex items-center gap-4">
-                         <Lock size={20} className="text-rose-400" />
-                         <h3 className="text-xl font-black tracking-tight">Réinitialisation des Données</h3>
-                      </div>
-                      <p className="text-slate-400 text-xs font-medium leading-relaxed font-sans italic opacity-60">Cette opération supprimera définitivement tous les logs de transactions de plus de 2 ans pour libérer de l'espace sur les serveurs FinTrack.</p>
-                      <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-[10px] tracking-widest transition-all shadow-xl shadow-rose-900/40">Exécuter le Nettoyage</button>
-                   </div>
-                   <div className="absolute top-0 right-0 w-64 h-64 bg-rose-600 rounded-full blur-[100px] opacity-10 -mr-20 -mt-20 group-hover:opacity-20 transition-opacity" />
-                </div>
-              </motion.div>
-            )}
-
-            {activeSubTab === 'team' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-10">
-                       <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                             <div className="w-1.5 h-10 bg-[#234D96] rounded-full" />
-                             <h3 className="text-xl font-black text-slate-900">Équipe Administrative</h3>
+                    <div className="space-y-8">
+                       <div className="grid grid-cols-1 gap-6">
+                          <div className="space-y-3">
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Mot de passe mestre actuel</label>
+                             <input 
+                               type="password" placeholder="••••••••••••" 
+                               className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                             />
                           </div>
-                          <button className="flex items-center gap-2 px-5 py-3 bg-[#234D96]/10 text-[#234D96] rounded-xl font-black text-[10px] tracking-widest hover:bg-[#234D96] hover:text-white transition-all">
-                             <Plus size={16} /> Ajouter Collaborateur
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nouveau code</label>
+                               <input 
+                                 type="password" placeholder="••••••••" 
+                                 className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                               />
+                            </div>
+                            <div className="space-y-3">
+                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Confirmation</label>
+                               <input 
+                                 type="password" placeholder="••••••••" 
+                                 className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                               />
+                            </div>
+                          </div>
+                       </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 space-y-8">
+                    <h3 className="text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
+                       <Activity size={20} className="text-indigo-600" /> Disponibilité Plateforme
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                       <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <div>
+                             <h4 className="text-sm font-black text-slate-950">Mode Maintenance</h4>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Coupure des accès publics</p>
+                          </div>
+                          <button 
+                            onClick={() => setIsMaintenance(!isMaintenance)}
+                            className={`w-14 h-8 rounded-full p-1 transition-all ${isMaintenance ? 'bg-rose-500' : 'bg-slate-300'}`}
+                          >
+                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${isMaintenance ? 'translate-x-6' : ''}`} />
                           </button>
                        </div>
 
-                   <div className="space-y-4">
-                      {[
-                        { name: 'Koffi G. Jean', role: 'Super Admin', email: 'koffi@fintrack.ci', avatar: 'KG' },
-                        { name: 'Sika Yao', role: 'Audit Manager', email: 'sika@fintrack.ci', avatar: 'SY' }
-                      ].map((member, i) => (
-                        <div key={i} className="flex items-center justify-between p-6 hover:bg-slate-50 rounded-3xl border border-transparent hover:border-slate-100 transition-all">
-                           <div className="flex items-center gap-6">
-                              <div className="w-14 h-14 bg-indigo-50 text-[#3A4DB7] rounded-2xl flex items-center justify-center font-black text-base border border-indigo-100 shadow-sm">
-                                 {member.avatar}
-                              </div>
-                              <div className="space-y-1">
-                                 <h4 className="font-black text-slate-950 text-sm tracking-tight">{member.name}</h4>
-                                 <p className="text-xs text-slate-400 font-bold">{member.email}</p>
-                              </div>
-                           </div>
-                           <div className="flex items-center gap-8 text-right">
-                              <div>
-                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Permissions</p>
-                                 <span className="text-[10px] font-black text-indigo-100 bg-[#3A4DB7] px-3 py-1 rounded-lg">{member.role}</span>
-                              </div>
-                              <button className="p-3 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 size={18} /></button>
-                           </div>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-              </motion.div>
-            )}
-         </div>
+                       <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <div>
+                             <h4 className="text-sm font-black text-slate-950">Inscriptions Libres</h4>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Autoriser nouveaux marchands</p>
+                          </div>
+                          <button 
+                            onClick={() => setIsRegistrationOpen(!isRegistrationOpen)}
+                            className={`w-14 h-8 rounded-full p-1 transition-all ${isRegistrationOpen ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                          >
+                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${isRegistrationOpen ? 'translate-x-6' : ''}`} />
+                          </button>
+                       </div>
+                    </div>
 
-         {/* RIGHT SIDEBAR STATS/HELPER */}
-         <div className="col-span-4 space-y-8">
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-200/60 shadow-sm space-y-8 relative overflow-hidden group">
-               <div className="relative z-10">
-                  <h4 className="text-lg font-black text-slate-950 tracking-tight leading-tight">État de la<br/>Infrastructure</h4>
-                  <div className="mt-8 space-y-6">
-                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base de Données</span>
-                           <span className="text-[10px] font-black text-emerald-500">99.9% Up</span>
-                        </div>
-                        <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
-                           <motion.div initial={{ width: 0 }} animate={{ width: '99%' }} className="h-full bg-emerald-500 rounded-full" />
-                        </div>
+                    <div className="p-8 bg-slate-950 rounded-[1.5rem] text-white flex items-center justify-between">
+                       <div className="flex items-center gap-6">
+                          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-rose-500">
+                             <Trash2 size={24} />
+                          </div>
+                          <div>
+                             <h4 className="text-lg font-black tracking-tight">Purge du Système</h4>
+                             <p className="text-xs text-slate-400 font-medium font-sans">Supprimer les données historiques (+24 mois)</p>
+                          </div>
+                       </div>
+                       <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
+                          Actioner la purge
+                       </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+
+              {activeSubTab === 'team' && (
+                <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden relative">
+                  {/* Editing Modal Overlay */}
+                  <AnimatePresence>
+                    {isEditingAdmin && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 bg-white/90 backdrop-blur-md p-10 flex items-center justify-center"
+                      >
+                         <motion.div 
+                           initial={{ scale: 0.9, opacity: 0 }}
+                           animate={{ scale: 1, opacity: 1 }}
+                           className="w-full max-w-md bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-2xl space-y-8"
+                         >
+                            <div className="flex items-center justify-between">
+                               <h4 className="text-xl font-black text-slate-950 uppercase tracking-tight">
+                                 {currentAdmin ? 'Éditer l\'accès' : 'Nouvel administrateur'}
+                               </h4>
+                               <button onClick={() => setIsEditingAdmin(false)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
+                                  <X size={18} />
+                               </button>
+                            </div>
+
+                            <form onSubmit={handleSaveAdmin} className="space-y-6">
+                               <div className="space-y-2">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom complet</label>
+                                  <input 
+                                     name="name" required defaultValue={currentAdmin?.name}
+                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
+                                     placeholder="ex: Paul Biya"
+                                  />
+                               </div>
+                               <div className="space-y-2">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Adresse E-mail pro</label>
+                                  <input 
+                                     name="email" type="email" required defaultValue={currentAdmin?.email}
+                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
+                                     placeholder="admin@fintrack.ci"
+                                  />
+                               </div>
+                               <div className="space-y-2">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Rôle Système</label>
+                                  <select 
+                                     name="role" defaultValue={currentAdmin?.role || 'Support Manager'}
+                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none appearance-none cursor-pointer"
+                                  >
+                                     <option>Super Admin</option>
+                                     <option>Support Manager</option>
+                                     <option>Auditeur Financier</option>
+                                  </select>
+                               </div>
+
+                               <div className="pt-4 flex gap-4">
+                                  <button type="submit" className="flex-1 px-8 py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                                     {currentAdmin ? 'Mettre à jour' : 'Créer l\'accès'}
+                                  </button>
+                                  <button type="button" onClick={() => setIsEditingAdmin(false)} className="px-8 py-4 bg-slate-100 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">
+                                     Annuler
+                                  </button>
+                               </div>
+                            </form>
+                         </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="p-10 flex items-center justify-between border-b border-slate-100 bg-slate-50/30">
+                     <div className="space-y-1">
+                        <h3 className="text-xl font-black text-slate-950 tracking-tight">Direction Administrative</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gestion des droits et des accès • {admins.length} membres</p>
                      </div>
-                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stockage (S3)</span>
-                           <span className="text-[10px] font-black text-emerald-500">42% Utilisé</span>
-                        </div>
-                        <div className="h-2 bg-slate-50 border border-slate-100 rounded-full overflow-hidden">
-                           <motion.div initial={{ width: 0 }} animate={{ width: '42%' }} className="h-full bg-[#3A4DB7] rounded-full" />
-                        </div>
-                     </div>
+                     <button 
+                        onClick={() => { setCurrentAdmin(null); setIsEditingAdmin(true); }}
+                        className="flex items-center gap-2 px-6 py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
+                     >
+                        <Plus size={16} /> Ajouter un administrateur
+                     </button>
                   </div>
 
-                  <div className="mt-10 p-6 bg-slate-950 rounded-3xl text-white">
-                     <div className="flex items-center gap-3 mb-4">
-                        <Zap size={18} className="text-indigo-400" />
-                        <h5 className="text-xs font-black uppercase tracking-widest">Temps de Réponse API</h5>
-                     </div>
-                     <p className="text-3xl font-black tracking-tight">124<span className="text-sm font-bold text-indigo-400 lowercase ml-1">ms</span></p>
+                  <div className="p-2">
+                    <table className="w-full text-left">
+                       <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          <tr>
+                             <th className="px-8 py-5">Collaborateur</th>
+                             <th className="px-8 py-5">Rôle</th>
+                             <th className="px-8 py-5">Disponibilité</th>
+                             <th className="px-8 py-5 text-right">Actions</th>
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-slate-50">
+                          {admins.map((member) => (
+                            <tr key={member.id} className="group hover:bg-slate-50 transition-colors">
+                               <td className="px-8 py-6">
+                                  <div className="flex items-center gap-4">
+                                     <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-xs text-sans">
+                                        {member.name.split(' ').map(n => n[0]).join('')}
+                                     </div>
+                                     <div>
+                                        <p className="text-sm font-black text-slate-950">{member.name}</p>
+                                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{member.email}</p>
+                                     </div>
+                                  </div>
+                               </td>
+                               <td className="px-8 py-6">
+                                  <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                                    member.role === 'Super Admin' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-100 text-slate-500'
+                                  }`}>
+                                     {member.role}
+                                  </span>
+                               </td>
+                               <td className="px-8 py-6">
+                                  <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${member.status === 'En ligne' ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                     <span className={`w-1.5 h-1.5 rounded-full ${member.status === 'En ligne' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                                     {member.status}
+                                  </span>
+                               </td>
+                               <td className="px-8 py-6 text-right">
+                                  <div className="flex items-center justify-end gap-3">
+                                     <button 
+                                        onClick={() => handleEditAdmin(member)}
+                                        className="p-2.5 text-slate-300 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
+                                     >
+                                        <Settings2 size={16} />
+                                     </button>
+                                     <button 
+                                        onClick={() => handleDeleteAdmin(member.id)}
+                                        className="p-2.5 text-slate-300 hover:text-rose-500 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all font-sans"
+                                     >
+                                        <Trash2 size={16} />
+                                     </button>
+                                  </div>
+                               </td>
+                            </tr>
+                          ))}
+                       </tbody>
+                    </table>
                   </div>
-               </div>
-               <div className="absolute bottom-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-[40px] opacity-40 -mr-16 -mb-16" />
-            </div>
 
-            <div className="bg-[#234D96] p-10 rounded-[3rem] text-white shadow-xl shadow-indigo-900/30 relative overflow-hidden">
-                <div className="relative z-10 flex flex-col gap-8">
-                   <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10">
-                      <Save size={24} className="text-white" />
-                   </div>
-                   <div className="space-y-2">
-                      <h4 className="text-2xl font-black tracking-tight">Enregistrer les Modifications</h4>
-                      <p className="text-indigo-100 text-[11px] font-medium opacity-60 font-sans">N'oubliez pas de valider vos changements pour qu'ils soient appliqués globalement sur tout FinTrack.</p>
-                   </div>
-                   <button 
-                     onClick={handleSave}
-                     className="w-full py-5 bg-white text-[#234D96] rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest hover:scale-[1.03] active:scale-95 transition-all shadow-xl"
-                   >
-                      Mettre à Jour le Système
-                   </button>
-                </div>
-                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent" />
+                  <div className="p-10 pt-14 text-center">
+                     <button className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] hover:text-indigo-600 transition-colors">
+                        Journal d'audit de sécurité complet →
+                     </button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+
+            <div className="mt-12 flex justify-end">
+               <button 
+                  onClick={handleSave}
+                  className="px-14 py-6 bg-slate-950 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-900/20"
+               >
+                  Sauvegarder les modifications Master
+               </button>
             </div>
-         </div>
+          </div>
+        </div>
       </div>
-    </motion.div>
+    </div>
+
+
   );
 }
+
 
 /* ------------------- VIEW: CATALOGUE ------------------- */
 function CatalogueView() {

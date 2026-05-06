@@ -65,7 +65,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 
 // --- Types & Interfaces ---
-type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "pos_fintech" | "pos_bank";
+type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "terminal";
 type WorkflowStep = "CATEGORY" | "OPERATOR" | "SERVICE" | "FORM" | "RECAP" | "SUCCESS";
 type ServiceCategory = "Réseaux" | "Banques" | "Facturiers";
 
@@ -762,7 +762,14 @@ export default function AgentDashboard() {
                 className="w-full pl-16 pr-6 py-5 bg-white border border-slate-200 rounded-[2rem] font-medium text-[#0F172A] placeholder:text-slate-300 outline-none focus:ring-4 focus:ring-fintrack-primary/5 focus:border-fintrack-primary/20 transition-all shadow-sm"
               />
             </div>
-            <button className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-xl shadow-[#3B4CB8]/20 hover:bg-[#2D3A8C] hover:scale-[1.02] transition-all active:scale-95">
+            <button 
+              onClick={() => {
+                setSuccessMessage(`Recherche effectuée pour "${searchQuery}"`);
+                setShowSuccessToast(true);
+                setTimeout(() => setShowSuccessToast(false), 3000);
+              }}
+              className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-xl shadow-[#3B4CB8]/20 hover:bg-[#2D3A8C] hover:scale-[1.02] transition-all active:scale-95"
+            >
               Rechercher
             </button>
           </div>
@@ -861,15 +868,27 @@ export default function AgentDashboard() {
                       )}
                     </td>
                     <td className="py-8 px-10 text-right">
-                      <button 
-                        onClick={() => {
-                          setSelectedTxForReceipt(txn);
-                          setShowReceiptModal(true);
-                        }}
-                        className="px-6 py-2.5 bg-[#3B4CB8] text-white rounded-xl font-black text-[11px] hover:bg-[#2D3A8C] transition-all shadow-lg shadow-blue-900/10 active:scale-95 whitespace-nowrap"
-                      >
-                        Voir Reçu
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setSelectedTxForReceipt(txn);
+                            setShowReceiptModal(true);
+                          }}
+                          className="px-4 py-2.5 bg-[#3B4CB8] text-white rounded-xl font-black text-[11px] hover:bg-[#2D3A8C] transition-all shadow-lg shadow-blue-900/10 active:scale-95 whitespace-nowrap"
+                        >
+                          Voir Reçu
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setSelectedTxForReceipt(txn);
+                            setShowReportModal(true);
+                          }}
+                          className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                          title="Signaler un problème"
+                        >
+                          <AlertTriangle size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -880,6 +899,65 @@ export default function AgentDashboard() {
       </div>
     );
   }
+
+  const [ajustementType, setAjustementType] = useState<"ENTREE" | "SORTIE">("ENTREE");
+  const [ajustementAmount, setAjustementAmount] = useState("");
+  const [ajustementReason, setAjustementReason] = useState("");
+
+  const handleAjustement = () => {
+    setSuccessMessage(`Ajustement de ${ajustementAmount} F (${ajustementType}) enregistré avec succès.`);
+    setShowSuccessToast(true);
+    closeModal();
+    setAjustementAmount("");
+    setAjustementReason("");
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const [ramassageAmount, setRamassageAmount] = useState("");
+  const handleRamassage = () => {
+    setSuccessMessage(`Ramassage de ${ramassageAmount} F effectué avec succès.`);
+    setShowSuccessToast(true);
+    closeModal();
+    setRamassageAmount("");
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const handleVenteLibre = () => {
+    setSuccessMessage(`Vente diverse enregistrée avec succès.`);
+    setShowSuccessToast(true);
+    closeModal();
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const [detteSearch, setDetteSearch] = useState("");
+  const [selectedDette, setSelectedDette] = useState<any>(null);
+  const handlePayDette = () => {
+    setSuccessMessage(`Dette de ${selectedDette.amount} F payée avec succès.`);
+    setShowSuccessToast(true);
+    closeModal();
+    setSelectedDette(null);
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const handleUpdateProfile = () => {
+    setSuccessMessage("Profil mis à jour avec succès.");
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const handleChangePassword = () => {
+    setSuccessMessage("Mot de passe modifié avec succès.");
+    setShowSuccessToast(true);
+    setPasswords({ current: "********", new: "", confirm: "" });
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
+
+  const handleSendFeedback = () => {
+    setSuccessMessage("Merci pour votre retour !");
+    setShowSuccessToast(true);
+    setFeedback({ nature: "Avis général", stars: 5, message: "" });
+    setTimeout(() => setShowSuccessToast(false), 5000);
+  };
 
   function AccountView() {
     return (
@@ -931,7 +1009,10 @@ export default function AgentDashboard() {
                 </div>
               </div>
 
-              <button className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-900/10 hover:bg-[#2D3A8C] transition-all flex items-center justify-center gap-3">
+              <button 
+                onClick={handleUpdateProfile}
+                className="px-10 py-5 bg-[#3B4CB8] text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-blue-900/10 hover:bg-[#2D3A8C] transition-all flex items-center justify-center gap-3"
+              >
                 <FileText size={18} />
                 Mettre à jour le profil
               </button>
@@ -987,7 +1068,10 @@ export default function AgentDashboard() {
                 </div>
               </div>
 
-              <button className="w-full py-5 bg-white border border-blue-600 text-blue-600 font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-blue-50 transition-all flex items-center justify-center gap-3">
+              <button 
+                onClick={handleChangePassword}
+                className="w-full py-5 bg-white border border-blue-600 text-blue-600 font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-blue-50 transition-all flex items-center justify-center gap-3"
+              >
                 <Cpu size={18} />
                 Changer le mot de passe
               </button>
@@ -1049,7 +1133,10 @@ export default function AgentDashboard() {
                 />
               </div>
 
-              <button className="w-full py-6 bg-[#55C59C] text-white font-black text-sm uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-emerald-500/10 hover:bg-[#45B08B] transition-all flex items-center justify-center gap-3">
+              <button 
+                onClick={handleSendFeedback}
+                className="w-full py-6 bg-[#55C59C] text-white font-black text-sm uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-emerald-500/10 hover:bg-[#45B08B] transition-all flex items-center justify-center gap-3"
+              >
                 <MessageCircle size={20} />
                 Envoyer mon retour
               </button>
@@ -1254,7 +1341,7 @@ export default function AgentDashboard() {
                 </button>
               </div>
 
-              {/* Notification / Comments Icon */}
+              {/* Notification & Communications */}
               <div className="relative">
                 <button 
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -1270,13 +1357,18 @@ export default function AgentDashboard() {
 
                 <AnimatePresence>
                   {isNotificationsOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <>
+                      <div 
+                        className="fixed inset-0 z-[90]" 
+                        onClick={() => setIsNotificationsOpen(false)} 
+                      />
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                       <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                         <div>
                           <h3 className="text-xl font-black text-slate-900 tracking-tight">Journal d'Activité</h3>
@@ -1321,6 +1413,7 @@ export default function AgentDashboard() {
                         </button>
                       </div>
                     </motion.div>
+                    </>
                   )}
                 </AnimatePresence>
               </div>
@@ -1344,12 +1437,17 @@ export default function AgentDashboard() {
 
                 <AnimatePresence>
                   {isProfileMenuOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-4 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.1)] border border-slate-100 overflow-hidden z-50 p-2"
-                    >
+                    <>
+                      <div 
+                        className="fixed inset-0 z-[90]" 
+                        onClick={() => setIsProfileMenuOpen(false)} 
+                      />
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full right-0 mt-4 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.1)] border border-slate-100 overflow-hidden z-[100] p-2"
+                      >
                       <div className="p-4 border-b border-slate-50 mb-2">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Active</p>
                         <p className="text-xs font-bold text-slate-900">Agent ID: #001</p>
@@ -1384,6 +1482,7 @@ export default function AgentDashboard() {
                          <LogOut size={16} /> Déconnexion
                       </button>
                     </motion.div>
+                    </>
                   )}
                 </AnimatePresence>
               </div>
@@ -1468,6 +1567,54 @@ export default function AgentDashboard() {
                     ))}
                   </div>
 
+                  {/* Terminal POS - New Trigger Section */}
+                  <div className="bg-white border border-slate-100/60 rounded-[3rem] p-4 shadow-sm overflow-hidden group">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                       <div className="w-full md:w-80 h-64 bg-slate-50 rounded-[2.5rem] relative overflow-hidden flex items-center justify-center p-8">
+                          <div className="absolute inset-0 bg-gradient-to-br from-fintrack-primary/10 to-transparent opacity-50" />
+                          <div className="relative z-10 w-full h-full border-4 border-white rounded-[2rem] shadow-2xl bg-white/40 backdrop-blur-md flex flex-col items-center justify-center gap-4 group-hover:scale-105 transition-transform duration-500">
+                             <div className="w-20 h-20 bg-fintrack-primary text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-900/40">
+                                <MonitorSmartphone size={48} strokeWidth={2.5} />
+                             </div>
+                             <div className="flex flex-col items-center gap-1">
+                                <div className="flex items-center gap-1.5">
+                                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                   <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Connecté</span>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                       
+                       <div className="flex-1 space-y-6 text-center md:text-left py-4 px-4 md:px-0">
+                          <div className="space-y-2">
+                             <h3 className="text-4xl font-black text-slate-950 tracking-tighter">Terminal Mobile Money</h3>
+                             <p className="text-slate-500 font-medium max-w-lg leading-relaxed text-sm">
+                                Accédez à tous les services de réseaux, transferts bancaires et règlements de factures depuis votre interface centralisée.
+                             </p>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                             {categories.map((cat) => (
+                               <div key={cat.id} className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                                  <span className={cat.iconColor}>{React.cloneElement(cat.icon as React.ReactElement<any>, { size: 14 })}</span>
+                                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{cat.title.split(" ")[0]}</span>
+                               </div>
+                             ))}
+                          </div>
+
+                          <button 
+                            onClick={() => {
+                              setWorkflowStep("CATEGORY");
+                              setActiveModal("terminal");
+                            }}
+                            className="w-full md:w-auto px-10 py-5 bg-fintrack-primary text-white rounded-[2rem] font-black text-[12px] uppercase tracking-[0.2em] shadow-2xl shadow-blue-900/30 hover:bg-fintrack-dark hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3"
+                          >
+                             Ouvrir le Terminal POS <ArrowRight size={18} strokeWidth={3} />
+                          </button>
+                       </div>
+                    </div>
+                  </div>
+
                   {/* Quick Actions - Lighter Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                     {[
@@ -1489,444 +1636,6 @@ export default function AgentDashboard() {
                       </button>
                     ))}
                   </div>
-
-                  {/* WORKFLOW NAVIGATION HEADER */}
-                  {workflowStep !== "CATEGORY" && (
-                    <div className="flex items-center justify-between mb-2">
-                      <button 
-                        onClick={handleBack}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-black text-xs uppercase tracking-widest"
-                      >
-                        <ArrowLeft size={16} /> Retour
-                      </button>
-                      <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                        <span>{selectedCategory}</span>
-                        {selectedOperator && (
-                          <>
-                            <ChevronRight size={10} />
-                            <span>{selectedOperator}</span>
-                          </>
-                        )}
-                        {selectedService && (
-                          <>
-                            <ChevronRight size={10} />
-                            <span>{selectedService.title}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* DYNAMIC WORKFLOW CONTENT */}
-                  <AnimatePresence mode="wait">
-                    {workflowStep === "CATEGORY" && (
-                      <motion.div 
-                        key="category"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="space-y-6"
-                      >
-                        <h2 className="text-xl font-black text-slate-900 tracking-tight px-4">Terminal POS</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          {categories.map((cat) => (
-                            <button
-                              key={cat.id}
-                              onClick={() => {
-                                setSelectedCategory(cat.id as ServiceCategory);
-                                setWorkflowStep("OPERATOR");
-                              }}
-                              className="bg-white border border-slate-100/60 rounded-[2.5rem] p-8 flex flex-col items-center gap-6 hover:shadow-xl hover:border-transparent transition-all duration-500 group relative overflow-hidden"
-                            >
-                              <div className={`w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center ${cat.iconColor} group-hover:scale-110 transition-all duration-500`}>
-                                {React.cloneElement(cat.icon as React.ReactElement<any>, { size: 32 })}
-                              </div>
-                              <div className="text-center space-y-1">
-                                <span className="block text-lg font-black text-slate-900 tracking-tight">{cat.title}</span>
-                                <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest">Choisir service</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {workflowStep === "OPERATOR" && (
-                      <motion.div 
-                        key="operator"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-6"
-                      >
-                        <h2 className="text-xl font-black text-slate-900 tracking-tight px-4 underline decoration-fintrack-primary/10 underline-offset-8">Choisir l'opérateur</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {getOperators().map((op) => (
-                            <button
-                              key={op.id}
-                              onClick={() => {
-                                setSelectedOperator(op.name);
-                                setWorkflowStep("SERVICE");
-                              }}
-                              className={`bg-white border-2 ${op.color} rounded-[2.5rem] p-8 flex items-center gap-6 hover:shadow-lg transition-all group`}
-                            >
-                              <div className="w-16 h-16 bg-slate-50 rounded-2xl p-2 flex items-center justify-center overflow-hidden">
-                                 <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
-                              </div>
-                              <span className="text-xl font-black text-slate-900 tracking-tight group-hover:text-fintrack-primary transition-colors">{op.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {workflowStep === "SERVICE" && (
-                      <motion.div 
-                        key="service"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                      >
-                        {services.map((srv) => (
-                          <button
-                            key={srv.id}
-                            onClick={() => {
-                              setSelectedService(srv);
-                              setWorkflowStep("FORM");
-                            }}
-                            className={`${srv.color} rounded-[2rem] p-10 flex flex-col gap-6 relative overflow-hidden group hover:shadow-xl transition-all h-64 md:h-auto`}
-                          >
-                             <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center ${srv.iconColor} shadow-sm group-hover:scale-110 transition-transform`}>
-                                {srv.icon}
-                             </div>
-                             <div className="text-left space-y-1">
-                                <p className="text-2xl font-black text-slate-900 tracking-tight">{srv.title}</p>
-                                <p className="text-xs font-bold text-slate-500 opacity-80 uppercase tracking-widest">{srv.desc}</p>
-                             </div>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-
-                    {workflowStep === "FORM" && (
-                      <motion.div 
-                        key="form"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="w-full max-w-2xl mx-auto space-y-12"
-                      >
-                        <div className="text-center space-y-6">
-                           <div className="inline-flex items-center gap-3 bg-fintrack-primary/5 px-4 py-2 rounded-full border border-fintrack-primary/10">
-                              <span className="text-[10px] font-black text-fintrack-primary uppercase tracking-[0.3em]">Configuration Opération</span>
-                           </div>
-                           <div className="flex items-center justify-center gap-4">
-                              <input 
-                                type="text" 
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0"
-                                className="text-7xl font-mono font-black text-slate-950 bg-transparent outline-none w-full max-w-[400px] text-right placeholder:text-slate-100 selection:bg-fintrack-primary/20"
-                              />
-                              <span className="text-4xl font-black text-slate-300">CFA</span>
-                           </div>
-                        </div>
-
-                        <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-8">
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             {/* FINTECH CATEGORY */}
-                             {selectedCategory === "Réseaux" && (
-                               <>
-                                 {["DEPOT", "RETRAIT", "CREDIT", "INTERNET", "APPEL"].includes(selectedService?.id || "") && (
-                                   <div className="space-y-3">
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Numéro de Téléphone</label>
-                                     <div className="relative">
-                                       <PhoneIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                       <input 
-                                         type="tel" 
-                                         value={phone}
-                                         onChange={(e) => setPhone(e.target.value)}
-                                         placeholder="Ex: 97 00 00 00" 
-                                         className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                       />
-                                     </div>
-                                   </div>
-                                 )}
-
-                                 {selectedService?.id === "DEPOT" && (
-                                   <div className="space-y-3">
-                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom COMPLET du Bénéficiaire</label>
-                                     <div className="relative">
-                                       <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                       <input 
-                                         type="text" 
-                                         value={beneficiaryName}
-                                         onChange={(e) => setBeneficiaryName(e.target.value)}
-                                         placeholder="Nom complet" 
-                                         className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                       />
-                                     </div>
-                                   </div>
-                                 )}
-
-                                 {["FACTURE", "ABONNEMENT"].includes(selectedService?.id || "") && (
-                                   <>
-                                     <div className="space-y-3">
-                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">
-                                         {selectedService?.id === "FACTURE" ? "N° Police / Identifiant Compteur" : "N° Carte / Abonné"}
-                                       </label>
-                                       <div className="relative">
-                                         <Cpu className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                         <input 
-                                           type="text" 
-                                           value={subscriberId}
-                                           onChange={(e) => setSubscriberId(e.target.value)}
-                                           placeholder="Référence..." 
-                                           className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                         />
-                                       </div>
-                                     </div>
-                                     <div className="space-y-3">
-                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom de l'Abonné / Titulaire</label>
-                                       <div className="relative">
-                                         <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                         <input 
-                                           type="text" 
-                                           value={beneficiaryName}
-                                           onChange={(e) => setBeneficiaryName(e.target.value)}
-                                           placeholder="Nom complet" 
-                                           className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                         />
-                                       </div>
-                                     </div>
-                                   </>
-                                 )}
-                               </>
-                             )}
-
-                             {/* BANK CATEGORY */}
-                             {selectedCategory === "Banques" && (
-                               <>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">N° de compte bancaire (RIB)</label>
-                                   <div className="relative">
-                                     <Landmark className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                     <input 
-                                       type="text" 
-                                       value={rib}
-                                       onChange={(e) => setRib(e.target.value)}
-                                       placeholder="RIB..." 
-                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                     />
-                                   </div>
-                                 </div>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom du Bénéficiaire / Client</label>
-                                   <div className="relative">
-                                     <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                     <input 
-                                       type="text" 
-                                       value={beneficiaryName}
-                                       onChange={(e) => setBeneficiaryName(e.target.value)}
-                                       placeholder="Nom complet" 
-                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                     />
-                                   </div>
-                                 </div>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Nom du Déposant / Retirant</label>
-                                   <div className="relative">
-                                     <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                     <input 
-                                       type="text" 
-                                       value={depositorName}
-                                       onChange={(e) => setDepositorName(e.target.value)}
-                                       placeholder="Nom complet" 
-                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                     />
-                                   </div>
-                                 </div>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">N° Pièce Identité (KYC)</label>
-                                   <div className="relative">
-                                     <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                     <input 
-                                       type="text" 
-                                       value={idNumber}
-                                       onChange={(e) => setIdNumber(e.target.value)}
-                                       placeholder="CIP / NPI / Passeport" 
-                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all"
-                                     />
-                                   </div>
-                                 </div>
-                               </>
-                             )}
-
-                             {/* SALES CATEGORY */}
-                             {selectedCategory === "Facturiers" && (
-                               <>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Article Sélectionné</label>
-                                   <div className="relative">
-                                     <ShoppingBag className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                     <select 
-                                       value={selectedArticle} 
-                                       onChange={(e) => setSelectedArticle(e.target.value)}
-                                       className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all appearance-none"
-                                     >
-                                       <option value="">Choisir un article</option>
-                                       <option value="SIM MTN">SIM MTN</option>
-                                       <option value="SIM MOOV">SIM Moov</option>
-                                       <option value="SIM CELTIS">SIM Celtis</option>
-                                       <option value="RECHARGE">Carte recharge</option>
-                                     </select>
-                                   </div>
-                                 </div>
-                                 <div className="space-y-3">
-                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Quantité</label>
-                                   <div className="flex items-center gap-4">
-                                      <button onClick={() => setQuantity(Math.max(1, parseInt(quantity) - 1).toString())} className="w-16 h-16 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center font-black">-</button>
-                                      <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="flex-1 h-16 bg-slate-50 border-transparent text-center font-black text-xl rounded-2xl outline-none" />
-                                      <button onClick={() => setQuantity((parseInt(quantity) + 1).toString())} className="w-16 h-16 bg-fintrack-primary text-white rounded-2xl flex items-center justify-center font-black">+</button>
-                                   </div>
-                                 </div>
-                               </>
-                             )}
-                           </div>
-
-                           <div className="pt-4 border-t border-slate-50">
-                              <button 
-                                onClick={() => setWorkflowStep("RECAP")}
-                                disabled={!amount || (!phone && selectedService?.id !== "ABONNEMENT")}
-                                className="w-full py-6 bg-fintrack-primary text-white rounded-2xl font-black text-[12px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-blue-900/30 hover:bg-fintrack-dark disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
-                              >
-                                Suivant <ArrowRight size={18} />
-                              </button>
-                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {workflowStep === "RECAP" && (
-                       <motion.div 
-                         key="recap"
-                         initial={{ opacity: 0, y: 50 }}
-                         animate={{ opacity: 1, y: 0 }}
-                         exit={{ opacity: 0, scale: 0.9 }}
-                         className="w-full max-xl mx-auto bg-white rounded-[3.5rem] border border-slate-100 shadow-2xl overflow-hidden"
-                       >
-                         <div className="bg-fintrack-primary p-12 text-center space-y-4">
-                            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white mx-auto backdrop-blur-md mb-2">
-                               <ShieldCheck size={32} />
-                            </div>
-                            <h2 className="text-2xl font-black text-white tracking-tight italic">Confirmation Finale</h2>
-                            <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Vérifiez les informations</p>
-                         </div>
-
-                         <div className="p-10 space-y-8">
-                            <div className="space-y-6">
-                               <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</span>
-                                  <span className="text-[13px] font-black text-slate-900 uppercase">{selectedService?.title} ({selectedOperator || "Réseau Interne"})</span>
-                               </div>
-                               <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Montant</span>
-                                  <span className="text-xl font-black text-slate-900">{amount} F</span>
-                               </div>
-                               
-                               {phone && (
-                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">N° Client</span>
-                                   <span className="text-[13px] font-black text-slate-900">{phone}</span>
-                                 </div>
-                               )}
-                               
-                               {subscriberId && (
-                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID / Police</span>
-                                   <span className="text-[13px] font-black text-slate-900">{subscriberId}</span>
-                                 </div>
-                               )}
-
-                               {beneficiaryName && (
-                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bénéficiaire</span>
-                                   <span className="text-[13px] font-black text-slate-900 uppercase">{beneficiaryName}</span>
-                                 </div>
-                               )}
-
-                               {rib && (
-                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RIB</span>
-                                   <span className="text-[13px] font-black text-slate-900 uppercase">{rib}</span>
-                                 </div>
-                               )}
-
-                               {selectedArticle && (
-                                 <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-                                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Article ({quantity})</span>
-                                   <span className="text-[13px] font-black text-slate-900 uppercase">{selectedArticle}</span>
-                                 </div>
-                               )}
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                               <button 
-                                 onClick={() => setWorkflowStep("SUCCESS")}
-                                 className="w-full py-6 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/30 hover:bg-emerald-600 transition-all active:scale-95"
-                               >
-                                 Confirmer & Exécuter
-                               </button>
-                               <button 
-                                 onClick={() => setWorkflowStep("FORM")}
-                                 className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900 transition-colors"
-                               >
-                                 Modifier les informations
-                               </button>
-                            </div>
-                         </div>
-                       </motion.div>
-                    )}
-
-                    {workflowStep === "SUCCESS" && (
-                      <motion.div 
-                        key="success"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="w-full max-w-xl mx-auto bg-white rounded-[4rem] p-12 border border-slate-100 shadow-2xl text-center space-y-10 focus:outline-none"
-                      >
-                         <div className="w-28 h-28 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/30">
-                            <Check size={56} strokeWidth={4} />
-                         </div>
-
-                         <div className="space-y-3">
-                            <h2 className="text-4xl font-black text-slate-950 tracking-tighter leading-none">Opération Terminée</h2>
-                            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Transaction Authentifiée</p>
-                         </div>
-
-                         <div className="bg-[#FCFDFF] border border-slate-50 rounded-[2.5rem] p-8 space-y-4">
-                            <div className="flex justify-between items-center pb-4 border-b border-slate-100/50">
-                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Montant</span>
-                               <span className="text-xl font-mono font-black text-slate-950">{amount} F</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">ID Unique</span>
-                               <span className="text-xs font-mono font-black text-fintrack-primary uppercase">TX-{Math.floor(Math.random() * 1000000)}</span>
-                            </div>
-                         </div>
-
-                         <div className="flex flex-col gap-4">
-                            <button 
-                              onClick={closeModal}
-                              className="w-full py-6 bg-slate-950 text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-fintrack-primary transition-all duration-300"
-                            >
-                               Nouvelle Opération
-                            </button>
-                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
                   {/* SECTION: ACTIVITES RECENTES (CLEAN PROFESSIONAL TABLE) */}
                   <div className="mt-12 space-y-6">
@@ -2128,10 +1837,11 @@ export default function AgentDashboard() {
                     {activeModal === "ajustement" && "Ajustement de Caisse"}
                     {activeModal === "recharge" && "Approvisionnement Flotte"}
                     {activeModal === "dette" && "Rembourser Dette"}
-                    {activeModal === "pos_fintech" && "Fintech & Mobile Money"}
-                    {activeModal === "pos_bank" && "Banque & Transferts"}
+                    {activeModal === "terminal" && "Terminal POS Multi-Services"}
                   </h2>
-                  <p className="text-slate-400 text-sm font-bold">Remplissez les informations ci-dessous.</p>
+                  <p className="text-slate-400 text-sm font-bold">
+                    {activeModal === "terminal" ? workflowStep : "Remplissez les informations ci-dessous."}
+                  </p>
                 </div>
                 <button 
                   onClick={closeModal}
@@ -2142,98 +1852,266 @@ export default function AgentDashboard() {
               </div>
 
               <div className="p-10 pt-6">
-                {activeModal === "pos_fintech" && (
-                  <div className="space-y-8">
-                    {step === 1 ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        {operators.map((op) => (
-                          <button 
-                            key={op.id}
-                            onClick={() => {
-                              setSelectedOperator(op.name);
-                              setStep(2);
-                            }}
-                            className="p-6 bg-[#F8FAFC] border-2 border-transparent hover:border-[#234D96] rounded-[2rem] flex flex-col items-center gap-4 transition-all group"
+                {activeModal === "terminal" && (
+                   <div className="space-y-8">
+                      {/* Terminal Workflow relocated into the modal */}
+                      <AnimatePresence mode="wait">
+                        {workflowStep === "CATEGORY" && (
+                          <motion.div 
+                            key="category"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="space-y-6"
                           >
-                            <div className="w-20 h-20 bg-white rounded-[1.5rem] p-4 shadow-sm group-hover:scale-110 transition-transform">
-                              <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {categories.map((cat) => (
+                                <button
+                                  key={cat.id}
+                                  onClick={() => {
+                                    setSelectedCategory(cat.id as ServiceCategory);
+                                    setWorkflowStep("OPERATOR");
+                                  }}
+                                  className="bg-slate-50 border border-slate-100 rounded-[2rem] p-6 flex items-center gap-4 hover:shadow-lg hover:bg-white transition-all group"
+                                >
+                                  <div className={`w-14 h-14 rounded-xl bg-white flex items-center justify-center ${cat.iconColor} shadow-sm group-hover:scale-110 transition-transform`}>
+                                    {React.cloneElement(cat.icon as React.ReactElement<any>, { size: 24 })}
+                                  </div>
+                                  <div className="text-left">
+                                    <span className="block text-sm font-black text-slate-900 tracking-tight">{cat.title}</span>
+                                    <span className="block text-[8px] font-black text-slate-300 uppercase tracking-widest">Choisir réseau</span>
+                                  </div>
+                                </button>
+                              ))}
                             </div>
-                            <span className="font-black text-slate-900 text-sm">{op.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                           <div className="w-12 h-12 bg-white rounded-xl p-2">
-                             <img src={operators.find(o => o.name === selectedOperator)?.img} className="w-full h-full object-contain" />
-                           </div>
-                           <div className="flex-1">
-                             <h4 className="font-black text-slate-900 text-sm">{selectedOperator}</h4>
-                             <p className="text-[10px] font-black text-[#234D96] tracking-widest uppercase">Opération Mobile Money</p>
-                           </div>
-                           <button onClick={() => setStep(1)} className="text-xs font-black text-blue-500 uppercase">Changer</button>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                           <button className="flex-1 py-4 bg-[#6ABCA6]/10 text-[#6ABCA6] border border-[#6ABCA6]/20 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
-                             <ArrowDownLeft size={16} /> Dépôt
-                           </button>
-                           <button className="flex-1 py-4 bg-blue-50 text-[#234D96] border border-blue-100 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2">
-                             <ArrowUpRight size={16} /> Retrait
-                           </button>
-                        </div>
+                          </motion.div>
+                        )}
 
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Numéro de téléphone</label>
-                            <div className="relative group">
-                              <Smartphone size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#234D96] transition-colors" />
-                              <input 
-                                type="tel" 
-                                placeholder="+229 00 00 00 00"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full pl-14 pr-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-2xl font-bold text-slate-900 placeholder:text-slate-300 outline-none transition-all"
-                              />
+                        {workflowStep === "OPERATOR" && (
+                          <motion.div 
+                            key="operator"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-6"
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                               <button onClick={() => setWorkflowStep("CATEGORY")} className="text-[10px] font-black text-fintrack-primary uppercase tracking-widest flex items-center gap-1"><ArrowLeft size={12}/> Retour</button>
+                               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{selectedCategory}</span>
                             </div>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Montant (F CFA)</label>
-                            <div className="relative group">
-                              <Coins size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#234D96] transition-colors" />
-                              <input 
-                                type="number" 
-                                placeholder="0"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="w-full pl-14 pr-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-[#234D96] rounded-2xl font-bold text-slate-900 placeholder:text-slate-300 outline-none transition-all"
-                              />
+                            <div className="grid grid-cols-2 gap-4">
+                              {getOperators().map((op) => (
+                                <button
+                                  key={op.id}
+                                  onClick={() => {
+                                    setSelectedOperator(op.name);
+                                    setWorkflowStep("SERVICE");
+                                  }}
+                                  className="bg-white border-2 border-slate-50 hover:border-fintrack-primary/20 rounded-2xl p-6 flex flex-col items-center gap-4 transition-all group"
+                                >
+                                  <div className="w-16 h-16 bg-slate-50 rounded-xl p-3">
+                                     <img src={op.img} alt={op.name} className="w-full h-full object-contain" />
+                                  </div>
+                                  <span className="text-xs font-black text-slate-900 tracking-tight text-center">{op.name}</span>
+                                </button>
+                              ))}
                             </div>
-                          </div>
-                        </div>
+                          </motion.div>
+                        )}
 
-                        <button 
-                          onClick={closeModal}
-                          className="w-full py-5 bg-[#234D96] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-                        >
-                          Valider l'opération <Check size={20} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                        {workflowStep === "SERVICE" && (
+                          <motion.div 
+                            key="service"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-6"
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                               <button onClick={() => setWorkflowStep("OPERATOR")} className="text-[10px] font-black text-fintrack-primary uppercase tracking-widest flex items-center gap-1"><ArrowLeft size={12}/> Retour</button>
+                               <div className="flex items-center gap-2">
+                                  <img src={getOperators().find(o => o.name === selectedOperator)?.img} className="w-4 h-4 object-contain" />
+                                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{selectedOperator}</span>
+                               </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              {services.map((srv) => (
+                                <button
+                                  key={srv.id}
+                                  onClick={() => {
+                                    setSelectedService(srv);
+                                    setWorkflowStep("FORM");
+                                  }}
+                                  className={`${srv.color} rounded-2xl p-6 flex flex-col gap-4 text-left group hover:shadow-md transition-all`}
+                                >
+                                   <div className={`w-10 h-10 rounded-lg bg-white flex items-center justify-center ${srv.iconColor} shadow-sm`}>
+                                      {React.cloneElement(srv.icon as React.ReactElement<any>, { size: 18 })}
+                                   </div>
+                                   <div>
+                                      <p className="text-xs font-black text-slate-900">{srv.title}</p>
+                                      <p className="text-[9px] font-bold text-slate-500 opacity-70 uppercase tracking-tighter">{srv.desc}</p>
+                                   </div>
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {workflowStep === "FORM" && (
+                          <motion.div 
+                            key="form"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="space-y-8"
+                          >
+                             <div className="flex items-center justify-between mb-4">
+                               <button onClick={() => setWorkflowStep("SERVICE")} className="text-[10px] font-black text-fintrack-primary uppercase tracking-widest flex items-center gap-1"><ArrowLeft size={12}/> Retour</button>
+                               <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black text-fintrack-primary uppercase tracking-widest">{selectedService?.title}</span>
+                                  <span className="text-[10px] font-black text-slate-300 uppercase">/</span>
+                                  <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{selectedOperator}</span>
+                               </div>
+                            </div>
+
+                            <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col items-center gap-4">
+                               <div className="flex items-baseline gap-2">
+                                  <input 
+                                    type="text" 
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    placeholder="0"
+                                    className="text-5xl font-mono font-black text-slate-950 bg-transparent outline-none w-full max-w-[200px] text-center placeholder:text-slate-200"
+                                  />
+                                  <span className="text-xl font-black text-slate-400 uppercase">CFA</span>
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                               {selectedCategory === "Réseaux" && (
+                                 <>
+                                   {["DEPOT", "RETRAIT", "CREDIT", "INTERNET", "APPEL"].includes(selectedService?.id || "") && (
+                                     <div className="space-y-2">
+                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Téléphone</label>
+                                       <div className="relative">
+                                         <PhoneIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                         <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="00 00 00 00" className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all text-lg" />
+                                       </div>
+                                     </div>
+                                   )}
+                                   {selectedService?.id === "DEPOT" && (
+                                     <div className="space-y-2">
+                                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Bénéficiaire</label>
+                                       <div className="relative">
+                                         <User className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                         <input type="text" value={beneficiaryName} onChange={(e) => setBeneficiaryName(e.target.value)} placeholder="Nom complet" className="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-2xl outline-none font-bold text-slate-900 focus:ring-2 focus:ring-fintrack-primary/20 transition-all" />
+                                       </div>
+                                     </div>
+                                   )}
+                                 </>
+                               )}
+
+                               {selectedCategory === "Banques" && (
+                                 <div className="space-y-4">
+                                   <div className="space-y-2">
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">RIB</label>
+                                     <input type="text" value={rib} onChange={(e) => setRib(e.target.value)} placeholder="RIB..." className="w-full px-6 py-5 bg-white border border-slate-100 rounded-2xl outline-none font-bold text-slate-900" />
+                                   </div>
+                                   <div className="space-y-2">
+                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Bénéficiaire</label>
+                                     <input type="text" value={beneficiaryName} onChange={(e) => setBeneficiaryName(e.target.value)} placeholder="Nom complet" className="w-full px-6 py-5 bg-white border border-slate-100 rounded-2xl outline-none font-bold text-slate-900" />
+                                   </div>
+                                 </div>
+                               )}
+                            </div>
+
+                            <button 
+                              onClick={() => setWorkflowStep("RECAP")}
+                              disabled={!amount}
+                              className="w-full py-6 bg-fintrack-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
+                            >
+                               Valider pour Confirmation
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {workflowStep === "RECAP" && (
+                          <motion.div 
+                            key="recap"
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-6"
+                          >
+                             <div className="p-8 bg-slate-900 rounded-[2.5rem] text-center space-y-4">
+                                <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Confirmez les détails</p>
+                                <div className="space-y-1">
+                                   <p className="text-xs font-black text-fintrack-primary uppercase">{selectedService?.title} / {selectedOperator}</p>
+                                   <h2 className="text-4xl font-black text-white">{amount} F</h2>
+                                </div>
+                                <div className="text-white/70 text-sm font-medium">{phone}</div>
+                             </div>
+
+                             <div className="flex flex-col gap-3">
+                                <button 
+                                  onClick={() => setWorkflowStep("SUCCESS")}
+                                  className="w-full py-6 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
+                                >
+                                   Confirmer l'opération
+                                </button>
+                                <button onClick={() => setWorkflowStep("FORM")} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900">Corriger</button>
+                             </div>
+                          </motion.div>
+                        )}
+
+                        {workflowStep === "SUCCESS" && (
+                          <motion.div 
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center space-y-8 py-4"
+                          >
+                             <div className="w-24 h-24 bg-emerald-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/40">
+                                <Check size={48} strokeWidth={4} />
+                             </div>
+                             <div className="space-y-2">
+                                <h3 className="text-3xl font-black text-slate-900 tracking-tight">Succès !</h3>
+                                <p className="text-sm font-medium text-slate-500">La transaction a été exécutée et enregistrée.</p>
+                             </div>
+                             <button 
+                               onClick={() => {
+                                 setAmount("");
+                                 setPhone("");
+                                 setWorkflowStep("CATEGORY");
+                               }}
+                               className="w-full py-5 bg-slate-950 text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                             >
+                               Nouvelle opération
+                             </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                   </div>
                 )}
 
                 {activeModal === "vente" && (
                    <div className="space-y-8">
                       <div className="grid grid-cols-2 gap-4">
                         {[
-                          { name: "SBEE", icon: <Zap size={18} />, color: "bg-amber-500" },
-                          { name: "CANAL+", icon: <Tv size={18} />, color: "bg-blue-600" },
-                          { name: "SONEB", icon: <Activity size={18} />, color: "bg-sky-500" },
-                          { name: "VISA/MC", icon: <CreditCard size={18} />, color: "bg-fintrack-primary" },
+                          { id: "sbee", name: "SBEE", icon: <Zap size={18} />, color: "bg-amber-500" },
+                          { id: "canal", name: "CANAL+", icon: <Tv size={18} />, color: "bg-blue-600" },
+                          { id: "soneb", name: "SONEB", icon: <Activity size={18} />, color: "bg-sky-500" },
+                          { id: "visa", name: "VISA/MC", icon: <CreditCard size={18} />, color: "bg-fintrack-primary" },
                         ].map((item) => (
-                          <button key={item.name} className="flex items-center gap-4 p-5 bg-slate-50 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 rounded-2xl transition-all group">
+                          <button 
+                            key={item.id} 
+                            onClick={() => {
+                              setSelectedCategory("Facturiers");
+                              setSelectedOperator(item.name);
+                              setWorkflowStep("FORM");
+                              setActiveModal("terminal");
+                            }}
+                            className="flex items-center gap-4 p-5 bg-slate-50 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 rounded-2xl transition-all group"
+                          >
                              <div className={`w-10 h-10 rounded-xl ${item.color} text-white flex items-center justify-center`}>
                                {item.icon}
                              </div>
@@ -2241,7 +2119,10 @@ export default function AgentDashboard() {
                           </button>
                         ))}
                       </div>
-                      <button className="w-full py-5 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-fintrack-primary transition-all flex items-center justify-center gap-3">
+                      <button 
+                        onClick={handleVenteLibre}
+                        className="w-full py-5 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-fintrack-primary transition-all flex items-center justify-center gap-3"
+                      >
                          Vente Libre <ShoppingBag size={16} />
                       </button>
                    </div>
@@ -2260,9 +2141,15 @@ export default function AgentDashboard() {
                          <input 
                            type="number" 
                            placeholder="0"
+                           value={ramassageAmount}
+                           onChange={(e) => setRamassageAmount(e.target.value)}
                            className="w-full px-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-blue-600 rounded-2xl font-bold text-slate-900 outline-none transition-all text-2xl"
                          />
-                         <button className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all">
+                         <button 
+                           onClick={handleRamassage}
+                           disabled={!ramassageAmount}
+                           className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all disabled:opacity-50"
+                         >
                            Confirmer le ramassage
                          </button>
                       </div>
@@ -2279,19 +2166,37 @@ export default function AgentDashboard() {
                       </div>
                       <div className="space-y-4">
                          <div className="grid grid-cols-2 gap-4">
-                            <button className="py-4 bg-white border border-slate-200 rounded-xl font-black text-[10px] uppercase text-slate-600">Entrée (Ajout)</button>
-                            <button className="py-4 bg-white border border-slate-200 rounded-xl font-black text-[10px] uppercase text-slate-600">Sortie (Retrait)</button>
+                            <button 
+                              onClick={() => setAjustementType("ENTREE")}
+                              className={`py-4 rounded-xl font-black text-[10px] uppercase transition-all ${ajustementType === "ENTREE" ? "bg-violet-600 text-white" : "bg-white border border-slate-200 text-slate-600"}`}
+                            >
+                              Entrée (Ajout)
+                            </button>
+                            <button 
+                              onClick={() => setAjustementType("SORTIE")}
+                              className={`py-4 rounded-xl font-black text-[10px] uppercase transition-all ${ajustementType === "SORTIE" ? "bg-violet-600 text-white" : "bg-white border border-slate-200 text-slate-600"}`}
+                            >
+                              Sortie (Retrait)
+                            </button>
                          </div>
                          <input 
                            type="number" 
                            placeholder="Montant"
+                           value={ajustementAmount}
+                           onChange={(e) => setAjustementAmount(e.target.value)}
                            className="w-full px-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-violet-600 rounded-2xl font-bold text-slate-900 outline-none transition-all"
                          />
                          <textarea 
                            placeholder="Raison de l'ajustement..."
+                           value={ajustementReason}
+                           onChange={(e) => setAjustementReason(e.target.value)}
                            className="w-full px-6 py-4 bg-[#F8FAFC] border-2 border-transparent focus:border-violet-600 rounded-2xl font-medium text-slate-900 outline-none transition-all min-h-[100px]"
                          />
-                         <button className="w-full py-5 bg-violet-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-violet-500/20 active:scale-95 transition-all">
+                         <button 
+                           onClick={handleAjustement}
+                           disabled={!ajustementAmount || !ajustementReason}
+                           className="w-full py-5 bg-violet-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-violet-500/20 active:scale-95 transition-all disabled:opacity-50"
+                         >
                            Enregistrer l'ajustement
                          </button>
                       </div>
@@ -2459,12 +2364,33 @@ export default function AgentDashboard() {
                          <input 
                            type="text" 
                            placeholder="Rechercher un client ou une dette..."
+                           value={detteSearch}
+                           onChange={(e) => setDetteSearch(e.target.value)}
                            className="w-full px-6 py-5 bg-[#F8FAFC] border-2 border-transparent focus:border-emerald-600 rounded-2xl font-bold text-slate-900 outline-none transition-all"
                          />
-                         <div className="p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-center">
-                            <span className="text-xs font-bold text-slate-400 tracking-widest uppercase">Aucune dette sélectionnée</span>
+                         <div className="space-y-2 max-h-[200px] overflow-y-auto no-scrollbar">
+                           {[
+                             { id: "d1", client: "Aya Konan", amount: 5000, date: "24/04/2026" },
+                             { id: "d2", client: "Koffi Jerry", amount: 12500, date: "26/04/2026" }
+                           ].filter(d => d.client.toLowerCase().includes(detteSearch.toLowerCase())).map((d) => (
+                             <button 
+                               key={d.id}
+                               onClick={() => setSelectedDette(d)}
+                               className={`w-full p-4 rounded-2xl border flex items-center justify-between transition-all ${selectedDette?.id === d.id ? "bg-emerald-500 text-white border-emerald-500" : "bg-white border-slate-100 hover:bg-slate-50"}`}
+                             >
+                                <div className="flex flex-col text-left">
+                                   <span className="text-xs font-black uppercase tracking-tight">{d.client}</span>
+                                   <span className={`text-[10px] font-bold ${selectedDette?.id === d.id ? "text-white/70" : "text-slate-400"}`}>Le {d.date}</span>
+                                </div>
+                                <span className="text-sm font-black">{d.amount} F</span>
+                             </button>
+                           ))}
                          </div>
-                         <button disabled className="w-full py-5 bg-slate-300 text-white rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed">
+                         <button 
+                           onClick={handlePayDette}
+                           disabled={!selectedDette}
+                           className={`w-full py-5 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${selectedDette ? "bg-emerald-600 shadow-xl shadow-emerald-600/20 active:scale-95" : "bg-slate-300 cursor-not-allowed"}`}
+                         >
                            Payer la dette
                          </button>
                       </div>
@@ -2958,7 +2884,12 @@ const AdminView = ({
                        {p.price} <span className="text-sm font-bold text-slate-400">F / mo</span>
                     </div>
 
-                    <button className="w-full py-5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 group-hover:bg-slate-950 group-hover:text-white group-hover:border-slate-950 transition-all duration-300">Modifier l'Offre</button>
+                    <button 
+                      onClick={() => alert("Fonctionnalité de modification d'offre indisponible en démo.")}
+                      className="w-full py-5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 group-hover:bg-slate-950 group-hover:text-white group-hover:border-slate-950 transition-all duration-300"
+                    >
+                      Modifier l'Offre
+                    </button>
                  </div>
               ))}
            </motion.div>
@@ -2993,7 +2924,12 @@ const AdminView = ({
                              </div>
                              <p className="text-sm font-medium text-slate-600 leading-relaxed bg-slate-50/50 p-5 rounded-2xl">"{f.message}"</p>
                              <div className="flex gap-4">
-                                <button className="flex-1 py-4 bg-[#234D96] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/10">Répondre</button>
+                                <button 
+                                  onClick={() => alert(`Répondre à ${f.user}`)}
+                                  className="flex-1 py-4 bg-[#234D96] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-900/10"
+                                >
+                                  Répondre
+                                </button>
                                 <button className="flex-1 py-4 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest">Muter</button>
                              </div>
                           </div>
