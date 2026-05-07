@@ -68,7 +68,8 @@ import {
   Pause,
   Play,
   RotateCcw,
-  Headphones
+  Headphones,
+  Menu
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -89,8 +90,28 @@ import {
 type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "Settings" | "Audit";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>("Overview");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [adminNotifications, setAdminNotifications] = useState([
+    { id: 1, title: "Sécurité", msg: "Tentative d'accès suspecte bloquée", time: "5 min", type: "alert", color: "rose", read: false },
+    { id: 2, title: "Infrastructure", msg: "Base de données optimisée", time: "2h", type: "info", color: "indigo", read: false },
+    { id: 3, title: "Merchant", msg: "5 nouveaux marchands inscrits", time: "5h", type: "success", color: "emerald", read: true },
+    { id: 4, title: "Audit", msg: "Accès au journal d'audit", time: "8h", type: "info", color: "indigo", read: true },
+    { id: 5, title: "Système", msg: "Mise à jour v4.2.1 déployée", time: "1j", type: "success", color: "emerald", read: true },
+  ]);
+
+  const markAdminNotifAsRead = (id: number) => {
+    setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllAdminNotifsAsRead = () => {
+    setAdminNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const adminUnreadCount = adminNotifications.filter(n => !n.read).length;
+
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [pulse, setPulse] = useState(false);
 
@@ -126,68 +147,106 @@ export default function AdminDashboard() {
     </button>
   );
 
+  const MobileAdminNavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) => (
+    <button 
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center gap-1 transition-all ${active ? "text-[#234D96]" : "text-slate-400"}`}
+    >
+      <div className={`p-2 rounded-xl transition-all ${active ? "bg-blue-50" : ""}`}>
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 20 })}
+      </div>
+      <span className="text-[9px] font-black uppercase tracking-tight">{label}</span>
+    </button>
+  );
+
   return (
-    <div className="fixed inset-0 flex bg-[#F0F2F5] font-sans text-slate-900 overflow-hidden">
+    <div className="fixed inset-0 flex bg-[#F0F2F5] font-sans text-slate-900 overflow-hidden flex-col lg:flex-row">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[55] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* BACKGROUND DECORATIONS */}
       <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#234D96] rounded-full blur-[150px] opacity-[0.03] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[30%] bg-[#234D96] rounded-full blur-[120px] opacity-[0.02] pointer-events-none" />
 
       {/* SIDEBAR ADMIN - MODERN GLASS STYLE */}
-      <aside className="w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/60 flex flex-col shrink-0 z-50 relative">
-        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-40 items-center">
+      <aside className={`
+        fixed inset-y-0 left-0 z-[60] w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/60 flex flex-col shrink-0 
+        lg:static lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        <div className="p-8 flex items-center justify-between border-b border-slate-50 mb-4 h-40">
           <Logo className="h-32 w-auto drop-shadow-sm" />
+           <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 transition-colors"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <nav className="flex-1 px-6 space-y-2 overflow-y-auto no-scrollbar py-4">
           <NavItem 
             active={activeTab === "Overview"} 
-            onClick={() => setActiveTab("Overview")} 
+            onClick={() => { setActiveTab("Overview"); setIsMobileMenuOpen(false); }} 
             icon={<LayoutDashboard size={20} />} 
             label="Vue d'Ensemble" 
           />
           <NavItem 
             active={activeTab === "Merchants"} 
-            onClick={() => setActiveTab("Merchants")} 
+            onClick={() => { setActiveTab("Merchants"); setIsMobileMenuOpen(false); }} 
             icon={<CheckCircle2 size={20} />} 
             label="Gestion des Marchands" 
           />
 
           <NavItem 
             active={activeTab === "Catalogue"} 
-            onClick={() => setActiveTab("Catalogue")} 
+            onClick={() => { setActiveTab("Catalogue"); setIsMobileMenuOpen(false); }} 
             icon={<BookOpen size={20} />} 
             label="Catalogue Réseaux" 
           />
 
           <NavItem 
             active={activeTab === "Plans"} 
-            onClick={() => setActiveTab("Plans")} 
+            onClick={() => { setActiveTab("Plans"); setIsMobileMenuOpen(false); }} 
             icon={<Plus size={20} />} 
             label="Plans & Offres" 
           />
           <NavItem 
             active={activeTab === "Support"} 
-            onClick={() => setActiveTab("Support")} 
+            onClick={() => { setActiveTab("Support"); setIsMobileMenuOpen(false); }} 
             icon={<MessageSquare size={20} />} 
             label="Support Client" 
           />
 
           <NavItem 
             active={activeTab === "Settings"} 
-            onClick={() => setActiveTab("Settings")} 
+            onClick={() => { setActiveTab("Settings"); setIsMobileMenuOpen(false); }} 
             icon={<Settings2 size={20} />} 
             label="Paramètres" 
           />
           <NavItem 
             active={activeTab === "Audit"} 
-            onClick={() => setActiveTab("Audit")} 
+            onClick={() => { setActiveTab("Audit"); setIsMobileMenuOpen(false); }} 
             icon={<ShieldCheck size={20} />} 
-            label="Journal d'Audit" 
+            label="Journal & Notifications" 
           />
         </nav>
 
         <div className="p-8">
-           <button className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] tracking-widest hover:text-rose-500 transition-colors">
+           <button 
+             onClick={() => navigate("/")}
+             className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] tracking-widest hover:text-rose-500 transition-colors"
+           >
               <LogOut size={18} />
               Déconnexion
            </button>
@@ -195,10 +254,22 @@ export default function AdminDashboard() {
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="flex-1 flex flex-col relative overflow-hidden pb-20 lg:pb-0">
         {/* TOP BAR - SLEEK */}
-        <header className="h-24 bg-white/40 backdrop-blur-md border-b border-white/20 px-12 flex items-center justify-end shrink-0 z-40">
-          <div className="flex items-center gap-8">
+        <header className="h-20 sm:h-24 bg-white/40 backdrop-blur-md border-b border-white/20 px-6 sm:px-12 flex items-center justify-between lg:justify-end shrink-0 z-40">
+           <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2.5 bg-white text-slate-900 rounded-xl hover:bg-slate-50 transition-all border border-slate-200 shadow-sm"
+            >
+              <Menu size={20} />
+            </button>
+
+          <div className="flex items-center gap-4 sm:gap-8">
+            {/* Admin Profile Label - Only on bigger screens */}
+            <div className="hidden sm:flex flex-col items-end">
+               <span className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">Super Admin</span>
+               <span className="text-xs font-bold text-slate-500">v4.2.1-stable</span>
+            </div>
             {/* Notification Bell */}
             <div className="relative">
               <button 
@@ -210,62 +281,86 @@ export default function AdminDashboard() {
                 }`}
               >
                 <Bell size={22} />
-                <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white" />
+                {adminUnreadCount > 0 && (
+                  <span className="absolute top-3 right-3 w-4 h-4 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black text-white">
+                    {adminUnreadCount}
+                  </span>
+                )}
               </button>
 
               <AnimatePresence>
                 {isNotificationsOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                      <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">System Alerts</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dernières notifications admin</p>
+                  <>
+                    <div 
+                      className="fixed inset-0 z-[90]" 
+                      onClick={() => setIsNotificationsOpen(false)} 
+                    />
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                        <div>
+                          <h3 className="text-xl font-black text-slate-900 tracking-tight">System Alerts</h3>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{adminUnreadCount} non lues</p>
+                        </div>
+                        <button 
+                          onClick={markAllAdminNotifsAsRead}
+                          className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all uppercase tracking-widest"
+                        >
+                          Tout lire
+                        </button>
                       </div>
-                      <button className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all uppercase tracking-widest">
-                        Tout lire
-                      </button>
-                    </div>
 
-                    <div className="max-h-[450px] overflow-y-auto no-scrollbar">
-                      {[
-                        { title: "Sécurité", msg: "Tentative d'accès suspecte bloquée", time: "5 min", type: "alert", color: "rose" },
-                        { title: "Infrastructure", msg: "Base de données optimisée", time: "2h", type: "info", color: "indigo" },
-                        { title: "Merchant", msg: "5 nouveaux marchands inscrits", time: "5h", type: "success", color: "emerald" },
-                      ].map((notif, idx) => (
-                        <div key={idx} className="p-6 border-b border-slate-50 hover:bg-slate-50/50 transition-all group cursor-pointer">
-                          <div className="flex gap-5">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
-                              notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
-                              notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
-                              'bg-emerald-50 text-emerald-500 border-emerald-100'
-                            }`}>
-                              {notif.type === 'alert' ? <ShieldAlert size={20} /> : notif.type === 'info' ? <Info size={20} /> : <CheckCircle size={20} />}
-                            </div>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
-                                <span className="text-[10px] font-bold text-slate-300">•</span>
-                                <span className="text-[10px] font-bold text-slate-300">{notif.time}</span>
+                      <div className="max-h-[450px] overflow-y-auto no-scrollbar">
+                        {adminNotifications.map((notif) => (
+                          <div 
+                            key={notif.id} 
+                            onClick={() => markAdminNotifAsRead(notif.id)}
+                            className={`p-6 border-b border-slate-50 hover:bg-slate-50/50 transition-all group cursor-pointer relative ${!notif.read ? 'bg-slate-50/30' : ''}`}
+                          >
+                            {!notif.read && (
+                              <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                            )}
+                            <div className="flex gap-5">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                                notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
+                                notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
+                                'bg-emerald-50 text-emerald-500 border-emerald-100'
+                              }`}>
+                                {notif.type === 'alert' ? <ShieldAlert size={20} /> : notif.type === 'info' ? <Info size={20} /> : <CheckCircle size={20} />}
                               </div>
-                              <p className="text-sm font-bold text-slate-900 group-hover:text-[#234D96] transition-colors leading-tight">{notif.msg}</p>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
+                                  <span className="text-[10px] font-bold text-slate-300">•</span>
+                                  <span className="text-[10px] font-bold text-slate-300">{notif.time}</span>
+                                </div>
+                                <p className={`text-sm font-bold transition-colors leading-tight ${!notif.read ? 'text-slate-900 group-hover:text-indigo-600' : 'text-slate-400'}`}>
+                                  {notif.msg}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
 
-                    <div className="p-6 bg-slate-50/50 border-t border-slate-100">
-                      <button className="w-full py-4 bg-white text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:border-slate-900 transition-all shadow-sm">
-                        Voir journal complet
-                      </button>
-                    </div>
-                  </motion.div>
+                      <div className="p-6 bg-slate-50/50 border-t border-slate-100">
+                        <button 
+                          onClick={() => {
+                            setActiveTab("Audit");
+                            setIsNotificationsOpen(false);
+                          }}
+                          className="w-full py-4 bg-white text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:border-slate-900 transition-all shadow-sm"
+                        >
+                          Voir journal complet
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -279,6 +374,14 @@ export default function AdminDashboard() {
             </div>
           </div>
         </header>
+
+        {/* Mobile Navigation - Only visible on small screens */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 z-50 px-6 flex items-center justify-between pb-safe">
+          <MobileAdminNavItem icon={<LayoutDashboard size={20} />} label="Overview" active={activeTab === "Overview"} onClick={() => setActiveTab("Overview")} />
+          <MobileAdminNavItem icon={<Users size={20} />} label="Marchands" active={activeTab === "Merchants"} onClick={() => setActiveTab("Merchants")} />
+          <MobileAdminNavItem icon={<Cpu size={20} />} label="Catalogue" active={activeTab === "Catalogue"} onClick={() => setActiveTab("Catalogue")} />
+          <MobileAdminNavItem icon={<Settings2 size={20} />} label="Admin" active={activeTab === "Settings"} onClick={() => setActiveTab("Settings")} />
+        </div>
 
         {/* PAGE DYNAMICS */}
         <div className="flex-1 overflow-y-auto no-scrollbar p-12 relative">
@@ -524,7 +627,6 @@ function OverviewView() {
            <div className="space-y-6 flex-1">
               {[
                 { label: "Vérification KYC", count: 9, icon: <UserCircle size={18} />, bg: "bg-indigo-50", text: "text-[#234D96]" },
-                { label: "Demandes de Retrait", count: 2, icon: <CreditCard size={18} />, bg: "bg-rose-50", text: "text-rose-500" },
                 { label: "Nouveaux Marchands", count: 16, icon: <Building2 size={18} />, bg: "bg-emerald-50", text: "text-emerald-500" },
                 { label: "Bugs Signalés", count: 5, icon: <AlertCircle size={18} />, bg: "bg-amber-50", text: "text-amber-500" }
               ].map((item, i) => (
@@ -586,10 +688,10 @@ function OverviewView() {
             
             <div className="space-y-8 flex-1">
                {[
-                 { name: "Leo Myers", role: "Devops", status: "Tech interview", color: "bg-amber-500" },
-                 { name: "Ann Fields", role: "UX/UI Designer", status: "Resume review", color: "bg-[#6200EA]" },
-                 { name: "Eric Olson", role: ".Net developer", status: "Final interview", color: "bg-emerald-500" },
-                  { name: "Koffi Mark", role: "Agent Support", status: "Onboarding", color: "bg-[#234D96]" }
+                 { name: "Sika Express", role: "Nouveau Marchand", status: "En attente KYC", color: "bg-amber-500" },
+                 { name: "Momo Market", role: "Marchand Premium", status: "Plan Actif", color: "bg-[#6200EA]" },
+                 { name: "Agent Littoral", role: "Terminal #882", status: "Actif / 12 TXN", color: "bg-emerald-500" },
+                 { name: "Wave Support", role: "Alerte Système", status: "API Connectée", color: "bg-[#234D96]" }
                ].map((person, i) => (
                  <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -2112,6 +2214,7 @@ function SupportView() {
 /* ------------------- VIEW: AUDIT LOGS ------------------- */
 function AuditView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeSubTab, setActiveSubTab] = useState<'LOGS' | 'NOTIFS'>('NOTIFS');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -2121,6 +2224,25 @@ function AuditView() {
   const [startInput, setStartInput] = useState('');
   const [endInput, setEndInput] = useState('');
   const [selectedHour, setSelectedHour] = useState('Tous');
+
+  // Notifications state moved inside view for local management or could stay global
+  // For consistency with user request, let's use some dummy data here specifically for the "Journal"
+  const [notificationsJournal, setNotificationsJournal] = useState([
+    { id: 1, title: "Sécurité", msg: "Tentative d'accès suspecte bloquée", time: "5 min", type: "alert", color: "rose", read: false, date: "07/05/2026 12:15" },
+    { id: 2, title: "Infrastructure", msg: "Base de données optimisée", time: "2h", type: "info", color: "indigo", read: false, date: "07/05/2026 10:30" },
+    { id: 3, title: "Merchant", msg: "5 nouveaux marchands inscrits", time: "5h", type: "success", color: "emerald", read: true, date: "07/05/2026 07:12" },
+    { id: 4, title: "Audit", msg: "Accès au journal d'audit par Admin", time: "8h", type: "info", color: "indigo", read: true, date: "06/05/2026 23:45" },
+    { id: 5, title: "Système", msg: "Mise à jour v4.2.1 déployée", time: "1j", type: "success", color: "emerald", read: true, date: "06/05/2026 14:20" },
+    { id: 6, title: "Alerte Payement", msg: "Échec de connexion API Orange", time: "2j", type: "alert", color: "rose", read: true, date: "05/05/2026 09:10" },
+  ]);
+
+  const markNotifRead = (id: number) => {
+    setNotificationsJournal(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const deleteNotif = (id: number) => {
+    setNotificationsJournal(prev => prev.filter(n => n.id !== id));
+  };
 
   // Sync year input when viewDate changes (e.g. via month arrows)
   useEffect(() => {
@@ -2220,21 +2342,38 @@ function AuditView() {
       className="max-w-7xl mx-auto space-y-8 pb-20 px-6"
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-100 pb-8">
-        <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">JOURNAL D'AUDIT</h2>
+        <div className="space-y-4">
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase shrink-0">Audit & Events</h2>
+          
+          <div className="flex bg-slate-100 p-1 rounded-2xl w-fit">
+            <button 
+              onClick={() => setActiveSubTab('NOTIFS')}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'NOTIFS' ? 'bg-white shadow-sm text-[#234D96]' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Centre de Notifications
+            </button>
+            <button 
+              onClick={() => setActiveSubTab('LOGS')}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'LOGS' ? 'bg-white shadow-sm text-[#234D96]' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Logs Techniques
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-4">
            <button 
              onClick={resetFilters}
              className="flex items-center gap-3 px-6 py-3.5 bg-white border border-slate-200 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:border-slate-400 hover:text-slate-900 transition-all"
            >
-              <RotateCcw size={14} /> Reset Filters
+              <RotateCcw size={14} /> Réinitialiser
            </button>
         </div>
       </div>
 
-      {/* CONTEXTUAL SMART FILTER */}
-      <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/10 flex flex-col lg:flex-row gap-2 relative z-50">
+      {activeSubTab === 'LOGS' ? (
+        <>
+          {/* CONTEXTUAL SMART FILTER */}
+          <div className="bg-white p-2 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/10 flex flex-col lg:flex-row gap-2 relative z-50">
         <div className="flex-1 relative group rounded-2xl bg-slate-50/50 border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all duration-500">
            <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors duration-500" />
            <input 
@@ -2561,8 +2700,92 @@ function AuditView() {
           </div>
         )}
       </div>
+     </>
+    ) : (
+      /* NOTIFICATIONS JOURNAL VIEW */
+      <div className="space-y-6">
+        <div className="flex bg-white p-4 rounded-[2.5rem] border border-slate-100 items-center justify-between">
+           <div className="flex items-center gap-4 px-4">
+              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                 <Bell size={20} />
+              </div>
+              <div>
+                 <h4 className="text-sm font-black text-slate-900 tracking-tight">Historique des Alertes</h4>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gérer les notifications système</p>
+              </div>
+           </div>
+           <button 
+             onClick={() => setNotificationsJournal(prev => prev.map(n => ({...n, read: true})))}
+             className="px-6 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100"
+           >
+              Tout marquer comme lu
+           </button>
+        </div>
 
+        <div className="grid gap-4">
+          {notificationsJournal.map((notif) => (
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={notif.id}
+              className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group transition-all hover:shadow-xl hover:shadow-slate-200/20 relative overflow-hidden ${!notif.read ? 'border-l-4 border-l-indigo-500' : ''}`}
+            >
+              <div className="flex items-center gap-8">
+                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0 border-2 ${
+                  notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
+                  notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
+                  'bg-emerald-50 text-emerald-500 border-emerald-100'
+                }`}>
+                  {notif.type === 'alert' ? <ShieldAlert size={28} /> : notif.type === 'info' ? <Info size={28} /> : <CheckCircle size={28} />}
+                </div>
+                
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
+                    <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                    <span className="text-[10px] font-black text-[#234D96] uppercase tracking-widest">{notif.date}</span>
+                    {!notif.read && (
+                      <span className="px-2 py-0.5 bg-rose-500 text-white text-[8px] font-black uppercase tracking-widest rounded-md">New</span>
+                    )}
+                  </div>
+                  <h4 className={`text-lg font-black tracking-tight ${!notif.read ? 'text-slate-900' : 'text-slate-400'}`}>{notif.msg}</h4>
+                  <p className="text-xs font-medium text-slate-400">Événement système enregistré automatiquement.</p>
+                </div>
+              </div>
 
+              <div className="flex items-center gap-3">
+                {!notif.read && (
+                  <button 
+                    onClick={() => markNotifRead(notif.id)}
+                    className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100"
+                    title="Marquer comme lu"
+                  >
+                    <Check size={20} />
+                  </button>
+                )}
+                <button 
+                  onClick={() => deleteNotif(notif.id)}
+                  className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:bg-rose-50 hover:text-rose-600 transition-all border border-slate-100"
+                  title="Supprimer"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+
+          {notificationsJournal.length === 0 && (
+            <div className="py-32 text-center space-y-4">
+               <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200 mx-auto">
+                 <Bell size={40} />
+               </div>
+               <p className="text-slate-400 font-bold tracking-tight">Votre journal de notifications est vide.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
     </motion.div>
   );
 }

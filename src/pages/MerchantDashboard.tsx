@@ -61,7 +61,8 @@ import {
   Smartphone,
   ExternalLink,
   PenTool,
-  Stamp
+  Stamp,
+  Menu
 } from "lucide-react";
 import { 
   LineChart, 
@@ -194,6 +195,26 @@ const DEFAULT_PROPS: MerchantDashboardProps = {
       date: "14:32",
       photo_preuve_url: null,
       reference_externe: "MOO-12345"
+    },
+    {
+      nature: "RETRAIT",
+      reference: "TXN-9021",
+      agence: "Agence Parakou",
+      montant: 25000.0,
+      statut: "CONFIRME",
+      date: "13:15",
+      photo_preuve_url: null,
+      reference_externe: "WAV-77889"
+    },
+    {
+      nature: "VENTE",
+      reference: "TXN-1102",
+      agence: "Agence Abomey-Calavi",
+      montant: 125000.0,
+      statut: "CONFIRME",
+      date: "11:05",
+      photo_preuve_url: null,
+      reference_externe: "MTN-99001"
     }
   ],
   pendingBilans: [
@@ -795,16 +816,16 @@ function AgencesView() {
   const [agentName, setAgentName] = useState("");
   const [agentPhone, setAgentPhone] = useState("");
   const [agentAgence, setAgentAgence] = useState("");
-  const [agentPass, setAgentPass] = useState("");
+  const [agentPin, setAgentPin] = useState("");
   
   const handleCreateAgent = () => {
-    if (!agentName || !agentPhone || !agentAgence || !agentPass) {
+    if (!agentName || !agentPhone || !agentAgence || !agentPin) {
        alert("Veuillez remplir tous les champs.");
        return;
     }
 
     const agentLoginUrl = `${window.location.origin}/agent/auth`;
-    const message = `Bonjour ${agentName},\n\nVotre compte agent sur la plateforme FinTrack a été créé avec succès.\n\nVoici vos accès :\n- Téléphone : ${agentPhone}\n- Mot de passe initial : ${agentPass}\n- Agence : ${agentAgence}\n\nVous pouvez vous connecter via ce lien : ${agentLoginUrl}\n\nMerci de changer votre mot de passe dès votre première connexion.`;
+    const message = `Bonjour ${agentName},\n\nVotre compte agent sur la plateforme FinTrack a été créé avec succès.\n\nVoici vos accès :\n- Téléphone : ${agentPhone}\n- Code PIN initial : ${agentPin}\n- Agence : ${agentAgence}\n\nVous pouvez vous connecter via ce lien : ${agentLoginUrl}\n\nMerci de changer votre PIN dès votre première connexion.`;
     
     // Clean phone number for WhatsApp link
     const cleanedPhone = agentPhone.replace(/\D/g, '');
@@ -816,7 +837,7 @@ function AgencesView() {
     setModalMode("none");
     setAgentName("");
     setAgentPhone("");
-    setAgentPass("");
+    setAgentPin("");
   };
 
   const agences = [
@@ -1122,7 +1143,7 @@ function AgencesView() {
             </select>
           </div>
 
-          <Input label="Mot de passe initial" placeholder="••••••••" value={agentPass} onChange={setAgentPass} type="password" />
+          <Input label="Code PIN initial (6 chiffres)" placeholder="••••••" value={agentPin} onChange={setAgentPin} type="password" />
           
           <button 
             onClick={handleCreateAgent}
@@ -3004,6 +3025,7 @@ function AjustementsView() {
 export default function MerchantDashboard(props: Partial<MerchantDashboardProps>) {
   const data = { ...DEFAULT_PROPS, ...props };
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("Mai 02 - Juin 02");
   const [timeframe, setTimeframe] = useState("24h");
@@ -3048,24 +3070,47 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
 
   return (
     <div className="fixed inset-0 flex bg-[#F8FAFC] overflow-hidden font-sans">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[55] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar - Fintrack2 Style */}
-      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-8 flex justify-center border-b border-slate-50 mb-4 h-40 items-center">
+      <aside className={`
+        fixed inset-y-0 left-0 z-[60] w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 
+        lg:static lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        <div className="p-8 flex items-center justify-between border-b border-slate-50 mb-4 h-40">
           <Logo className="h-32 w-auto drop-shadow-sm" />
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 transition-colors"
+          >
+            <X size={24} />
+          </button>
         </div>
         
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-8">
-          <SidebarItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => setActiveTab("Dashboard")} />
-          <SidebarItem icon={<Users size={20} />} label="Agences & Agents" active={activeTab === "Agences"} onClick={() => setActiveTab("Agences")} />
-          <SidebarItem icon={<LayoutGrid size={20} />} label="Services & Commissions" active={activeTab === "Services"} onClick={() => setActiveTab("Services")} />
-          <SidebarItem icon={<Activity size={20} />} label="Transactions" active={activeTab === "Transactions"} onClick={() => setActiveTab("Transactions")} />
-          <SidebarItem icon={<MessageSquare size={20} />} label="Caisses & Remontées" active={activeTab === "Caisses"} onClick={() => setActiveTab("Caisses")} />
-          <SidebarItem icon={<Package size={20} />} label="Produits & Stocks" active={activeTab === "Stocks"} onClick={() => setActiveTab("Stocks")} />
-          <SidebarItem icon={<Calendar size={20} />} label="Clôtures & Bilans" active={activeTab === "Clôtures"} onClick={() => setActiveTab("Clôtures")} />
-          <SidebarItem icon={<ShieldAlert size={20} />} label="Dettes agents" active={activeTab === "Dettes"} onClick={() => setActiveTab("Dettes")} />
-          <SidebarItem icon={<PenTool size={20} />} label="Ajustements" active={activeTab === "Ajustements"} onClick={() => setActiveTab("Ajustements")} />
-          <SidebarItem icon={<BarChart2 size={20} />} label="Rapports" active={activeTab === "Rapports"} onClick={() => setActiveTab("Rapports")} />
-          <SidebarItem icon={<Settings size={20} />} label="Paramètres" active={activeTab === "Paramètres"} onClick={() => setActiveTab("Paramètres")} />
+          <SidebarItem icon={<LayoutDashboard size={20} />} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => { setActiveTab("Dashboard"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<Users size={20} />} label="Agences & Agents" active={activeTab === "Agences"} onClick={() => { setActiveTab("Agences"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<LayoutGrid size={20} />} label="Services & Commissions" active={activeTab === "Services"} onClick={() => { setActiveTab("Services"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<Activity size={20} />} label="Transactions" active={activeTab === "Transactions"} onClick={() => { setActiveTab("Transactions"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<MessageSquare size={20} />} label="Caisses & Remontées" active={activeTab === "Caisses"} onClick={() => { setActiveTab("Caisses"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<Package size={20} />} label="Produits & Stocks" active={activeTab === "Stocks"} onClick={() => { setActiveTab("Stocks"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<Calendar size={20} />} label="Clôtures & Bilans" active={activeTab === "Clôtures"} onClick={() => { setActiveTab("Clôtures"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<ShieldAlert size={20} />} label="Dettes agents" active={activeTab === "Dettes"} onClick={() => { setActiveTab("Dettes"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<PenTool size={20} />} label="Ajustements" active={activeTab === "Ajustements"} onClick={() => { setActiveTab("Ajustements"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<BarChart2 size={20} />} label="Rapports" active={activeTab === "Rapports"} onClick={() => { setActiveTab("Rapports"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<Settings size={20} />} label="Paramètres" active={activeTab === "Paramètres"} onClick={() => { setActiveTab("Paramètres"); setIsMobileMenuOpen(false); }} />
         </nav>
 
         {/* Plan Card */}
@@ -3099,22 +3144,30 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Header - Functional Search & User Controls */}
-        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-8 shrink-0 relative z-40">
-          <div className="relative w-full max-w-xl group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-900 transition-colors" size={16} />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Chercher une transaction, un stock, une agence..." 
-              className="w-full bg-slate-50 border-none rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-slate-100 transition-all outline-none placeholder:text-slate-300"
-            />
+        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 shrink-0 relative z-40">
+          <div className="flex items-center gap-4 flex-1">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2.5 bg-slate-50 text-slate-900 rounded-xl hover:bg-slate-100 transition-all border border-slate-100"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="relative w-full max-w-xl group hidden md:block">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-900 transition-colors" size={16} />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Chercher une transaction, un stock, une agence..." 
+                className="w-full bg-slate-50 border-none rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-slate-100 transition-all outline-none placeholder:text-slate-300"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div className="hidden sm:flex items-center gap-3">
               <Dropdown
                 onSelect={setDateRange}
                 trigger={
@@ -3166,12 +3219,18 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
                   {/* Notification Panel */}
                   <AnimatePresence>
                     {isNotificationsOpen && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-4 w-[380px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden z-50 flex flex-col"
-                      >
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setIsNotificationsOpen(false)} 
+                        />
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute top-full right-0 mt-4 w-[380px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden z-50 flex flex-col"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                         {/* Header */}
                         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
                           <div>
@@ -3199,8 +3258,9 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
                           </button>
                         </div>
                       </motion.div>
-                    )}
-                  </AnimatePresence>
+                    </>
+                  )}
+                </AnimatePresence>
                 </div>
                 
                 <Dropdown

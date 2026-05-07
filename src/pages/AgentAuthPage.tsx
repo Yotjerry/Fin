@@ -16,30 +16,30 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
 export default function AgentAuthPage() {
-  const [step, setStep] = useState<"login" | "change_password" | "success">("login");
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<"login" | "change_pin" | "success">("login");
+  const [showPin, setShowPin] = useState(false);
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pin, setPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   const navigate = useNavigate();
 
   const handleInitialLogin = () => {
-    if (!phone || !password) {
-      alert("Veuillez entrer vos identifiants reçus par WhatsApp.");
+    if (!phone || !pin) {
+      alert("Veuillez entrer vos identifiants reçus (Téléphone + PIN).");
       return;
     }
     // Simulate finding that this is a first-time login
-    setStep("change_password");
+    setStep("change_pin");
   };
 
-  const handleChangePassword = () => {
-    if (newPassword.length < 6) {
-      alert("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+  const handleChangePin = () => {
+    if (newPin.length < 4) {
+      alert("Le nouveau code PIN doit contenir au moins 4 chiffres.");
       return;
     }
-    if (newPassword !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas.");
+    if (newPin !== confirmPin) {
+      alert("Les codes PIN ne correspondent pas.");
       return;
     }
     // Simulate activation success
@@ -103,22 +103,23 @@ export default function AgentAuthPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mot de passe temporaire</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Code PIN Initial</label>
                     <div className="relative group">
                       <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-[#234D96] transition-colors" />
                       <input 
-                        type={showPassword ? "text" : "password"} 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••" 
+                        type={showPin ? "text" : "password"} 
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        placeholder="••••••" 
+                        maxLength={6}
                         className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 focus:border-[#234D96] focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
                       />
                       <button 
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setShowPin(!showPin)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-600 transition-colors"
                       >
-                        {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                        {showPin ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                       </button>
                     </div>
                   </div>
@@ -134,7 +135,7 @@ export default function AgentAuthPage() {
               </motion.div>
             )}
 
-            {step === "change_password" && (
+            {step === "change_pin" && (
               <motion.div 
                 key="change"
                 initial={{ opacity: 0, x: 20 }}
@@ -145,34 +146,36 @@ export default function AgentAuthPage() {
                   <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <ShieldCheck size={32} />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Sécurisez votre compte</h3>
-                  <p className="text-slate-400 text-sm font-medium mt-1">Veuillez définir un mot de passe personnel pour activer votre accès définitif.</p>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Sécurisez votre accès</h3>
+                  <p className="text-slate-400 text-sm font-medium mt-1">Veuillez définir votre code PIN personnel à 6 chiffres.</p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nouveau mot de passe</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nouveau Code PIN</label>
                     <div className="relative group">
                       <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-[#234D96] transition-colors" />
                       <input 
-                        type={showPassword ? "text" : "password"} 
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="••••••••" 
+                        type={showPin ? "text" : "password"} 
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value)}
+                        placeholder="••••••" 
+                        maxLength={6}
                         className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 focus:border-[#234D96] focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirmer le mot de passe</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirmer le code PIN</label>
                     <div className="relative group">
                       <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-[#234D96] transition-colors" />
                       <input 
-                        type={showPassword ? "text" : "password"} 
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••" 
+                        type={showPin ? "text" : "password"} 
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value)}
+                        placeholder="••••••" 
+                        maxLength={6}
                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 focus:border-[#234D96] focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
                       />
                     </div>
@@ -181,15 +184,15 @@ export default function AgentAuthPage() {
                   <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl flex gap-3">
                     <AlertCircle size={16} className="text-[#234D96] shrink-0" />
                     <p className="text-[10px] font-bold text-[#234D96] leading-tight">
-                      Cette étape est obligatoire pour valider votre compte auprès de votre marchand gestionnaire.
+                      Ce code PIN vous sera demandé pour chaque transaction. Gardez-le secret.
                     </p>
                   </div>
 
                   <button 
                     className="w-full bg-[#234D96] hover:bg-blue-900 text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group shadow-xl shadow-blue-900/20 text-sm uppercase tracking-widest mt-4"
-                    onClick={handleChangePassword}
+                    onClick={handleChangePin}
                   >
-                    <span>Activer mon compte</span>
+                    <span>Valider mon PIN</span>
                     <CheckCircle2 className="w-5 h-5" />
                   </button>
                 </div>

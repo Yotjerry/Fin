@@ -60,6 +60,7 @@ import {
   Wifi,
   PhoneCall,
   Tv,
+  Menu
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
@@ -107,6 +108,7 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 export default function AgentDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Caisse");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [agentProfile, setAgentProfile] = useState({ 
     name: "Agent Cotonou", 
     email: "agent1@fintrack.bj", 
@@ -117,6 +119,24 @@ export default function AgentDashboard() {
   const [feedback, setFeedback] = useState({ nature: "Avis général", stars: 5, message: "" });
   const [workflowStep, setWorkflowStep] = useState<WorkflowStep>("CATEGORY");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: "Sécurité", msg: "Nouveau terminal connecté", time: "2 min", type: "alert", color: "rose", read: false },
+    { id: 2, title: "Système", msg: "Validation Wave optimisée", time: "1h", type: "info", color: "indigo", read: false },
+    { id: 3, title: "Commission", msg: "Bonus quotidien +2,500F", time: "3h", type: "success", color: "emerald", read: true },
+    { id: 4, title: "Transfert", msg: "Transaction Wave réussie", time: "5h", type: "success", color: "emerald", read: true },
+    { id: 5, title: "Alerte", msg: "Solde bas sur terminal MTN", time: "1j", type: "alert", color: "rose", read: true },
+  ]);
+
+  const markAsRead = (id: number) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedService, setSelectedService] = useState<any>(null);
@@ -560,14 +580,29 @@ export default function AgentDashboard() {
       clientRef: "0719695722",
       amount: "5 000", 
       commission: "500", 
-      operator: "Celtis Cash", 
+      operator: "Moov Money", 
       type: "Retrait", 
       date: "25/04/2026", 
       time: "15:20", 
       status: "CONFIRME", 
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8F6tXG5S1O5A4Y7_qg7Z5y5o9G0Z3w-Q&s", // Placeholder for Celtis
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR07fJ00Z11aV86GZ_Qk0w4_f56y6a6E_2G-Q&s",
       proofPhoto: true,
       receiptPhoto: true,
+    },
+    { 
+      id: "TXN-Z9921004", 
+      clientRef: "0799887766",
+      amount: "125 000", 
+      commission: "1 250", 
+      operator: "Bénin Control", 
+      type: "Paiement Facture", 
+      date: "24/04/2026", 
+      time: "10:10", 
+      status: "CONFIRME", 
+      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3vY8Xv3U8_Y9W9I6o_7yYQ0Q0G8o7z9Y6aQ&s",
+      proofPhoto: true,
+      receiptPhoto: true,
+      extra: "Fouillet #88291"
     },
   ]);
 
@@ -1244,11 +1279,34 @@ export default function AgentDashboard() {
   };
 
   return (
-    <div className="fixed inset-0 flex bg-fintrack-light font-sans selection:bg-fintrack-primary/30 overflow-hidden">
-      {/* Sidebar - HIDDEN ON MOBILE */}
-      <aside className="hidden lg:flex w-72 bg-[#FCFDFF] border-r border-slate-200/60 flex-col shrink-0 relative z-50">
-        <div className="p-10 flex justify-center h-56 items-center border-b border-slate-100/50">
+    <div className="fixed inset-0 flex bg-fintrack-light font-sans selection:bg-fintrack-primary/30 overflow-hidden flex-col lg:flex-row">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[55] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar - Fintrack2 Style */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-[60] w-72 bg-white border-r border-slate-100 flex flex-col shrink-0 
+        lg:static lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        <div className="p-10 flex items-center justify-between h-56 border-b border-slate-100/50">
           <Logo className="h-44 w-auto" />
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-900 transition-colors"
+          >
+            <X size={24} />
+          </button>
         </div>
         
         <div className="flex-1 px-5 py-6 overflow-y-auto no-scrollbar">
@@ -1260,25 +1318,35 @@ export default function AgentDashboard() {
               onClick={() => {
                 setActiveTab("Caisse");
                 setWorkflowStep("CATEGORY");
+                setIsMobileMenuOpen(false);
               }} 
             />
             <SidebarItem 
               icon={<Activity size={20} />} 
               label="Transactions" 
               active={activeTab === "Transactions"} 
-              onClick={() => setActiveTab("Transactions")} 
+              onClick={() => {
+                setActiveTab("Transactions");
+                setIsMobileMenuOpen(false);
+              }} 
             />
             <SidebarItem 
               icon={<History size={20} />} 
               label="Clôtures & Bilans" 
               active={activeTab === "Historique"} 
-              onClick={() => setActiveTab("Historique")} 
+              onClick={() => {
+                setActiveTab("Historique");
+                setIsMobileMenuOpen(false);
+              }} 
             />
             <SidebarItem 
               icon={<Settings2 size={20} />} 
               label="Paramètres" 
               active={activeTab === "Account"} 
-              onClick={() => setActiveTab("Account")} 
+              onClick={() => {
+                setActiveTab("Account");
+                setIsMobileMenuOpen(false);
+              }} 
             />
           </nav>
         </div>
@@ -1295,17 +1363,23 @@ export default function AgentDashboard() {
       </aside>
 
       {/* Main Command Center */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FBFBFE]">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FBFBFE] relative pb-20 lg:pb-0">
         {/* Simplified & More Breathing Header */}
-        <header className="h-28 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 flex items-center justify-between px-12 shrink-0 relative z-40 sticky top-0">
-          <div className="flex items-center gap-10">
+        <header className="h-20 sm:h-28 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 flex items-center justify-between px-6 sm:px-12 shrink-0 relative z-40 sticky top-0">
+          <div className="flex items-center gap-4 sm:gap-10">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2.5 bg-slate-50 text-slate-900 rounded-xl hover:bg-slate-100 transition-all border border-slate-100"
+            >
+              <Menu size={20} />
+            </button>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-black text-slate-950 tracking-tighter leading-none">
-                {activeTab === "Caisse" ? "Poste de Travail" : activeTab === "Transactions" ? "Gestion Flux" : activeTab === "Account" ? "Paramètres" : activeTab} 
+              <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tighter leading-none">
+                {activeTab === "Caisse" ? "Travail" : activeTab === "Transactions" ? "Flux" : activeTab === "Account" ? "Profil" : activeTab} 
               </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Session Active • Agent #001</span>
+              <div className="flex items-center gap-2 mt-1 sm:mt-2">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[100px] sm:max-w-none">Live • Agent #001</span>
               </div>
             </div>
           </div>
@@ -1322,173 +1396,25 @@ export default function AgentDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Mobile Quick Actions */}
-              <div className="lg:hidden flex items-center gap-2">
-                <button 
-                  onClick={() => setActiveModal("cloture")}
-                  className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center border border-rose-100 shadow-sm active:scale-95 transition-all"
-                  title="Clôture"
-                >
-                  <Power size={18} />
-                </button>
-                <button 
-                  onClick={() => navigate("/")}
-                  className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm active:scale-95 transition-all"
-                  title="Déconnexion"
-                >
-                  <LogOut size={18} />
-                </button>
-              </div>
-
-              {/* Notification & Communications */}
-              <div className="relative">
-                <button 
-                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative ${
-                    isNotificationsOpen 
-                      ? "bg-slate-950 text-white shadow-xl shadow-slate-950/20" 
-                      : "bg-white border border-slate-100 text-slate-400 hover:text-slate-950 hover:border-slate-300 shadow-sm"
-                  }`}
-                >
-                  <Bell size={22} />
-                  <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white" />
-                </button>
-
-                <AnimatePresence>
-                  {isNotificationsOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-[90]" 
-                        onClick={() => setIsNotificationsOpen(false)} 
-                      />
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-6 w-[400px] bg-white rounded-[3rem] shadow-[0_30px_70px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden z-[100]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                        <div>
-                          <h3 className="text-xl font-black text-slate-900 tracking-tight">Journal d'Activité</h3>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dernières notifications</p>
-                        </div>
-                        <button className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-all uppercase tracking-widest">
-                          Tout lire
-                        </button>
-                      </div>
-
-                      <div className="max-h-[450px] overflow-y-auto no-scrollbar">
-                        {[
-                          { title: "Sécurité", msg: "Nouveau terminal connecté", time: "2 min", type: "alert", color: "rose" },
-                          { title: "Système", msg: "Validation Wave optimisée", time: "1h", type: "info", color: "indigo" },
-                          { title: "Commission", msg: "Bonus quotidien +2,500F", time: "3h", type: "success", color: "emerald" },
-                        ].map((notif, idx) => (
-                          <div key={idx} className="p-6 border-b border-slate-50 hover:bg-slate-50/50 transition-all group cursor-pointer">
-                            <div className="flex gap-5">
-                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
-                                notif.color === 'rose' ? 'bg-rose-50 text-rose-500 border-rose-100' :
-                                notif.color === 'indigo' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
-                                'bg-emerald-50 text-emerald-500 border-emerald-100'
-                              }`}>
-                                {notif.type === 'alert' ? <ShieldAlert size={20} /> : notif.type === 'info' ? <Info size={20} /> : <CheckCircle size={20} />}
-                              </div>
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{notif.title}</span>
-                                  <span className="text-[10px] font-bold text-slate-300">•</span>
-                                  <span className="text-[10px] font-bold text-slate-300">{notif.time}</span>
-                                </div>
-                                <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight">{notif.msg}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="p-6 bg-slate-50/50 border-t border-slate-100">
-                        <button className="w-full py-4 bg-white text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] rounded-2xl border border-slate-200 hover:border-slate-900 transition-all shadow-sm">
-                          Voir tout l'historique
-                        </button>
-                      </div>
-                    </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="h-10 w-[1px] bg-slate-100 mx-2" />
-
-              <div className="relative">
-                <button 
-                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center gap-4 bg-white border border-slate-100 p-1.5 pr-6 rounded-[1.5rem] hover:border-slate-300 transition-all shadow-sm group"
-                >
-                  <div className="w-10 h-10 bg-slate-950 text-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-lg shadow-slate-950/20">
-                    <User size={20} />
-                  </div>
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-sm font-black text-slate-900">Jerry Yotto</span>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Agent Certifié</span>
-                  </div>
-                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                  {isProfileMenuOpen && (
-                    <>
-                      <div 
-                        className="fixed inset-0 z-[90]" 
-                        onClick={() => setIsProfileMenuOpen(false)} 
-                      />
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute top-full right-0 mt-4 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.1)] border border-slate-100 overflow-hidden z-[100] p-2"
-                      >
-                      <div className="p-4 border-b border-slate-50 mb-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Session Active</p>
-                        <p className="text-xs font-bold text-slate-900">Agent ID: #001</p>
-                      </div>
-                      
-                      <button 
-                        onClick={() => {
-                          setActiveTab("Account");
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-slate-950 transition-all text-xs font-bold"
-                      >
-                         <User size={16} /> Mon Compte
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setActiveModal("cloture");
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-rose-50 text-rose-500 transition-all text-xs font-bold"
-                      >
-                         <Power size={16} /> Clôture de Caisse
-                      </button>
-
-                      <div className="h-px bg-slate-50 my-2" />
-
-                      <button 
-                        onClick={() => navigate("/")}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-950 hover:text-white text-slate-500 transition-all text-xs font-bold"
-                      >
-                         <LogOut size={16} /> Déconnexion
-                      </button>
-                    </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all bg-slate-50 text-slate-400 border border-slate-100 hover:border-slate-200 hover:text-slate-900 relative"
+              >
+                <Bell size={20} />
+              </button>
             </div>
           </div>
         </header>
+
+        {/* Mobile Navigation - Only visible on small screens */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-slate-100 z-50 px-6 flex items-center justify-between pb-safe">
+          <MobileNavItem icon={<Home size={20} />} label="Travail" active={activeTab === "Caisse"} onClick={() => { setActiveTab("Caisse"); setWorkflowStep("CATEGORY"); }} />
+          <MobileNavItem icon={<Activity size={20} />} label="Flux" active={activeTab === "Transactions"} onClick={() => setActiveTab("Transactions")} />
+          <MobileNavItem icon={<History size={20} />} label="Bilans" active={activeTab === "Historique"} onClick={() => setActiveTab("Historique")} />
+          <MobileNavItem icon={<User size={20} />} label="Profil" active={activeTab === "Account"} onClick={() => setActiveTab("Account")} />
+        </div>
+      
 
         {/* Success Toast for Fleet Funding */}
         <AnimatePresence>
@@ -2405,6 +2331,18 @@ export default function AgentDashboard() {
     </div>
   );
 }
+
+const MobileNavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) => (
+  <button 
+    onClick={onClick}
+    className={`flex flex-col items-center justify-center gap-1 transition-all ${active ? "text-[#234D96]" : "text-slate-400"}`}
+  >
+    <div className={`p-2 rounded-xl transition-all ${active ? "bg-blue-50" : ""}`}>
+      {React.cloneElement(icon as React.ReactElement<any>, { size: 20 })}
+    </div>
+    <span className="text-[9px] font-black uppercase tracking-tight">{label}</span>
+  </button>
+);
 
 // Receipt Modal Component
 const ReceiptModal = ({ isOpen, onClose, transaction }: { isOpen: boolean; onClose: () => void; transaction: any }) => {
