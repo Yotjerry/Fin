@@ -184,8 +184,8 @@ export default function AdminDashboard() {
         lg:static lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
-        <div className="p-8 flex items-center justify-between border-b border-slate-50 mb-4 h-40">
-          <Logo className="h-32 w-auto drop-shadow-sm" />
+        <div className="p-8 flex items-center justify-between border-b border-slate-50 mb-4 h-32 lg:h-40">
+          <Logo className="h-24 lg:h-32 w-auto drop-shadow-sm" />
            <button 
             onClick={() => setIsMobileMenuOpen(false)}
             className="lg:hidden p-2 text-slate-400 hover:text-slate-900 transition-colors"
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* PAGE DYNAMICS */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-12 relative">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-6 sm:p-10 lg:p-12 relative">
           <AnimatePresence mode="wait">
             {activeTab === "Overview" && <OverviewView key="overview" />}
             {activeTab === "Merchants" && <MerchantsView key="merchants" />}
@@ -478,28 +478,19 @@ function OverviewView() {
       className="space-y-8 pb-20"
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <div className="w-1.5 h-12 bg-[#234D96] rounded-full" />
-          <div className="flex items-baseline gap-4">
-            <h2 className="text-5xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Vision</span></h2>
-            <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] font-sans">SYSTÈME CENTRALISÉ</p>
+        <div className="flex items-center gap-2 sm:gap-4 lg:gap-8">
+          <div className="w-1.5 h-8 sm:h-12 bg-[#234D96] rounded-full" />
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tighter text-slate-950 leading-none">Global <span className="text-[#234D96]">Vision</span></h2>
+            <p className="text-[8px] sm:text-[10px] font-black text-slate-400 tracking-[0.2em] sm:tracking-[0.3em] font-sans">SYSTÈME CENTRALISÉ</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-           <button 
-             onClick={handleRefresh}
-             className={`w-16 h-16 bg-white border border-slate-200/60 rounded-2xl flex items-center justify-center text-slate-400 hover:text-[#234D96] hover:border-[#234D96]/30 transition-all ${isRefreshing ? 'animate-spin' : ''}`}
-           >
-              <Activity size={24} />
-           </button>
-           <button className="px-10 py-5 bg-[#234D96] text-white rounded-[2rem] font-bold text-xs shadow-2xl shadow-indigo-900/40 hover:scale-[1.03] active:scale-95 transition-all border-4 border-white">
-              Générer Rapport PDF
-           </button>
         </div>
       </div>
 
       {/* TOP KPI ROW - IMAGE STYLE */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar -mx-6 px-6 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-5 sm:gap-6">
         <KpiCard 
           label="Points de Vente" 
           value="1,248" 
@@ -534,9 +525,9 @@ function OverviewView() {
       </div>
 
       {/* MIDDLE SECTION - IMAGE STYLE (3 columns) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="flex overflow-x-auto pb-8 gap-8 no-scrollbar -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-3">
         {/* Working Format -> Transactions Format */}
-        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col justify-between">
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col justify-between shrink-0 w-[320px] md:w-auto">
            <div className="flex items-center justify-between">
               <h3 className="text-xl font-black text-slate-900 tracking-tight">Format des Flux</h3>
               <select className="bg-slate-50 text-[10px] font-black p-2 rounded-lg border-none outline-none cursor-pointer uppercase tracking-widest">
@@ -584,7 +575,7 @@ function OverviewView() {
         </div>
 
         {/* Project Employment -> Business Metrics */}
-        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm">
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm shrink-0 w-[320px] md:w-auto">
            <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black text-slate-900 tracking-tight">Performances Hubs</h3>
               <select className="bg-slate-50 text-[10px] font-black p-2 rounded-lg border-none outline-none cursor-pointer uppercase tracking-widest">
@@ -622,7 +613,7 @@ function OverviewView() {
         </div>
 
         {/* Requests -> Flux Retours (Simplified from image) */}
-        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col">
+        <div className="bg-white rounded-[2.5rem] p-10 border border-slate-200/60 shadow-sm flex flex-col shrink-0 w-[320px] md:w-auto">
            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-8">Demandes & Actions</h3>
            <div className="space-y-6 flex-1">
               {[
@@ -720,15 +711,15 @@ function KpiCard({ label, value, growth, color, isCurrency }: { label: string, v
   const isPositive = growth.startsWith('+');
 
   return (
-    <div className="bg-white rounded-[2rem] p-8 border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 group flex items-center justify-between">
+    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-8 border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-300 group flex items-center justify-between shrink-0 w-[280px] sm:w-auto">
        <div className="flex flex-col gap-1">
-          <h4 className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{label}</h4>
+          <h4 className="text-[9px] sm:text-[10px] font-black text-slate-400 tracking-widest uppercase">{label}</h4>
           <div className="flex items-baseline gap-2">
-             <span className="text-3xl font-black text-slate-950 tracking-tighter leading-none">{value}</span>
-             {isCurrency && <span className="text-[10px] font-black text-slate-400">FCFA</span>}
+             <span className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tighter leading-none">{value}</span>
+             {isCurrency && <span className="text-[9px] sm:text-[10px] font-black text-slate-400">FCFA</span>}
           </div>
        </div>
-       <div className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-black ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+       <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
           {isPositive ? <TrendingUp size={10} strokeWidth={3} /> : <TrendingDown size={10} strokeWidth={3} />}
           {growth}
        </div>
@@ -1030,7 +1021,7 @@ function MerchantsView() {
       </div>
 
       {/* SUMMARY STATS BAR */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar -mx-6 px-6 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-6">
          {[
            { label: "MARCHANDS", val: "842", sub: "Base totale suivie", color: "indigo" },
            { label: "ACTIFS", val: "798", sub: "Comptes opérationnels", color: "emerald" },
@@ -1038,7 +1029,7 @@ function MerchantsView() {
            { label: "SUSPENDUS", val: "32", sub: "Accès temporaires bloqués", color: "rose" },
            { label: "AGENTS", val: "2,410", sub: "Points de vente", color: "slate" }
          ].map((stat, i) => (
-           <div key={i} className="bg-white border border-slate-200/60 p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow group">
+           <div key={i} className="bg-white border border-slate-200/60 p-6 rounded-[1.5rem] shadow-sm hover:shadow-md transition-shadow group shrink-0 w-[220px] sm:w-auto">
               <p className="text-[10px] font-black text-slate-400 tracking-widest mb-2 group-hover:text-[#3A4DB7] transition-colors">{stat.label}</p>
               <div className="flex items-baseline gap-2">
                  <span className="text-3xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
@@ -1895,14 +1886,14 @@ function PlansView() {
       </AnimatePresence>
 
       {/* SUMMARY STATS */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar -mx-6 px-6 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
          {[
            { label: "PLANS", val: plans.length, sub: "Catalogue total", icon: <Layers className="text-[#234D96]" size={20} />, bg: "bg-indigo-50" },
            { label: "ACTIFS", val: plans.filter(p => p.isActive).length, sub: "Commercialisables", icon: <CheckCircle2 className="text-emerald-500" size={20} />, bg: "bg-emerald-50" },
            { label: "INACTIFS", val: plans.filter(p => !p.isActive).length, sub: "Masqués ou suspendus", icon: <XCircle className="text-rose-500" size={20} />, bg: "bg-rose-50" },
            { label: "LIMITE MOYENNE", val: Math.round(plans.reduce((acc, curr) => acc + curr.agencyLimit, 0) / (plans.length || 1)), sub: "Agences autorisées", icon: <CreditCard className="text-amber-500" size={20} />, bg: "bg-amber-50" }
          ].map((stat, i) => (
-           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all">
+           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all shrink-0 w-[260px] sm:w-auto">
               <div>
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
                  <span className="text-4xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
@@ -2885,42 +2876,42 @@ function SettingsView() {
       </AnimatePresence>
 
       <div className="flex flex-col gap-10">
-        <header className="space-y-4 px-4">
+        <header className="space-y-4 px-4 sm:px-0">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full border border-slate-200">
             <Settings size={12} />
             <span className="text-[10px] font-black uppercase tracking-widest">Configuration Master</span>
           </div>
-          <h2 className="text-4xl font-black tracking-tight text-slate-950">Paramètres Généraux</h2>
+          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-950">Paramètres Généraux</h2>
         </header>
 
-        <div className="grid grid-cols-12 gap-8 items-start px-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-start px-4 sm:px-0">
           {/* Navigation Sidebar */}
-          <div className="col-span-3 space-y-2">
-            <div className="bg-white p-3 rounded-[2rem] border border-slate-200 shadow-sm">
+          <div className="w-full lg:col-span-3 space-y-4">
+            <div className="bg-white p-2 sm:p-3 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 shadow-sm flex lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar gap-2">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveSubTab(tab.id as any)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 ${
+                  className={`flex-none lg:w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[1.2rem] sm:rounded-[1.5rem] transition-all duration-300 min-w-[160px] lg:min-w-0 ${
                     activeSubTab === tab.id 
                       ? 'bg-slate-950 text-white shadow-xl' 
                       : 'hover:bg-slate-50 text-slate-500'
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center ${
                     activeSubTab === tab.id ? 'bg-white/10' : 'bg-slate-100 text-slate-400 font-sans'
                   }`}>
-                    {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18 })}
+                    {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16 })}
                   </div>
                   <div className="text-left">
-                    <p className="text-[11px] font-black uppercase tracking-widest">{tab.label}</p>
-                    <p className={`text-[9px] font-bold opacity-40 ${activeSubTab === tab.id ? 'text-white' : 'text-slate-400'}`}>{tab.desc}</p>
+                    <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-widest">{tab.label}</p>
+                    <p className={`hidden sm:block text-[9px] font-bold opacity-40 ${activeSubTab === tab.id ? 'text-white' : 'text-slate-400'}`}>{tab.desc}</p>
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="mt-8 p-6 bg-slate-50 rounded-[2rem] border border-slate-200">
+            <div className="hidden lg:block p-6 bg-slate-50 rounded-[2rem] border border-slate-200">
                <div className="flex items-center gap-2 text-slate-900 mb-3">
                   <Info size={16} />
                   <span className="text-[10px] font-black uppercase tracking-widest">Aide Rapide</span>
@@ -2932,7 +2923,7 @@ function SettingsView() {
           </div>
 
           {/* Main Content Area */}
-          <div className="col-span-9">
+          <div className="w-full lg:col-span-9">
             <motion.div
               key={activeSubTab}
               variants={container}
@@ -2942,35 +2933,35 @@ function SettingsView() {
             >
               {activeSubTab === 'security' && (
                 <>
-                  <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 space-y-10">
+                  <motion.div variants={item} className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-10">
                     <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-                       <h3 className="text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
+                       <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
                           <Lock size={20} className="text-indigo-600" /> Sécurité des Accès
                        </h3>
                     </div>
 
-                    <div className="space-y-8">
-                       <div className="grid grid-cols-1 gap-6">
-                          <div className="space-y-3">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Mot de passe mestre actuel</label>
+                    <div className="space-y-6">
+                       <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                          <div className="space-y-2">
+                             <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Mot de passe mestre actuel</label>
                              <input 
                                type="password" placeholder="••••••••••••" 
-                               className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                               className="w-full px-5 sm:px-8 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
                              />
                           </div>
-                          <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nouveau code</label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div className="space-y-2">
+                               <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nouveau code</label>
                                <input 
                                  type="password" placeholder="••••••••" 
-                                 className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                                 className="w-full px-5 sm:px-8 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
                                />
                             </div>
-                            <div className="space-y-3">
-                               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Confirmation</label>
+                            <div className="space-y-2">
+                               <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Confirmation</label>
                                <input 
                                  type="password" placeholder="••••••••" 
-                                 className="w-full px-8 py-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
+                                 className="w-full px-5 sm:px-8 py-4 sm:py-5 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none transition-all"
                                />
                             </div>
                           </div>
@@ -2978,50 +2969,50 @@ function SettingsView() {
                     </div>
                   </motion.div>
 
-                  <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 space-y-8">
-                    <h3 className="text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
+                  <motion.div variants={item} className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-8">
+                    <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight flex items-center gap-3">
                        <Activity size={20} className="text-indigo-600" /> Disponibilité Plateforme
                     </h3>
                     
-                    <div className="grid grid-cols-2 gap-6">
-                       <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                       <div className="p-4 sm:p-6 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 flex items-center justify-between">
                           <div>
                              <h4 className="text-sm font-black text-slate-950">Mode Maintenance</h4>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Coupure des accès publics</p>
+                             <p className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Coupure des accès publics</p>
                           </div>
                           <button 
                             onClick={() => setIsMaintenance(!isMaintenance)}
-                            className={`w-14 h-8 rounded-full p-1 transition-all ${isMaintenance ? 'bg-rose-500' : 'bg-slate-300'}`}
+                            className={`w-12 h-7 sm:w-14 sm:h-8 rounded-full p-1 transition-all ${isMaintenance ? 'bg-rose-500' : 'bg-slate-300'}`}
                           >
-                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${isMaintenance ? 'translate-x-6' : ''}`} />
+                             <div className={`w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md transition-all ${isMaintenance ? 'translate-x-5 sm:translate-x-6' : ''}`} />
                           </button>
                        </div>
 
-                       <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                       <div className="p-4 sm:p-6 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100 flex items-center justify-between">
                           <div>
                              <h4 className="text-sm font-black text-slate-950">Inscriptions Libres</h4>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Autoriser nouveaux marchands</p>
+                             <p className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Autoriser nouveaux marchands</p>
                           </div>
                           <button 
                             onClick={() => setIsRegistrationOpen(!isRegistrationOpen)}
-                            className={`w-14 h-8 rounded-full p-1 transition-all ${isRegistrationOpen ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                            className={`w-12 h-7 sm:w-14 sm:h-8 rounded-full p-1 transition-all ${isRegistrationOpen ? 'bg-emerald-500' : 'bg-slate-300'}`}
                           >
-                             <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all ${isRegistrationOpen ? 'translate-x-6' : ''}`} />
+                             <div className={`w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md transition-all ${isRegistrationOpen ? 'translate-x-5 sm:translate-x-6' : ''}`} />
                           </button>
                        </div>
                     </div>
 
-                    <div className="p-8 bg-slate-950 rounded-[1.5rem] text-white flex items-center justify-between">
-                       <div className="flex items-center gap-6">
-                          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-rose-500">
-                             <Trash2 size={24} />
+                    <div className="p-6 sm:p-8 bg-slate-950 rounded-[1.2rem] sm:rounded-[1.5rem] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                       <div className="flex items-center gap-4 sm:gap-6">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center text-rose-500 shrink-0">
+                             <Trash2 size={20} className="sm:w-6 sm:h-6" />
                           </div>
                           <div>
-                             <h4 className="text-lg font-black tracking-tight">Purge du Système</h4>
-                             <p className="text-xs text-slate-400 font-medium font-sans">Supprimer les données historiques (+24 mois)</p>
+                             <h4 className="text-base sm:text-lg font-black tracking-tight">Purge du Système</h4>
+                             <p className="text-[10px] sm:text-xs text-slate-400 font-medium font-sans">Supprimer les données historiques (+24 mois)</p>
                           </div>
                        </div>
-                       <button className="px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
+                       <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-lg sm:rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all">
                           Actioner la purge
                        </button>
                     </div>
@@ -3030,7 +3021,7 @@ function SettingsView() {
               )}
 
               {activeSubTab === 'team' && (
-                <motion.div variants={item} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden relative">
+                <motion.div variants={item} className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden relative">
                   {/* Editing Modal Overlay */}
                   <AnimatePresence>
                     {isEditingAdmin && (
@@ -3038,44 +3029,44 @@ function SettingsView() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 bg-white/90 backdrop-blur-md p-10 flex items-center justify-center"
+                        className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md p-4 sm:p-10 flex items-center justify-center"
                       >
                          <motion.div 
                            initial={{ scale: 0.9, opacity: 0 }}
                            animate={{ scale: 1, opacity: 1 }}
-                           className="w-full max-w-md bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-2xl space-y-8"
+                           className="w-full max-w-md bg-white border border-slate-200 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl space-y-6"
                          >
                             <div className="flex items-center justify-between">
-                               <h4 className="text-xl font-black text-slate-950 uppercase tracking-tight">
+                               <h4 className="text-lg sm:text-xl font-black text-slate-950 uppercase tracking-tight">
                                  {currentAdmin ? 'Éditer l\'accès' : 'Nouvel administrateur'}
                                </h4>
-                               <button onClick={() => setIsEditingAdmin(false)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
-                                  <X size={18} />
+                               <button onClick={() => setIsEditingAdmin(false)} className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
+                                  <X size={16} />
                                </button>
                             </div>
 
-                            <form onSubmit={handleSaveAdmin} className="space-y-6">
-                               <div className="space-y-2">
-                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Nom complet</label>
+                            <form onSubmit={handleSaveAdmin} className="space-y-4 sm:space-y-5">
+                               <div className="space-y-1">
+                                  <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nom complet</label>
                                   <input 
                                      name="name" required defaultValue={currentAdmin?.name}
-                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
+                                     className="w-full px-5 sm:px-6 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
                                      placeholder="ex: Paul Biya"
                                   />
                                </div>
-                               <div className="space-y-2">
-                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Adresse E-mail pro</label>
+                               <div className="space-y-1">
+                                  <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Adresse E-mail pro</label>
                                   <input 
                                      name="email" type="email" required defaultValue={currentAdmin?.email}
-                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
+                                     className="w-full px-5 sm:px-6 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none"
                                      placeholder="admin@fintrack.ci"
                                   />
                                </div>
-                               <div className="space-y-2">
-                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Rôle Système</label>
+                               <div className="space-y-1">
+                                  <label className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Rôle Système</label>
                                   <select 
                                      name="role" defaultValue={currentAdmin?.role || 'Support Manager'}
-                                     className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none appearance-none cursor-pointer"
+                                     className="w-full px-5 sm:px-6 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-sm font-bold focus:border-indigo-600 outline-none appearance-none cursor-pointer"
                                   >
                                      <option>Super Admin</option>
                                      <option>Support Manager</option>
@@ -3083,11 +3074,11 @@ function SettingsView() {
                                   </select>
                                </div>
 
-                               <div className="pt-4 flex gap-4">
-                                  <button type="submit" className="flex-1 px-8 py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                               <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                                  <button type="submit" className="flex-1 px-6 sm:px-8 py-3 sm:py-4 bg-slate-950 text-white rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all">
                                      {currentAdmin ? 'Mettre à jour' : 'Créer l\'accès'}
                                   </button>
-                                  <button type="button" onClick={() => setIsEditingAdmin(false)} className="px-8 py-4 bg-slate-100 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">
+                                  <button type="button" onClick={() => setIsEditingAdmin(false)} className="px-6 sm:px-8 py-3 sm:py-4 bg-slate-100 text-slate-500 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">
                                      Annuler
                                   </button>
                                </div>
@@ -3097,72 +3088,73 @@ function SettingsView() {
                     )}
                   </AnimatePresence>
 
-                  <div className="p-10 flex items-center justify-between border-b border-slate-100 bg-slate-50/30">
+                  <div className="p-6 sm:p-10 flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 bg-slate-50/30 gap-4">
                      <div className="space-y-1">
-                        <h3 className="text-xl font-black text-slate-950 tracking-tight">Direction Administrative</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gestion des droits et des accès • {admins.length} membres</p>
+                        <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">Direction Administrative</h3>
+                        <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Droits d'accès • {admins.length} membres</p>
                      </div>
                      <button 
                         onClick={() => { setCurrentAdmin(null); setIsEditingAdmin(true); }}
-                        className="flex items-center gap-2 px-6 py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
+                        className="flex items-center justify-center sm:justify-start gap-2 px-5 sm:px-6 py-3 sm:py-4 bg-slate-950 text-white rounded-lg sm:rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
                      >
-                        <Plus size={16} /> Ajouter un administrateur
+                        <Plus size={14} className="sm:w-4 sm:h-4" /> Ajouter un administrateur
                      </button>
                   </div>
 
-                  <div className="p-2">
-                    <table className="w-full text-left">
-                       <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <div className="p-2 overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left min-w-[600px]">
+                       <thead className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
                           <tr>
-                             <th className="px-8 py-5">Collaborateur</th>
-                             <th className="px-8 py-5">Rôle</th>
-                             <th className="px-8 py-5">Disponibilité</th>
-                             <th className="px-8 py-5 text-right">Actions</th>
+                             <th className="px-6 sm:px-8 py-4 sm:py-5">Collaborateur</th>
+                             <th className="px-6 sm:px-8 py-4 sm:py-5">Rôle</th>
+                             <th className="px-6 sm:px-8 py-4 sm:py-5">Disponibilité</th>
+                             <th className="px-6 sm:px-8 py-4 sm:py-5 text-right">Actions</th>
                           </tr>
                        </thead>
                        <tbody className="divide-y divide-slate-50">
                           {admins.map((member) => (
                             <tr key={member.id} className="group hover:bg-slate-50 transition-colors">
-                               <td className="px-8 py-6">
-                                  <div className="flex items-center gap-4">
-                                     <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 text-xs text-sans">
+                               <td className="px-6 sm:px-8 py-5 sm:py-6">
+                                  <div className="flex items-center gap-3 sm:gap-4">
+                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 rounded-lg sm:rounded-xl flex items-center justify-center font-black text-slate-400 text-[10px] sm:text-xs font-mono">
                                         {member.name.split(' ').map(n => n[0]).join('')}
                                      </div>
                                      <div>
-                                        <p className="text-sm font-black text-slate-950">{member.name}</p>
-                                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{member.email}</p>
+                                        <p className="text-xs sm:text-sm font-black text-slate-950">{member.name}</p>
+                                        <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 mt-0.5">{member.email}</p>
                                      </div>
                                   </div>
                                </td>
-                               <td className="px-8 py-6">
-                                  <span className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                               <td className="px-6 sm:px-8 py-5 sm:py-6">
+                                  <span className={`px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-[7px] sm:text-[8px] font-black uppercase tracking-widest ${
                                     member.role === 'Super Admin' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-slate-100 text-slate-500'
                                   }`}>
                                      {member.role}
                                   </span>
                                </td>
-                               <td className="px-8 py-6">
-                                  <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${member.status === 'En ligne' ? 'text-emerald-500' : 'text-slate-300'}`}>
-                                     <span className={`w-1.5 h-1.5 rounded-full ${member.status === 'En ligne' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                               <td className="px-6 sm:px-8 py-5 sm:py-6">
+                                  <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${member.status === 'En ligne' ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                     <span className={`w-1.5 h-1.5 rounded-full ${member.status === 'En ligne' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                                      {member.status}
                                   </span>
                                </td>
-                               <td className="px-8 py-6 text-right">
-                                  <div className="flex items-center justify-end gap-3">
+                               <td className="px-6 sm:px-8 py-5 sm:py-6 text-right">
+                                  <div className="flex items-center justify-end gap-2 text-slate-300 font-sans">
                                      <button 
                                         onClick={() => handleEditAdmin(member)}
-                                        className="p-2.5 text-slate-300 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
+                                        className="p-2 sm:p-2.5 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
                                      >
-                                        <Settings2 size={16} />
+                                        <Settings2 size={14} />
                                      </button>
                                      <button 
                                         onClick={() => handleDeleteAdmin(member.id)}
-                                        className="p-2.5 text-slate-300 hover:text-rose-500 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all font-sans"
+                                        className="p-2 sm:p-2.5 hover:text-rose-500 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all"
                                      >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={14} />
                                      </button>
                                   </div>
                                </td>
+                               
                             </tr>
                           ))}
                        </tbody>
@@ -3178,23 +3170,20 @@ function SettingsView() {
               )}
             </motion.div>
 
-            <div className="mt-12 flex justify-end">
+            <div className="mt-8 sm:mt-12 flex justify-center sm:justify-end">
                <button 
                   onClick={handleSave}
-                  className="px-14 py-6 bg-slate-950 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-900/20"
+                  className="w-full sm:w-auto px-10 sm:px-14 py-5 sm:py-6 bg-slate-950 text-white rounded-[1.2rem] sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] hover:bg-slate-800 transition-all shadow-2xl shadow-slate-900/20"
                >
-                  Sauvegarder les modifications Master
+                  Sauvegarder les modifications
                </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-
   );
 }
-
 
 /* ------------------- VIEW: CATALOGUE ------------------- */
 function CatalogueView() {
@@ -3274,7 +3263,7 @@ function CatalogueView() {
       </div>
 
       {/* KPI CARDS */}
-      <div className="grid grid-cols-5 gap-6">
+      <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar -mx-6 px-6 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-5 sm:gap-6">
          {[
            { label: "CATALOGUES", val: stats.total, sub: "Entrées référencées", icon: <Layers size={20} />, color: "text-[#3A4DB7]", bg: "bg-indigo-50" },
            { label: "BANQUES", val: stats.banks, sub: "Entités bancaires", icon: <Building2 size={20} />, color: "text-amber-500", bg: "bg-amber-50" },
@@ -3282,7 +3271,7 @@ function CatalogueView() {
            { label: "ACTIFS", val: stats.active, sub: "Disponibles au catalogue", icon: <CheckCircle2 size={20} />, color: "text-emerald-500", bg: "bg-emerald-50" },
            { label: "RÉSEAUX RELIÉS", val: 16, sub: "Instances connectées", icon: <Globe size={20} />, color: "text-amber-600", bg: "bg-amber-50" }
          ].map((stat, i) => (
-           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all">
+           <div key={i} className="bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm flex items-start justify-between group hover:shadow-md transition-all shrink-0 w-[240px] sm:w-auto">
               <div>
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{stat.label}</p>
                  <span className="text-4xl font-black text-slate-950 tracking-tighter">{stat.val}</span>
