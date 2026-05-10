@@ -64,6 +64,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
+import { useAuth } from "../contexts/AuthContext";
 
 // --- Types & Interfaces ---
 type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "terminal";
@@ -107,13 +108,29 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Caisse");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const [agentProfile, setAgentProfile] = useState({ 
-    name: "Agent Cotonou", 
-    email: "agent1@fintrack.bj", 
-    phone: "+22900000003" 
+    name: user?.name || "Agent", 
+    email: user?.email || "agent@fintrack.bj", 
+    phone: user?.phone || "+22900000000" 
   });
+
+  useEffect(() => {
+    if (user) {
+      setAgentProfile({
+        name: user.name,
+        email: user.email || "agent@fintrack.bj",
+        phone: user.phone || "+22900000000"
+      });
+    } else {
+      // For demo purposes, we allow viewing even if not logged in, but normally we'd redirect
+      // navigate("/agent/auth");
+    }
+  }, [user]);
+
   const [passwords, setPasswords] = useState({ current: "********", new: "", confirm: "" });
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [feedback, setFeedback] = useState({ nature: "Avis général", stars: 5, message: "" });
@@ -267,6 +284,7 @@ export default function AgentDashboard() {
     setIsClosingFinished(true);
     // In a real app, we would send data to backend here
     setTimeout(() => {
+      logout();
       navigate("/");
     }, 3000);
   };
@@ -1358,7 +1376,10 @@ export default function AgentDashboard() {
 
         <div className="px-6 pb-10">
           <button 
-            onClick={() => navigate("/")}
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
             className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] bg-slate-100 border border-slate-200 text-slate-500 hover:bg-slate-950 hover:text-white transition-all font-black text-[10px] tracking-widest uppercase active:scale-95 group/logout"
           >
             <LogOut size={16} className="group-hover/logout:-translate-x-1 transition-all" />

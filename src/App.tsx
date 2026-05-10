@@ -19,8 +19,9 @@ import {
   useTransform 
 } from "motion/react";
 import Logo from "./components/Logo";
+import { AuthProvider } from "./contexts/AuthContext";
 import AuthPage from "./pages/AuthPage";
-import AgentAuthPage from "./pages/AgentAuthPage";
+import AdminAuthPage from "./pages/AdminAuthPage";
 import MerchantOnboarding from "./pages/MerchantOnboarding";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import AgentDashboard from "./pages/AgentDashboard";
@@ -66,17 +67,19 @@ import {
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/agent/auth" element={<AgentAuthPage />} />
-        <Route path="/onboarding" element={<MerchantOnboarding />} />
-        <Route path="/dashboard" element={<MerchantDashboard />} />
-        <Route path="/agent/dashboard" element={<AgentDashboard />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin/private-login" element={<AdminAuthPage />} />
+          <Route path="/onboarding" element={<MerchantOnboarding />} />
+          <Route path="/dashboard" element={<MerchantDashboard />} />
+          <Route path="/agent/dashboard" element={<AgentDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

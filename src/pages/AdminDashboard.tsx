@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import { useAuth } from "../contexts/AuthContext";
 import { 
   ShieldAlert,
   Info,
@@ -91,6 +92,7 @@ type AdminTab = "Overview" | "Merchants" | "Catalogue" | "Plans" | "Support" | "
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>("Overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -244,7 +246,10 @@ export default function AdminDashboard() {
 
         <div className="p-8">
            <button 
-             onClick={() => navigate("/")}
+             onClick={() => {
+               logout();
+               navigate("/");
+             }}
              className="w-full flex items-center justify-center gap-3 py-4 text-slate-400 font-black text-[11px] tracking-widest hover:text-rose-500 transition-colors"
            >
               <LogOut size={18} />

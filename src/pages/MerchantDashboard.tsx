@@ -82,6 +82,7 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import { useAuth } from "../contexts/AuthContext";
 
 // --- Data Model Interfaces ---
 
@@ -3024,6 +3025,7 @@ function AjustementsView() {
 
 export default function MerchantDashboard(props: Partial<MerchantDashboardProps>) {
   const data = { ...DEFAULT_PROPS, ...props };
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -3134,7 +3136,10 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
           </div>
           
           <button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
             className="w-full mt-4 flex items-center justify-center gap-3 py-4 rounded-[1.5rem] bg-red-500/5 border border-red-500/20 text-[#FF4B4B] hover:bg-red-500/10 transition-all font-black text-xs tracking-widest uppercase"
           >
             <LogOut size={18} />
