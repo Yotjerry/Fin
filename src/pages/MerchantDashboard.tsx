@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   LayoutDashboard, 
@@ -84,6 +84,10 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
 import SupportCenter from "../components/SupportCenter";
+import { transactionService, Transaction } from "../services/transactionService";
+import { agencyService, Agency } from "../services/agencyService";
+import { productService, Product } from "../services/productService";
+import { LOGOS } from "../constants/logos";
 
 // --- Data Model Interfaces ---
 
@@ -1618,7 +1622,27 @@ function CaissesView({ agences }: { agences: any[] }) {
   );
 }
 
-function StocksView() {
+function StocksView({ stocks }: { stocks: any[] }) {
+  const { user } = useAuth();
+  const [newProduct, setNewProduct] = useState({ nom: "", stock: "", prix: "", agence: "" });
+
+  const handleAddProduct = async () => {
+    if (!user || !newProduct.nom || !newProduct.stock || !newProduct.prix) return;
+    try {
+      await productService.addProduct({
+        name: newProduct.nom,
+        stock: parseInt(newProduct.stock),
+        minStock: 5,
+        price: parseInt(newProduct.prix),
+        category: "Divers",
+        merchantId: user.id
+      });
+      setNewProduct({ nom: "", stock: "", prix: "", agence: "" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -1637,11 +1661,22 @@ function StocksView() {
           <div className="space-y-4">
              <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Nom du produit</label>
-                <input type="text" placeholder="Ex: Gaz 12kg" className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none border focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" />
+                <input 
+                  type="text" 
+                  value={newProduct.nom}
+                  onChange={(e) => setNewProduct({...newProduct, nom: e.target.value})}
+                  placeholder="Ex: Gaz 12kg" 
+                  className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none border focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" 
+                />
              </div>
              <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Agence</label>
-                <select className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold appearance-none outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all">
+                <select 
+                  value={newProduct.agence}
+                  onChange={(e) => setNewProduct({...newProduct, agence: e.target.value})}
+                  className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold appearance-none outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all"
+                >
+                   <option value="">Sélectionner</option>
                    <option>Cotonou Star</option>
                    <option>Calavi Center</option>
                 </select>
@@ -1649,14 +1684,31 @@ function StocksView() {
              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Quantité</label>
-                   <input type="number" placeholder="50" className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" />
+                   <input 
+                     type="number" 
+                     value={newProduct.stock}
+                     onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
+                     placeholder="50" 
+                     className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" 
+                   />
                 </div>
                 <div className="space-y-1">
                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Prix (FCFA)</label>
-                   <input type="number" placeholder="8500" className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" />
+                   <input 
+                     type="number" 
+                     value={newProduct.prix}
+                     onChange={(e) => setNewProduct({...newProduct, prix: e.target.value})}
+                     placeholder="8500" 
+                     className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-xs font-bold outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 transition-all" 
+                   />
                 </div>
              </div>
-             <button className="w-full py-4 bg-blue-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-800 transition-all mt-2">Enregistrer</button>
+             <button 
+               onClick={handleAddProduct}
+               className="w-full py-4 bg-blue-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-800 transition-all mt-2"
+             >
+               Enregistrer
+             </button>
           </div>
         </aside>
 
@@ -1673,15 +1725,15 @@ function StocksView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {[1, 2, 3, 4].map((i) => (
-                    <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-[11px] font-black text-slate-900">Gaz Bouteille {i === 1 ? '12kg' : '6kg'}</td>
-                      <td className="px-6 py-4 text-[10px] font-bold text-slate-500">Cotonou Agence {i}</td>
-                      <td className="px-6 py-4 text-[11px] font-black text-slate-900 text-center">{i * 15}</td>
-                      <td className="px-6 py-4 text-[11px] font-black text-slate-900 text-center">{i === 1 ? '8.500' : '4.500'} FCFA</td>
+                  {stocks.map((item) => (
+                    <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 text-[11px] font-black text-slate-900">{item.nom}</td>
+                      <td className="px-6 py-4 text-[10px] font-bold text-slate-500">{item.agence}</td>
+                      <td className="px-6 py-4 text-[11px] font-black text-slate-900 text-center">{item.stock}</td>
+                      <td className="px-6 py-4 text-[11px] font-black text-slate-900 text-center">{item.prix.toLocaleString()} FCFA</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${i === 3 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
-                           {i === 3 ? "Rupture" : "En stock"}
+                        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${item.stock <= 5 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
+                           {item.stock <= 5 ? "Alerte / Rupture" : "En stock"}
                         </span>
                       </td>
                     </tr>
@@ -3025,7 +3077,6 @@ function AjustementsView() {
 // --- Main App Wrapper ---
 
 export default function MerchantDashboard(props: Partial<MerchantDashboardProps>) {
-  const data = { ...DEFAULT_PROPS, ...props };
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -3034,6 +3085,102 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
   const [dateRange, setDateRange] = useState("Mai 02 - Juin 02");
   const [timeframe, setTimeframe] = useState("24h");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  // Firestore Dynamic Data
+  const [dynamicStats, setDynamicStats] = useState(DEFAULT_PROPS.stats);
+  const [dynamicTransactions, setDynamicTransactions] = useState(DEFAULT_PROPS.recentTransactions);
+  const [dynamicAgencies, setDynamicAgencies] = useState(DEFAULT_PROPS.liveSupervision.agencies);
+  const [dynamicStocks, setDynamicStocks] = useState(DEFAULT_PROPS.alertesStock);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Real-time stock subscription
+    const unsubStock = productService.subscribeToMerchantStock(user.id, (products) => {
+      const mapped = products.map(p => ({
+        id: parseInt(p.id.substring(0, 5), 36) || 1,
+        nom: p.name,
+        agence: "Agence Principale", // We'd join with agency name usually
+        stock: p.stock,
+        prix: p.price
+      }));
+      setDynamicStocks(mapped);
+    });
+
+    const fetchAllData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch Agencies
+        const fetchedAgencies = await agencyService.getAgenciesByMerchant(user.id);
+        const mappedAgencies = fetchedAgencies.map(a => ({
+          id: parseInt(a.id.substring(0, 5), 36) || 1, // Fallback as initial UI expects numbers
+          nom: a.name,
+          is_active: a.status === 'OK',
+          status: a.status,
+          solde_caisse: a.balance,
+          plafond_cash: a.plafond,
+          cash_usage_percent: (a.balance / a.plafond) * 100,
+          transactions_today: 0,
+          volume_today: 0,
+          commissions_today: 0,
+          active_agents: 1,
+          pending_remontees: 0,
+          pending_remontees_amount: 0,
+          pending_closures: 0,
+          latest_activity_at: a.latestActivityAt ? new Date(a.latestActivityAt).toLocaleTimeString() : null
+        }));
+        setDynamicAgencies(mappedAgencies as any);
+
+        // Fetch Transactions
+        const txns = await transactionService.getRecentTransactions(user.id, 'MERCHANT');
+        const mappedTxns = txns.map(t => ({
+          nature: t.nature as any,
+          reference: t.reference,
+          agence: "Agence Principale", // In real DB we'd join with Agency name
+          montant: t.amount,
+          statut: t.status as any,
+          date: new Date(t.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          photo_preuve_url: t.proofUrl || null,
+          reference_externe: t.externalRef || null
+        }));
+        setDynamicTransactions(mappedTxns);
+
+        // Calculate Stats
+        const totalVol = txns.reduce((acc, curr) => acc + curr.amount, 0);
+        setDynamicStats({
+          ...DEFAULT_PROPS.stats,
+          totalTransactions: txns.length,
+          totalVolume: totalVol,
+          nbAgences: fetchedAgencies.length
+        });
+
+      } catch (err) {
+        console.error("Dashboard Sync Error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllData();
+    return () => unsubStock();
+  }, [user]);
+
+  const data: MerchantDashboardProps = { 
+    ...DEFAULT_PROPS, 
+    ...props,
+    stats: dynamicStats,
+    recentTransactions: dynamicTransactions,
+    alertesStock: dynamicStocks,
+    liveSupervision: {
+      ...DEFAULT_PROPS.liveSupervision,
+      summary: {
+        ...DEFAULT_PROPS.liveSupervision.summary,
+        active_agencies: dynamicAgencies.filter(a => a.is_active).length,
+      },
+      agencies: dynamicAgencies as any
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -3051,7 +3198,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       case "Services": return <ServicesView />;
       case "Transactions": return <TransactionsView />;
       case "Caisses": return <CaissesView agences={data.liveSupervision.agencies} />;
-      case "Stocks": return <StocksView />;
+      case "Stocks": return <StocksView stocks={data.alertesStock} />;
       case "Clôtures": return <CloturesView />;
       case "Dettes": return <DettesView />;
       case "Ajustements": return <AjustementsView />;

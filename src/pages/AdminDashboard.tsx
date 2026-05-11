@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../lib/firebase";
 import { 
   ShieldAlert,
   Info,
@@ -116,6 +118,32 @@ export default function AdminDashboard() {
 
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [pulse, setPulse] = useState(false);
+  const [dynamicStats, setDynamicStats] = useState({ transactions: 24, volume: 845000, merchants: 0, products: 0 });
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const merchantsSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'MERCHANT')));
+        const transactionsSnap = await getDocs(collection(db, 'transactions'));
+        const productsSnap = await getDocs(collection(db, 'products'));
+        
+        let totalVol = 0;
+        transactionsSnap.forEach(doc => {
+          totalVol += doc.data().amount || 0;
+        });
+
+        setDynamicStats({
+          merchants: merchantsSnap.size,
+          transactions: transactionsSnap.size,
+          volume: totalVol,
+          products: productsSnap.size
+        });
+      } catch (err) {
+        console.error("Admin Stats Fetch Error:", err);
+      }
+    };
+    fetchAdminStats();
+  }, []);
 
   // Simulate live data updates
   React.useEffect(() => {

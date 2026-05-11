@@ -67,6 +67,13 @@ import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
 import SupportCenter from "../components/SupportCenter";
 import { HelpCircle } from "lucide-react";
+import { transactionService, Transaction } from "../services/transactionService";
+import { agencyService, Agency } from "../services/agencyService";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../lib/firebase";
+
+import { LOGOS } from "../constants/logos";
+import { productService, Product } from "../services/productService";
 
 // --- Types & Interfaces ---
 type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "terminal";
@@ -160,6 +167,61 @@ export default function AgentDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedService, setSelectedService] = useState<any>(null);
 
+  // Firestore Logic for Agent
+  const [dynamicTransactions, setDynamicTransactions] = useState<Transaction[]>([]);
+  const [agencyData, setAgencyData] = useState<Agency | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Listen to agency balance in real-time if agency info is in user profile
+    if (user.agencyId) {
+      const unsubscribe = onSnapshot(doc(db, 'agencies', user.agencyId), (snapshot) => {
+        if (snapshot.exists()) {
+          setAgencyData({ id: snapshot.id, ...snapshot.data() } as Agency);
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchHistory = async () => {
+      const txns = await transactionService.getRecentTransactions(user.id, 'AGENT');
+      setDynamicTransactions(txns);
+    };
+    fetchHistory();
+  }, [user]);
+
+  const handleTransactionCreation = async (nature: any, amount: number, service: string) => {
+    if (!user) return;
+    try {
+      await transactionService.createTransaction({
+        nature,
+        amount,
+        status: 'CONFIRME',
+        agentId: user.id,
+        agencyId: user.agencyId || 'default',
+        merchantId: user.merchantId || 'default',
+        reference: `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        service
+      });
+      // Update balance locally or let onSnapshot handle it
+      if (user.agencyId) {
+        // Adjust balance (negative for DEPOT/VENTE usually, positive for RAMASSAGE)
+        const balanceAdjust = nature === 'DEPOT' || nature === 'VENTE' ? -amount : amount;
+        await agencyService.updateAgencyBalance(user.agencyId, balanceAdjust);
+      }
+      
+      // Refresh history
+      const txns = await transactionService.getRecentTransactions(user.id, 'AGENT');
+      setDynamicTransactions(txns);
+    } catch (err) {
+      console.error("Transac Error:", err);
+    }
+  };
+
   // --- TYPES & DATA FOR SERVICES & COMMISSIONS ---
   type OperationType = "Dépôt" | "Retrait" | "Transfert" | "Paiement Facture";
   
@@ -185,7 +247,7 @@ export default function AgentDashboard() {
     {
       id: "mtn-momo",
       name: "MTN Mobile Money",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/MTN_Logo.svg/1024px-MTN_Logo.svg.png",
+      logo: LOGOS.OPERATORS.MTN,
       category: "Réseaux",
       isActive: true,
       isGlobalMaintenance: false,
@@ -199,7 +261,7 @@ export default function AgentDashboard() {
     {
       id: "moov-money",
       name: "Moov Money",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR07fJ00Z11aV86GZ_Qk0w4_f56y6a6E_2G-Q&s",
+      logo: LOGOS.OPERATORS.MOOV,
       category: "Réseaux",
       isActive: true,
       isGlobalMaintenance: false,
@@ -210,14 +272,14 @@ export default function AgentDashboard() {
     {
       id: "sbee",
       name: "SBEE",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3vY8Xv3U8_Y9W9I6o_7yYQ0Q0G8o7z9Y6aQ&s",
+      logo: LOGOS.SERVICES.SBEE,
       category: "Facturiers",
       isActive: true,
       isGlobalMaintenance: false,
       commissions: {
         "Dépôt": [], "Retrait": [], "Transfert": [], "Paiement Facture": []
       }
-    }
+    },
   ]);
 
   const [selectedMerchantService, setSelectedMerchantService] = useState<ServiceConfig | null>(null);
@@ -536,104 +598,20 @@ export default function AgentDashboard() {
   const [step, setStep] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [activities, setActivities] = useState([
-    { 
-      id: "TXN-IMRH6NP3", 
-      clientRef: "0718957019",
-      amount: "10 000", 
-      commission: "100", 
-      operator: "Ecobank", 
-      type: "Dépôt", 
-      date: "28/04/2026", 
-      time: "14:25", 
-      status: "EN_ANNULATION", 
-      logo: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ecobank_logo.svg",
-      proofPhoto: true,
-      receiptPhoto: false,
-      extra: "Bénéficiaire: Koffi Jerry"
-    },
-    { 
-      id: "TXN-DSAGPFUJ", 
-      clientRef: "0749499122",
-      amount: "50 000", 
-      commission: "500", 
-      operator: "Wave", 
-      type: "Retrait", 
-      date: "28/04/2026", 
-      time: "13:42", 
-      status: "EN_ANNULATION", 
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Wave_Logo.svg/1000px-Wave_Logo.svg.png",
-      proofPhoto: true,
-      receiptPhoto: false,
-      extra: "SENELEC | Titulaire : Aya"
-    },
-    { 
-      id: "TXN-B110432B", 
-      clientRef: "0711338192",
-      amount: "2 500", 
-      commission: "25", 
-      operator: "Ecobank", 
-      type: "Dépôt", 
-      date: "25/04/2026", 
-      time: "18:42", 
-      status: "CONFIRME", 
-      logo: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ecobank_logo.svg",
-      proofPhoto: true,
-      receiptPhoto: true,
-    },
-    { 
-      id: "TXN-B10F0B3D", 
-      clientRef: "0755083250",
-      amount: "50 000", 
-      commission: "750", 
-      operator: "NSIA Banque", 
-      type: "Dépôt", 
-      date: "25/04/2026", 
-      time: "18:42", 
-      status: "CONFIRME", 
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_xN8F6tXG5S1O5A4Y7_qg7Z5y5o9G0Z3w-Q&s",
-      proofPhoto: true,
-      receiptPhoto: true,
-    },
-    { 
-      id: "TXN-C7196957", 
-      clientRef: "0719695722",
-      amount: "5 000", 
-      commission: "500", 
-      operator: "Moov Money", 
-      type: "Retrait", 
-      date: "25/04/2026", 
-      time: "15:20", 
-      status: "CONFIRME", 
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR07fJ00Z11aV86GZ_Qk0w4_f56y6a6E_2G-Q&s",
-      proofPhoto: true,
-      receiptPhoto: true,
-    },
-    { 
-      id: "TXN-Z9921004", 
-      clientRef: "0799887766",
-      amount: "125 000", 
-      commission: "1 250", 
-      operator: "Bénin Control", 
-      type: "Paiement Facture", 
-      date: "24/04/2026", 
-      time: "10:10", 
-      status: "CONFIRME", 
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3vY8Xv3U8_Y9W9I6o_7yYQ0Q0G8o7z9Y6aQ&s",
-      proofPhoto: true,
-      receiptPhoto: true,
-      extra: "Fouillet #88291"
-    },
-  ]);
-
   const [selectedTxForReceipt, setSelectedTxForReceipt] = useState<any>(null);
   const [selectedTxForReport, setSelectedTxForReport] = useState<any>(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
+  const stats = {
+    entrant: dynamicTransactions.filter(t => t.nature === 'RETRAIT' || t.nature === 'RAMASSAGE').reduce((acc, curr) => acc + curr.amount, 0),
+    sortant: dynamicTransactions.filter(t => t.nature === 'DEPOT' || t.nature === 'VENTE').reduce((acc, curr) => acc + curr.amount, 0),
+    count: dynamicTransactions.length
+  };
+
   const handleReportError = (id: string, reason: string) => {
     console.log(`Reporting error for ${id} with reason: ${reason}`);
-    setActivities(prev => prev.map(a => a.id === id ? { ...a, status: "EN_ANNULATION" } : a));
+    // Optional: add logical update to Firestore here later
     setShowReportModal(false);
   };
 
@@ -795,11 +773,11 @@ export default function AgentDashboard() {
   }
 
   function TransactionsView() {
-    const filteredActivities = activities.filter(txn => 
+    const filteredActivities = dynamicTransactions.filter(txn => 
       txn.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      txn.operator.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      txn.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (txn.clientRef && txn.clientRef.toLowerCase().includes(searchQuery.toLowerCase()))
+      (txn.service && txn.service.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      txn.nature.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      txn.reference.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -983,6 +961,7 @@ export default function AgentDashboard() {
   };
 
   const handleVenteLibre = () => {
+    handleTransactionCreation("VENTE", 0, "Divers"); // Amount 0 as it's free-form for now
     setSuccessMessage(`Vente diverse enregistrée avec succès.`);
     setShowSuccessToast(true);
     closeModal();
@@ -1518,9 +1497,9 @@ export default function AgentDashboard() {
                     {/* Refined Stats - More White Space */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
                       {[
-                        { label: "Cumul Entrant", value: "845 000", delta: "+12.5%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
-                        { label: "Cumul Sortant", value: "320 500", delta: "+4.2%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
-                        { label: "Transactions", value: "24", delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
+                        { label: "Cumul Entrant", value: stats.entrant.toLocaleString(), delta: "+0%", icon: <ArrowUpRight />, color: "text-emerald-500", bg: "bg-emerald-500", trend: "up" },
+                        { label: "Cumul Sortant", value: stats.sortant.toLocaleString(), delta: "+0%", icon: <ArrowDownLeft />, color: "text-rose-500", bg: "bg-rose-500", trend: "down" },
+                        { label: "Transactions", value: stats.count.toString(), delta: "Normal", icon: <Activity />, color: "text-blue-500", bg: "bg-blue-500", trend: "neutral" },
                       ].map((stat, i) => (
                         <div key={i} className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 border border-slate-100/60 shadow-sm group hover:shadow-xl transition-all duration-500 relative overflow-hidden">
                           <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 opacity-50 group-hover:bg-fintrack-primary group-hover:opacity-100 transition-all duration-500" />
@@ -1640,7 +1619,7 @@ export default function AgentDashboard() {
                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historique de vos dernières opérations</p>
                        </div>
                        <div className="bg-[#DCE1F2]/50 text-[#234D96] px-4 py-1.5 rounded-xl text-[11px] font-black border border-[#DCE1F2]">
-                          {activities.length} Opérations
+                          {dynamicTransactions.length} Opérations
                        </div>
                     </div>
 
@@ -1657,48 +1636,55 @@ export default function AgentDashboard() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-50">
-                            {activities.map((tx) => (
+                            {dynamicTransactions.map((tx) => (
                               <motion.tr 
                                 key={tx.id}
                                 className={`group transition-colors ${tx.status === "EN_ANNULATION" ? "bg-amber-50/30" : "hover:bg-slate-50/50"}`}
                               >
                                 <td className="px-6 py-4">
                                   <div className="flex flex-col">
-                                    <span className="text-xs font-black text-slate-900">{tx.date}</span>
-                                    <span className="text-[10px] font-bold text-slate-400">{tx.time}</span>
+                                    <span className="text-xs font-black text-slate-900">{new Date(tx.date).toLocaleDateString()}</span>
+                                    <span className="text-[10px] font-bold text-slate-400">{new Date(tx.date).toLocaleTimeString()}</span>
                                   </div>
                                 </td>
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
-                                      tx.type === "Dépôt" ? "bg-emerald-50 border-emerald-100/50 text-emerald-500" : "bg-blue-50 border-blue-100/50 text-blue-500"
+                                      tx.nature === "RETRAIT" || tx.nature === "RAMASSAGE" ? "bg-emerald-50 border-emerald-100/50 text-emerald-500" : "bg-blue-50 border-blue-100/50 text-blue-500"
                                     }`}>
-                                      {tx.type === "Dépôt" ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
+                                      {tx.nature === "RETRAIT" || tx.nature === "RAMASSAGE" ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
                                     </div>
                                     <div className="flex flex-col">
                                       <div className="flex items-center gap-1.5">
                                         <div className="w-3 h-3 rounded-sm overflow-hidden flex items-center justify-center bg-white shadow-xs p-[1px]">
-                                          <img src={tx.logo} alt="" className="w-full h-full object-contain" />
+                                          <img 
+                                            src={
+                                              tx.service?.toLowerCase().includes('mtn') ? LOGOS.OPERATORS.MTN :
+                                              tx.service?.toLowerCase().includes('moov') ? LOGOS.OPERATORS.MOOV :
+                                              tx.service?.toLowerCase().includes('wave') ? LOGOS.OPERATORS.WAVE :
+                                              tx.service?.toLowerCase().includes('ecobank') ? LOGOS.BANKS.ECOBANK :
+                                              LOGOS.OPERATORS.CELTIIS
+                                            } 
+                                            alt="" 
+                                            className="w-full h-full object-contain" 
+                                          />
                                         </div>
-                                        <span className="text-xs font-black text-slate-700">{tx.operator}</span>
+                                        <span className="text-xs font-black text-slate-700">{tx.service || "Mobile Money"}</span>
                                       </div>
                                       <span className={`text-[9px] font-black uppercase tracking-tighter ${
-                                        tx.type === "Dépôt" ? "text-emerald-500" : "text-blue-500"
+                                        tx.nature === "RETRAIT" ? "text-emerald-500" : "text-blue-500"
                                       }`}>
-                                        {tx.type}
+                                        {tx.nature}
                                       </span>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <span className="text-[11px] font-black font-mono text-slate-400">{tx.clientRef}</span>
+                                  <span className="text-[11px] font-black font-mono text-slate-400">{tx.reference}</span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   <div className="flex flex-col items-end">
-                                    <span className="text-sm font-black text-slate-950">{tx.amount} F</span>
-                                    {tx.status === "EN_ANNULATION" && (
-                                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter bg-amber-100/50 px-1.5 py-0.5 rounded">Annulation</span>
-                                    )}
+                                    <span className="text-sm font-black text-slate-950">{tx.amount.toLocaleString()} F</span>
                                   </div>
                                 </td>
                                 <td className="px-6 py-4">
@@ -2048,7 +2034,12 @@ export default function AgentDashboard() {
 
                              <div className="flex flex-col gap-3">
                                 <button 
-                                  onClick={() => setWorkflowStep("SUCCESS")}
+                                   onClick={() => {
+                                     const numAmount = parseInt(String(amount).replace(/\s/g, "")) || 0;
+                                     const nature = selectedService?.title === "Dépôt" ? "DEPOT" : "RETRAIT";
+                                     handleTransactionCreation(nature, numAmount, selectedOperator);
+                                     setWorkflowStep("SUCCESS");
+                                   }}
                                   className="w-full py-6 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
                                 >
                                    Confirmer l'opération

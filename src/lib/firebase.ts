@@ -6,9 +6,17 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 
 // Use databaseId from config if present
-const dbId = (firebaseConfig as any).firestoreDatabaseId || '(default)';
+const dbIdFromConfig = (firebaseConfig as any).firestoreDatabaseId;
 
-export const db = getFirestore(app, dbId);
+let dbInstance;
+try {
+  dbInstance = getFirestore(app, dbIdFromConfig || '(default)');
+} catch (e) {
+  console.warn("Failed to initialize specific database, falling back to default", e);
+  dbInstance = getFirestore(app);
+}
+
+export const db = dbInstance;
 export const auth = getAuth(app);
 
 // Critical Constraint: Test connection on boot

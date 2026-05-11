@@ -73,9 +73,22 @@ service cloud.firestore {
                data.amount is number && data.amount > 0;
       }
 
-      allow list: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
-      allow get: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
-      allow create: if (isAgent() || isMerchant()) && isValidTxn(incoming());
+      allow list: if isSignedIn() || (request.auth == null && exists(/databases/$(database)/documents/users/$(request.resource.data.agentId)));
+      allow get: if isSignedIn() || (request.auth == null && exists(/databases/$(database)/documents/users/$(resource.data.agentId)));
+      allow create: if isValidTxn(incoming());
+    }
+
+    // --- AGENCIES ---
+    match /agencies/{agencyId} {
+      allow read: if isSignedIn();
+      allow update: if isSignedIn() || (request.auth == null && incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'latestActivityAt']));
+    }
+
+    // --- PRODUCTS ---
+    match /products/{productId} {
+      allow read: if isSignedIn() || (request.auth == null);
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() || (request.auth == null && incoming().diff(existing()).affectedKeys().hasOnly(['stock', 'status', 'updatedAt']));
     }
   }
 }
