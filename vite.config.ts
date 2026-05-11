@@ -2,11 +2,59 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        devOptions: {
+          enabled: true
+        },
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        manifest: {
+          name: 'FinTrack Côte d\'Ivoire',
+          short_name: 'FinTrack',
+          description: 'Gestion Financière Terrain Côte d\'Ivoire - Suivi des agents et remontées de fonds',
+          theme_color: '#234D96',
+          background_color: '#F8FAFC',
+          display: 'standalone',
+          orientation: 'portrait',
+          categories: ['finance', 'business'],
+          icons: [
+            {
+              src: 'https://xzuwhajkyxrztrxosand.supabase.co/storage/v1/object/sign/Mon%20bucket/logo-transparent.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85NGNlM2FjMS03NzNkLTQ1OGUtODU2YS02ZTRmNGVjZGQ1ODEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJNb24gYnVja2V0L2xvZ28tdHJhbnNwYXJlbnQucG5nIiwiaWF0IjoxNzc2MDY5MjIzLCJleHAiOjE4MDc2MDUyMjN9.Tza7nG0c-8-TJgvPreIsRAtmA7E8GT4fjqLPMJuZySs',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            }
+          ]
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            }
+          ]
+        }
+      })
+    ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },

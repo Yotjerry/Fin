@@ -21,7 +21,7 @@ import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function AuthPage() {
-  const { loginWithEmail, loginAgent, updateAgentPin } = useAuth();
+  const { user, loginWithGoogle, loginAgent, updateAgentPin } = useAuth();
   const [userType, setUserType] = useState<'merchant' | 'agent'>('merchant');
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -74,19 +74,11 @@ export default function AuthPage() {
 
   const handleAuth = async () => {
     if (userType === 'merchant') {
-      if (isLogin) {
-        if (!email || !password) {
-          alert("Veuillez remplir tous les champs.");
-          return;
-        }
-        try {
-          await loginWithEmail(email, password);
-          navigate("/dashboard");
-        } catch (err: any) {
-          alert(err.message || "Erreur de connexion.");
-        }
-      } else {
-        navigate("/onboarding", { state: { firstName, lastName, email } });
+      try {
+        await loginWithGoogle();
+        navigate("/dashboard");
+      } catch (err: any) {
+        alert(err.message || "Erreur de connexion.");
       }
     } else {
       // Agent Auth Logic
@@ -101,19 +93,19 @@ export default function AuthPage() {
           return;
         }
         try {
-          await updateAgentPin(phone, newPin);
+          await updateAgentPin(user?.id || "", newPin);
           navigate("/agent/dashboard");
         } catch (err: any) {
           alert(err.message || "Erreur lors du changement de PIN.");
         }
       } else {
         // Login step
-        if (!phone || !pin) {
-          alert("Veuillez entrer votre numéro et votre code PIN.");
+        if (!phone || !password) {
+          alert("Veuillez entrer votre numéro et votre mot de passe.");
           return;
         }
         try {
-          const res = await loginAgent(phone, pin);
+          const res = await loginAgent(phone, password);
           if (res.isFirstLogin) {
             setIsFirstLogin(true);
           } else {
@@ -231,7 +223,10 @@ export default function AuthPage() {
             {/* Social Login - Only for merchants */}
             {userType === 'merchant' && isLogin && (
               <>
-                <button className="w-full flex items-center justify-center gap-3 py-4 border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all group">
+                <button 
+                  onClick={loginWithGoogle}
+                  className="w-full flex items-center justify-center gap-3 py-4 border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all group"
+                >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -410,16 +405,15 @@ export default function AuthPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Code PIN</label>
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Mot de passe Agent</label>
                         <div className="relative group">
                           <LockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-fintrack-primary transition-colors" />
                           <input 
                             type={showPassword ? "text" : "password"} 
-                            placeholder="••••••" 
-                            value={pin}
-                            onChange={(e) => setPin(e.target.value)}
-                            maxLength={6}
-                            className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900 tracking-[0.5em]"
+                            placeholder="••••••••" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 focus:border-fintrack-primary focus:bg-white rounded-2xl outline-none transition-all font-bold text-slate-900"
                           />
                           <button 
                             type="button"
@@ -499,7 +493,7 @@ export default function AuthPage() {
               onClick={() => {
                 setUserType('agent');
                 setPhone("+22997000001");
-                setPin("123456");
+                setPassword("demo123");
               }}
               className="w-full mt-3 py-5 bg-blue-50/50 border border-blue-100 text-[#234D96] font-black rounded-2xl hover:bg-blue-100 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 group"
             >

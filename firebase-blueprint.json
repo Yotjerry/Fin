@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "User": {
+      "title": "Utilisateur",
+      "description": "Profil utilisateur (Admin, Merchant, Agent)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "MERCHANT", "AGENT"] },
+        "status": { "type": "string", "enum": ["ACTIVE", "PENDING", "INACTIVE"] },
+        "agencyId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "enterpriseId": { "type": "string" },
+        "bio": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name", "role", "status"]
+    },
+    "Enterprise": {
+      "title": "Entreprise",
+      "description": "Structure regroupant plusieurs agents/agences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "merchantId"]
+    },
+    "Agency": {
+      "title": "Agence",
+      "description": "Point de vente physique ou virtuel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "status": { "type": "string", "enum": ["OK", "A_SURVEILLER", "INACTIVE"] },
+        "balance": { "type": "number" },
+        "plafond": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "merchantId"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Opération financière unitaire",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nature": { "type": "string", "enum": ["DEPOT", "RETRAIT", "VENTE", "RECHARGE", "RAMASSAGE"] },
+        "reference": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["CONFIRME", "ECHEC", "EN_ATTENTE"] },
+        "agentId": { "type": "string" },
+        "agencyId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "date": { "type": "number" },
+        "proofUrl": { "type": "string" },
+        "externalRef": { "type": "string" },
+        "service": { "type": "string" }
+      },
+      "required": ["id", "nature", "amount", "status", "agentId", "date"]
+    },
+    "Feedback": {
+      "title": "Feedback",
+      "description": "Signalement de bug ou suggestion technique pour les admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Correction", "Bug Technique", "Suggestion", "Autre"] },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["Reçu", "En cours", "Résolu", "Classé"] },
+        "adminNote": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "type", "message", "status", "createdAt"]
+    },
+    "Review": {
+      "title": "Avis",
+      "description": "Évaluation publique de la plateforme",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "rating", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Profils utilisateurs"
+    },
+    "/enterprises/{enterpriseId}": {
+      "schema": "Enterprise",
+      "description": "Données des entreprises marchandes"
+    },
+    "/agencies/{agencyId}": {
+      "schema": "Agency",
+      "description": "Agences du réseau"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Registre des transactions"
+    },
+    "/feedbacks/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "Support et retours techniques"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Avis clients et notes plateforme"
+    }
+  }
+}

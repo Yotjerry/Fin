@@ -65,6 +65,8 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
+import SupportCenter from "../components/SupportCenter";
+import { HelpCircle } from "lucide-react";
 
 // --- Types & Interfaces ---
 type ModalType = "none" | "vente" | "ramassage" | "ajustement" | "cloture" | "recharge" | "dette" | "terminal";
@@ -1363,6 +1365,15 @@ export default function AgentDashboard() {
               }} 
             />
             <SidebarItem 
+              icon={<HelpCircle size={20} />} 
+              label="Support & Avis" 
+              active={activeTab === "Support"} 
+              onClick={() => {
+                setActiveTab("Support");
+                setIsMobileMenuOpen(false);
+              }} 
+            />
+            <SidebarItem 
               icon={<Settings2 size={20} />} 
               label="Paramètres" 
               active={activeTab === "Account"} 
@@ -1484,6 +1495,8 @@ export default function AgentDashboard() {
                 <CloturesView />
               ) : activeTab === "Account" ? (
                 <AccountView />
+              ) : activeTab === "Support" ? (
+                <SupportCenter />
               ) : activeTab === "Caisse" ? (
                 <div className="space-y-10">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-8">

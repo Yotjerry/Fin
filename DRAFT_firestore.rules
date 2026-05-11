@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- GLOBAL HELPERS ---
+    function isSignedIn() { return request.auth != null; }
+    function isEmailVerified() { return request.auth.token.email_verified == true; }
+    function userId() { return request.auth.uid; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    // RBAC
+    function getUserData() { return get(/databases/$(database)/documents/users/$(userId())).data; }
+    function isAdmin() { return isSignedIn() && getUserData().role == "ADMIN"; }
+    function isMerchant() { return isSignedIn() && getUserData().role == "MERCHANT"; }
+    function isAgent() { return isSignedIn() && getUserData().role == "AGENT"; }
+
+    // --- DEFAULT DENY ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- USERS ---
+    match /users/{uid} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['id', 'name', 'role', 'status']) &&
+               data.id is string && data.id.size() <= 128 &&
+               data.name is string && data.name.size() <= 200 &&
+               data.role in ['ADMIN', 'MERCHANT', 'AGENT'] &&
+               data.status in ['ACTIVE', 'PENDING', 'INACTIVE'];
+      }
+      
+      allow read: if isSignedIn() && (userId() == uid || isAdmin() || isMerchant());
+      allow create: if isSignedIn() && (userId() == uid || isAdmin()) && isValidUser(incoming());
+      allow update: if isSignedIn() && (userId() == uid || isAdmin()) && isValidUser(incoming()) && (
+        (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'bio', 'phone', 'updatedAt'])) ||
+        isAdmin()
+      );
+    }
+
+    // --- FEEDBACKS ---
+    match /feedbacks/{feedbackId} {
+      function isValidFeedback(data) {
+        return data.keys().hasAll(['id', 'userId', 'type', 'message', 'status', 'createdAt']) &&
+               data.id is string && data.userId == userId() &&
+               data.type in ['Correction', 'Bug Technique', 'Suggestion', 'Autre'] &&
+               data.message is string && data.message.size() <= 2000 &&
+               data.status in ['Reçu', 'En cours', 'Résolu', 'Classé'];
+      }
+
+      allow list: if isSignedIn() && (resource.data.userId == userId() || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == userId() || isAdmin());
+      
+      allow create: if isSignedIn() && isValidFeedback(incoming()) && incoming().createdAt == request.time;
+      allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adminNote']);
+    }
+
+    // --- REVIEWS ---
+    match /reviews/{reviewId} {
+      function isValidReview(data) {
+        return data.keys().hasAll(['id', 'userId', 'rating', 'createdAt']) &&
+               data.userId == userId() &&
+               data.rating is number && data.rating >= 1 && data.rating <= 5;
+      }
+
+      allow read: if true; // Reviews are public (filtered by collection if needed)
+      allow create: if isSignedIn() && isValidReview(incoming()) && incoming().createdAt == request.time;
+    }
+
+    // --- TRANSACTIONS ---
+    match /transactions/{txnId} {
+      function isValidTxn(data) {
+        return data.keys().hasAll(['id', 'nature', 'amount', 'status', 'agentId', 'date']) &&
+               data.amount is number && data.amount > 0;
+      }
+
+      allow list: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
+      allow get: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
+      allow create: if (isAgent() || isMerchant()) && isValidTxn(incoming());
+    }
+  }
+}

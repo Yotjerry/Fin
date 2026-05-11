@@ -2014,34 +2014,33 @@ function PlansView() {
 }
 
 /* ------------------- VIEW: SUPPORT ------------------- */
-function SupportView() {
-  const [activeTab, setActiveTab] = useState<'merchants' | 'agents'>('merchants');
-  const [filter, setFilter] = useState('Tous');
-  
-  const [reports, setReports] = useState({
-    merchants: [
-      { id: '102', reporter: 'Pharmacie Grand Pont', type: 'Bug', label: 'Impression ticket', content: "Erreur 504 lors de la clôture journalière sur terminal V2.", status: 'pending', time: '14m', priority: 'high' },
-      { id: '054', reporter: 'Boulangerie Saveurs', type: 'Suggestion', label: 'UI/UX', content: "Ajouter un bouton 'Recharge Rapide' sur l'accueil marchand.", status: 'pending', time: '2h', priority: 'low' },
-      { id: '105', reporter: 'Supermarché Horizon', type: 'Bug', label: 'QR Scan', content: "Scan impossible en basse luminosité.", status: 'fixed', time: 'Hier', priority: 'medium' }
-    ],
-    agents: [
-      { id: '001', reporter: 'Agent Kamara', type: 'Alerte', label: 'Fraude', content: "Suspicion de double KYC secteur Nord.", status: 'pending', time: '5m', priority: 'high' },
-      { id: '088', reporter: 'Agent Doe', type: 'Note', label: 'Tarification', content: "Mise à jour des prix Canal+ requise.", status: 'notified', time: '3h', priority: 'medium' }
-    ]
-  });
+import { feedbackService, Feedback, FeedbackStatus } from '../services/feedbackService';
 
-  const handleUpdateStatus = (type: 'merchants' | 'agents', id: string, newStatus: string) => {
-    setReports(prev => ({
-      ...prev,
-      [type]: prev[type].map(r => r.id === id ? { ...r, status: newStatus } : r)
-    }));
+function SupportView() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [filter, setFilter] = useState('Tous');
+  const [adminNote, setAdminNote] = useState<{ [id: string]: string }>({});
+
+  useEffect(() => {
+    loadFeedbacks();
+  }, []);
+
+  const loadFeedbacks = async () => {
+    const data = await feedbackService.getAllFeedbacks();
+    setFeedbacks(data);
   };
 
-  const currentData = reports[activeTab].filter(item => {
-    if (filter === 'all' || filter === 'Tous') return true;
-    if (filter === 'Bugs') return item.type === 'Bug';
-    if (filter === 'Alertes') return item.type === 'Alerte';
-    if (filter === 'Suggestions') return item.type === 'Suggestion';
+  const handleUpdateStatus = async (id: string, newStatus: FeedbackStatus) => {
+    const note = adminNote[id] || '';
+    await feedbackService.updateFeedbackStatus(id, newStatus, note);
+    loadFeedbacks();
+  };
+
+  const filteredFeedbacks = feedbacks.filter(f => {
+    if (filter === 'Tous') return true;
+    if (filter === 'Corrections') return f.type === 'Correction';
+    if (filter === 'Bugs') return f.type === 'Bug Technique';
+    if (filter === 'Suggestions') return f.type === 'Suggestion';
     return true;
   });
 
@@ -2051,41 +2050,24 @@ function SupportView() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-6xl mx-auto space-y-8 pb-20"
     >
-      {/* MINIMALIST NAV */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-6">
         <div>
           <h2 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
-            Flux de Maintenance
-            <span className="text-xs bg-indigo-50 text-[#3A4DB7] px-3 py-1 rounded-full border border-indigo-100 font-black uppercase tracking-widest">{currentData.length} Actifs</span>
+            Support & Incidents
+            <span className="text-xs bg-indigo-50 text-[#3A4DB7] px-3 py-1 rounded-full border border-indigo-100 font-black uppercase tracking-widest">{filteredFeedbacks.length} Signalements</span>
           </h2>
-          <p className="text-slate-400 text-sm mt-2 font-medium">Supervision et résolution des incidents remontés par le réseau.</p>
-        </div>
-
-        <div className="flex bg-slate-100/50 p-1 rounded-2xl border border-slate-200/40">
-          <button 
-            onClick={() => { setActiveTab('merchants'); setFilter('all'); }}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'merchants' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <AlertCircle size={14} /> Flux Marchands
-          </button>
-          <button 
-            onClick={() => { setActiveTab('agents'); setFilter('all'); }}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'agents' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/60' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Fingerprint size={14} /> Notes Agents
-          </button>
+          <p className="text-slate-400 text-sm mt-2 font-medium">Gestion centralisée des retours techniques et suggestions du réseau.</p>
         </div>
       </div>
 
-      {/* FILTER BUTTONS */}
       <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">Filtrer :</span>
-        {['Tous', 'Bugs', 'Alertes', 'Suggestions'].map((t) => (
+        {['Tous', 'Corrections', 'Bugs', 'Suggestions'].map((t) => (
           <button 
             key={t} 
             onClick={() => setFilter(t)}
             className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              filter === t || (filter === 'all' && t === 'Tous') 
+              filter === t 
               ? 'bg-slate-900 text-white shadow-lg' 
               : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'
             }`}
@@ -2093,93 +2075,80 @@ function SupportView() {
             {t}
           </button>
         ))}
-        <div className="flex-1" />
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 text-[10px] font-black uppercase">
-           <Activity size={12} className="animate-pulse" /> Système Optimal
-        </div>
       </div>
 
-      {/* COMPACT LIST / TABLE */}
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
-        {currentData.length > 0 ? (
+        {filteredFeedbacks.length > 0 ? (
           <div className="divide-y divide-slate-50">
-            {currentData.map((item) => (
-              <div 
-                key={item.id}
-                className={`group flex flex-col md:flex-row items-center gap-8 p-8 transition-all hover:bg-slate-50/50 ${item.status === 'fixed' ? 'opacity-60 grayscale-[0.5]' : ''}`}
-              >
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
-                  item.priority === 'high' ? 'bg-rose-50 text-rose-500' : 
-                  item.priority === 'medium' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'
-                }`}>
-                  {item.type === 'Bug' || item.type === 'Alerte' ? <Zap size={24} /> : <FileText size={24} />}
-                </div>
-
-                <div className="flex-1 space-y-3">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-[10px] font-black text-slate-900 uppercase bg-slate-100 px-3 py-1 rounded-lg">#{item.id}</span>
-                    <h4 className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.reporter}</h4>
-                    <span className="text-[10px] font-black text-slate-400 uppercase italic flex items-center gap-2"><Clock size={12}/> {item.time}</span>
+            {filteredFeedbacks.map((f) => (
+              <div key={f.id} className="p-8 hover:bg-slate-50/50 transition-all flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
+                    f.type === 'Bug Technique' ? 'bg-rose-50 text-rose-500' : 
+                    f.type === 'Correction' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'
+                  }`}>
+                    {f.type === 'Bug Technique' ? <Zap size={24} /> : <FileText size={24} />}
                   </div>
-                  <p className="text-sm font-bold text-slate-500 leading-relaxed italic max-w-2xl">
-                     "{item.content}"
-                  </p>
+
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded">#{f.id}</span>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        f.status === 'Résolu' ? 'bg-emerald-50 text-emerald-600' :
+                        f.status === 'En cours' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'
+                      }`}>
+                        {f.status}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-300 ml-auto">
+                        {new Date(f.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <h4 className="text-lg font-black text-slate-950 uppercase tracking-tight mb-2">
+                      {f.userName} • <span className="text-slate-400 font-bold">{f.type}</span>
+                    </h4>
+                    <p className="text-sm font-medium text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">
+                      "{f.message}"
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  {/* ACTIONS BASED ON TYPE */}
-                  {(item.type === 'Bug' || item.type === 'Alerte') ? (
-                    item.status !== 'fixed' ? (
-                      <button 
-                        onClick={() => handleUpdateStatus(activeTab, item.id, 'fixed')}
-                        className="h-11 px-6 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#3A4DB7] transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2"
-                      >
-                        <CheckCircle2 size={14} /> Résoudre
-                      </button>
-                    ) : (
-                      <div className="flex items-center gap-3 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 font-black text-[10px] uppercase tracking-widest">
-                        <ShieldCheck size={16} /> Résolu
-                      </div>
-                    )
-                  ) : (
-                    /* SUGGESTION / NOTE WORKFLOW */
-                    <div className="flex items-center gap-2">
-                       {item.status === 'pending' && (
-                         <button 
-                           onClick={() => handleUpdateStatus(activeTab, item.id, 'acknowledged')}
-                           className="h-11 px-5 border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2"
-                         >
-                           <Bell size={14} /> Accuser réception
-                         </button>
-                       )}
-                       
-                       {(item.status === 'pending' || item.status === 'acknowledged') ? (
-                         <>
-                           <button 
-                             onClick={() => handleUpdateStatus(activeTab, item.id, 'accepted')}
-                             className="h-11 px-5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
-                           >
-                             <Check size={14} /> Accepter
-                           </button>
-                           <button 
-                             onClick={() => handleUpdateStatus(activeTab, item.id, 'declined')}
-                             className="h-11 px-5 bg-white border border-rose-100 text-rose-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-all flex items-center gap-2"
-                           >
-                             <X size={14} /> Refuser
-                           </button>
-                         </>
-                       ) : (
-                         <div className={`flex items-center gap-3 px-6 py-2 rounded-xl border font-black text-[10px] uppercase tracking-widest ${
-                           item.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                           item.status === 'declined' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                           'bg-amber-50 text-amber-600 border-amber-100'
-                         }`}>
-                           {item.status === 'accepted' ? <Check size={16} /> : item.status === 'declined' ? <X size={16} /> : <Bell size={16} />}
-                           {item.status === 'accepted' ? 'Acceptée' : item.status === 'declined' ? 'Refusée' : 'Reçue'}
-                         </div>
-                       )}
-                    </div>
-                  )}
+                <div className="flex flex-col md:flex-row items-end gap-4 bg-white border border-slate-100 p-4 rounded-2xl">
+                   <div className="w-full flex-1">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Réponse / Note administrative</label>
+                      <input 
+                        type="text"
+                        value={adminNote[f.id] || f.adminNote || ''}
+                        onChange={(e) => setAdminNote({...adminNote, [f.id]: e.target.value})}
+                        placeholder="Rédiger une réponse visible par l'utilisateur..."
+                        className="w-full bg-slate-50 border-none outline-none p-3 rounded-xl text-xs font-bold"
+                      />
+                   </div>
+                   <div className="flex gap-2">
+                     {f.status !== 'Résolu' && (
+                       <button 
+                        onClick={() => handleUpdateStatus(f.id, 'Résolu')}
+                        className="px-6 py-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all flex items-center gap-2"
+                       >
+                         <CheckCircle2 size={14} /> Marquer Résolu
+                       </button>
+                     )}
+                     {f.status !== 'En cours' && f.status !== 'Résolu' && (
+                       <button 
+                        onClick={() => handleUpdateStatus(f.id, 'En cours')}
+                        className="px-6 py-3 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-950 transition-all flex items-center gap-2"
+                       >
+                         <Clock size={14} /> Traiter
+                       </button>
+                     )}
+                     {(f.status === 'En cours' || f.status === 'Résolu') && (
+                       <button 
+                        onClick={() => handleUpdateStatus(f.id, f.status)}
+                        className="px-6 py-3 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2"
+                       >
+                         <Save size={14} /> Enregistrer Note
+                       </button>
+                     )}
+                   </div>
                 </div>
               </div>
             ))}
@@ -2189,19 +2158,9 @@ function SupportView() {
             <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200">
                <ShieldCheck size={40} />
             </div>
-            <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic">Aucun signalement actif pour ce filtre.</p>
-            </div>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Aucun feedback à traiter.</p>
           </div>
         )}
-      </div>
-
-      {/* QUICK LOGS FOOTER */}
-      <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest px-6">
-         <span>Dernière synchronisation : 12:42:01</span>
-         <div className="flex items-center gap-4">
-            <button className="hover:text-slate-900 transition-colors underline">Vider cache alertes</button>
-         </div>
       </div>
     </motion.div>
   );

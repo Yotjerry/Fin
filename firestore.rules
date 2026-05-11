@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- GLOBAL HELPERS ---
+    function isSignedIn() { return request.auth != null; }
+    function userId() { return request.auth.uid; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // RBAC - Fetches role from user document
+    function getUserData() { return get(/databases/$(database)/documents/users/$(userId())).data; }
+    function isAdmin() { return isSignedIn() && getUserData().role == "ADMIN"; }
+    function isMerchant() { return isSignedIn() && getUserData().role == "MERCHANT"; }
+    function isAgent() { return isSignedIn() && getUserData().role == "AGENT"; }
+
+    // --- DEFAULT DENY ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- USERS ---
+    match /users/{uid} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['id', 'name', 'role', 'status']) &&
+               data.id is string && data.id.size() <= 128 &&
+               data.name is string && data.name.size() <= 200 &&
+               data.role in ['ADMIN', 'MERCHANT', 'AGENT'] &&
+               data.status in ['ACTIVE', 'PENDING', 'INACTIVE'];
+      }
+      
+      allow read: if isSignedIn() && (userId() == uid || isAdmin() || isMerchant());
+      allow create: if isSignedIn() && (userId() == uid || isAdmin()) && isValidUser(incoming());
+      allow update: if isSignedIn() && (userId() == uid || isAdmin()) && (
+        (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'bio', 'phone', 'updatedAt'])) ||
+        isAdmin()
+      );
+    }
+
+    // --- FEEDBACKS ---
+    match /feedbacks/{feedbackId} {
+      function isValidFeedback(data) {
+        return data.keys().hasAll(['userId', 'type', 'message', 'status']) &&
+               data.userId == userId() &&
+               data.type in ['Correction', 'Bug Technique', 'Suggestion', 'Autre'] &&
+               data.message is string && data.message.size() <= 2000 &&
+               data.status in ['Reçu', 'En cours', 'Résolu', 'Classé'];
+      }
+
+      allow list: if isSignedIn() && (resource.data.userId == userId() || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == userId() || isAdmin());
+      
+      allow create: if isSignedIn() && isValidFeedback(incoming());
+      allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adminNote', 'updatedAt']);
+    }
+
+    // --- REVIEWS ---
+    match /reviews/{reviewId} {
+      function isValidReview(data) {
+        return data.keys().hasAll(['userId', 'rating']) &&
+               data.userId == userId() &&
+               data.rating is number && data.rating >= 1 && data.rating <= 5;
+      }
+
+      allow read: if true; 
+      allow create: if isSignedIn() && isValidReview(incoming());
+    }
+
+    // --- TRANSACTIONS ---
+    match /transactions/{txnId} {
+      function isValidTxn(data) {
+        return data.keys().hasAll(['nature', 'amount', 'status', 'agentId']) &&
+               data.amount is number && data.amount > 0;
+      }
+
+      allow list: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
+      allow get: if isSignedIn() && (resource.data.agentId == userId() || resource.data.merchantId == userId() || isAdmin());
+      allow create: if (isAgent() || isMerchant()) && isValidTxn(incoming());
+    }
+  }
+}

@@ -83,6 +83,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../contexts/AuthContext";
+import SupportCenter from "../components/SupportCenter";
 
 // --- Data Model Interfaces ---
 
@@ -3025,6 +3026,7 @@ function AjustementsView() {
 
 export default function MerchantDashboard(props: Partial<MerchantDashboardProps>) {
   const data = { ...DEFAULT_PROPS, ...props };
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -3054,6 +3056,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
       case "Dettes": return <DettesView />;
       case "Ajustements": return <AjustementsView />;
       case "Rapports": return <RapportsView />;
+      case "Support": return <SupportCenter />;
       case "Paramètres": return <SettingsView user={data.user} />;
       default: return (
         <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
@@ -3112,6 +3115,7 @@ export default function MerchantDashboard(props: Partial<MerchantDashboardProps>
           <SidebarItem icon={<ShieldAlert size={20} />} label="Dettes agents" active={activeTab === "Dettes"} onClick={() => { setActiveTab("Dettes"); setIsMobileMenuOpen(false); }} />
           <SidebarItem icon={<PenTool size={20} />} label="Ajustements" active={activeTab === "Ajustements"} onClick={() => { setActiveTab("Ajustements"); setIsMobileMenuOpen(false); }} />
           <SidebarItem icon={<BarChart2 size={20} />} label="Rapports" active={activeTab === "Rapports"} onClick={() => { setActiveTab("Rapports"); setIsMobileMenuOpen(false); }} />
+          <SidebarItem icon={<HelpCircle size={20} />} label="Support & Avis" active={activeTab === "Support"} onClick={() => { setActiveTab("Support"); setIsMobileMenuOpen(false); }} />
           <SidebarItem icon={<Settings size={20} />} label="Paramètres" active={activeTab === "Paramètres"} onClick={() => { setActiveTab("Paramètres"); setIsMobileMenuOpen(false); }} />
         </nav>
 
